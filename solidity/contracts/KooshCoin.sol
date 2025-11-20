@@ -23,6 +23,42 @@ contract KooshCoin is ERC20, AccessControl {
     }
 
     /**
+     * @notice Role management functions
+     * @dev Only accounts with DEFAULT_ADMIN_ROLE can manage roles.
+     */
+
+    function addAdmin(address newAdmin) external {
+        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "Caller is not an admin");
+        _grantRole(DEFAULT_ADMIN_ROLE, newAdmin);
+        _grantRole(MINTER_ROLE, newAdmin);
+    }
+
+    function removeAdmin(address admin) external {
+        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "Caller is not an admin");
+        _revokeRole(DEFAULT_ADMIN_ROLE, admin);
+        _revokeRole(MINTER_ROLE, admin);
+    }
+
+    function isAdmin(address account) external view returns (bool) {
+        return hasRole(DEFAULT_ADMIN_ROLE, account);
+    }
+
+    function addMinter(address newMinter) external {
+        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "Caller is not an admin");
+        _grantRole(MINTER_ROLE, newMinter);
+    }
+
+    function removeMinter(address minter) external {
+        require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "Caller is not an admin");
+        _revokeRole(MINTER_ROLE, minter);
+    }
+
+    function isMinter(address account) external view returns (bool) {
+        return hasRole(MINTER_ROLE, account);
+    }
+
+
+    /**
      * @notice Creates new tokens. Can only be called by accounts with MINTER_ROLE.
      */
     function mint(address to, uint256 amount) external {
