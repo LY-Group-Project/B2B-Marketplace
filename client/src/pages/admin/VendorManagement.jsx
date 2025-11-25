@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Helmet } from 'react-helmet-async';
-import { 
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Helmet } from "react-helmet-async";
+import {
   MagnifyingGlassIcon,
   FunnelIcon,
   CheckCircleIcon,
@@ -13,36 +13,43 @@ import {
   EnvelopeIcon,
   PhoneIcon,
   CalendarIcon,
-  ShieldCheckIcon
-} from '@heroicons/react/24/outline';
-import { adminAPI } from '../../services/api';
-import { toast } from 'react-hot-toast';
+  ShieldCheckIcon,
+} from "@heroicons/react/24/outline";
+import { adminAPI } from "../../services/api";
+import { toast } from "react-hot-toast";
 
 const VendorManagement = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
   const queryClient = useQueryClient();
 
   const { data: vendorsData, isLoading } = useQuery({
-    queryKey: ['adminVendors', { page, search: searchTerm, status: statusFilter }],
-    queryFn: () => adminAPI.getAllVendors({ 
-      page, 
-      limit: 10, 
-      search: searchTerm, 
-      status: statusFilter 
-    }),
+    queryKey: [
+      "adminVendors",
+      { page, search: searchTerm, status: statusFilter },
+    ],
+    queryFn: () =>
+      adminAPI.getAllVendors({
+        page,
+        limit: 10,
+        search: searchTerm,
+        status: statusFilter,
+      }),
     select: (response) => response.data,
   });
 
   const updateVendorStatusMutation = useMutation({
-    mutationFn: ({ id, isApproved }) => adminAPI.updateVendorStatus(id, { isApproved }),
+    mutationFn: ({ id, isApproved }) =>
+      adminAPI.updateVendorStatus(id, { isApproved }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['adminVendors']);
-      toast.success('Vendor status updated successfully');
+      queryClient.invalidateQueries(["adminVendors"]);
+      toast.success("Vendor status updated successfully");
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Failed to update vendor status');
+      toast.error(
+        error.response?.data?.message || "Failed to update vendor status",
+      );
     },
   });
 
@@ -67,8 +74,12 @@ const VendorManagement = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Vendor Management</h1>
-            <p className="text-gray-600 mt-2">Manage vendor accounts and approvals</p>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Vendor Management
+            </h1>
+            <p className="text-gray-600 mt-2">
+              Manage vendor accounts and approvals
+            </p>
           </div>
 
           {/* Stats Cards */}
@@ -77,43 +88,47 @@ const VendorManagement = () => {
               <div className="flex items-center">
                 <BuildingOfficeIcon className="h-12 w-12 text-blue-600" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Total Vendors</p>
-                  <p className="text-2xl font-bold text-gray-900">{vendorsData?.total || 0}</p>
+                  <p className="text-sm font-medium text-gray-500">
+                    Total Vendors
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {vendorsData?.total || 0}
+                  </p>
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-white rounded-lg shadow-sm p-6">
               <div className="flex items-center">
                 <CheckCircleIcon className="h-12 w-12 text-green-600" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">Approved</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {vendors.filter(v => v.vendorProfile?.isApproved).length}
+                    {vendors.filter((v) => v.vendorProfile?.isApproved).length}
                   </p>
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-white rounded-lg shadow-sm p-6">
               <div className="flex items-center">
                 <XCircleIcon className="h-12 w-12 text-yellow-600" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">Pending</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {vendors.filter(v => !v.vendorProfile?.isApproved).length}
+                    {vendors.filter((v) => !v.vendorProfile?.isApproved).length}
                   </p>
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-white rounded-lg shadow-sm p-6">
               <div className="flex items-center">
                 <ShieldCheckIcon className="h-12 w-12 text-purple-600" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">Verified</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {vendors.filter(v => v.isVerified).length}
+                    {vendors.filter((v) => v.isVerified).length}
                   </p>
                 </div>
               </div>
@@ -210,10 +225,12 @@ const VendorManagement = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm text-gray-900">
-                              {vendor.vendorProfile?.businessName || 'Not provided'}
+                              {vendor.vendorProfile?.businessName ||
+                                "Not provided"}
                             </div>
                             <div className="text-sm text-gray-500">
-                              {vendor.vendorProfile?.businessType || 'Not specified'}
+                              {vendor.vendorProfile?.businessType ||
+                                "Not specified"}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -229,12 +246,16 @@ const VendorManagement = () => {
                             )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              vendor.vendorProfile?.isApproved 
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-yellow-100 text-yellow-800'
-                            }`}>
-                              {vendor.vendorProfile?.isApproved ? 'Approved' : 'Pending'}
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                vendor.vendorProfile?.isApproved
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-yellow-100 text-yellow-800"
+                              }`}
+                            >
+                              {vendor.vendorProfile?.isApproved
+                                ? "Approved"
+                                : "Pending"}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -246,7 +267,9 @@ const VendorManagement = () => {
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div className="flex items-center justify-end space-x-2">
                               <button
-                                onClick={() => {/* View vendor details */}}
+                                onClick={() => {
+                                  /* View vendor details */
+                                }}
                                 className="text-blue-600 hover:text-blue-900 p-1"
                                 title="View Details"
                               >
@@ -255,16 +278,24 @@ const VendorManagement = () => {
                               {!vendor.vendorProfile?.isApproved && (
                                 <>
                                   <button
-                                    onClick={() => handleApproveVendor(vendor._id)}
-                                    disabled={updateVendorStatusMutation.isPending}
+                                    onClick={() =>
+                                      handleApproveVendor(vendor._id)
+                                    }
+                                    disabled={
+                                      updateVendorStatusMutation.isPending
+                                    }
                                     className="text-green-600 hover:text-green-900 p-1 disabled:opacity-50"
                                     title="Approve Vendor"
                                   >
                                     <CheckCircleIcon className="h-4 w-4" />
                                   </button>
                                   <button
-                                    onClick={() => handleRejectVendor(vendor._id)}
-                                    disabled={updateVendorStatusMutation.isPending}
+                                    onClick={() =>
+                                      handleRejectVendor(vendor._id)
+                                    }
+                                    disabled={
+                                      updateVendorStatusMutation.isPending
+                                    }
                                     className="text-red-600 hover:text-red-900 p-1 disabled:opacity-50"
                                     title="Reject Vendor"
                                   >
@@ -313,8 +344,12 @@ const VendorManagement = () => {
             ) : (
               <div className="p-8 text-center">
                 <BuildingOfficeIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No vendors found</h3>
-                <p className="text-gray-500">Try adjusting your search or filter criteria</p>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No vendors found
+                </h3>
+                <p className="text-gray-500">
+                  Try adjusting your search or filter criteria
+                </p>
               </div>
             )}
           </div>

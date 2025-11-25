@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { Helmet } from 'react-helmet-async';
-import { useQuery } from '@tanstack/react-query';
-import { categoriesAPI } from '../services/api';
-import { Link } from 'react-router-dom';
+import { useState } from "react";
+import { Helmet } from "react-helmet-async";
+import { useQuery } from "@tanstack/react-query";
+import { categoriesAPI } from "../services/api";
+import { Link } from "react-router-dom";
 
 const Categories = () => {
   const { data: categoriesData, isLoading } = useQuery({
-    queryKey: ['categories'],
+    queryKey: ["categories"],
     queryFn: () => categoriesAPI.getCategories(),
     select: (response) => response.data,
   });

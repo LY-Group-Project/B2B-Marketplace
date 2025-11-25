@@ -1,17 +1,17 @@
 // Helper functions to base64url encode/decode ArrayBuffers
 const bufferEncode = (buffer) => {
   return btoa(String.fromCharCode(...new Uint8Array(buffer)))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=/g, '');
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=/g, "");
 };
 
 const bufferDecode = (base64urlString) => {
   // Pad base64 string to a multiple of 4
-  const padding = '='.repeat((4 - (base64urlString.length % 4)) % 4);
+  const padding = "=".repeat((4 - (base64urlString.length % 4)) % 4);
   const base64 = (base64urlString + padding)
-    .replace(/-/g, '+')
-    .replace(/_/g, '/');
+    .replace(/-/g, "+")
+    .replace(/_/g, "/");
   const str = atob(base64);
   const buffer = new Uint8Array(str.length);
   for (let i = 0; i < str.length; i++) {
@@ -29,7 +29,7 @@ const preformatMakeCredReq = (makeCredRequest) => {
       (exCred) => {
         exCred.id = bufferDecode(exCred.id);
         return exCred;
-      }
+      },
     );
   }
   return makeCredRequest;

@@ -1,46 +1,46 @@
-import { useState } from 'react';
-import { Helmet } from 'react-helmet-async';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
-import { productsAPI, categoriesAPI, uploadAPI } from '../../services/api';
+import { useState } from "react";
+import { Helmet } from "react-helmet-async";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import { productsAPI, categoriesAPI, uploadAPI } from "../../services/api";
 import {
   ArrowLeftIcon,
   XMarkIcon,
   PlusIcon,
-} from '@heroicons/react/24/outline';
-import { toast } from 'react-hot-toast';
+} from "@heroicons/react/24/outline";
+import { toast } from "react-hot-toast";
 
 const AddProduct = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  
+
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: '',
-    category: '',
-    quantity: '',
-    sku: '',
-    weight: '',
+    name: "",
+    description: "",
+    price: "",
+    category: "",
+    quantity: "",
+    sku: "",
+    weight: "",
     dimensions: {
-      length: '',
-      width: '',
-      height: ''
+      length: "",
+      width: "",
+      height: "",
     },
     tags: [],
-    isActive: true
+    isActive: true,
   });
-  
+
   const [images, setImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
-  const [tagInput, setTagInput] = useState('');
+  const [tagInput, setTagInput] = useState("");
   const [showCreateCategory, setShowCreateCategory] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState('');
-  const [newCategoryDescription, setNewCategoryDescription] = useState('');
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [newCategoryDescription, setNewCategoryDescription] = useState("");
 
   // Fetch categories
   const { data: categoriesData } = useQuery({
-    queryKey: ['categories'],
+    queryKey: ["categories"],
     queryFn: () => categoriesAPI.getCategories(),
     select: (response) => response.data,
   });
@@ -49,12 +49,12 @@ const AddProduct = () => {
   const createProductMutation = useMutation({
     mutationFn: (productData) => productsAPI.createProduct(productData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vendorProducts'] });
-      toast.success('Product created successfully');
-      navigate('/vendor/products');
+      queryClient.invalidateQueries({ queryKey: ["vendorProducts"] });
+      toast.success("Product created successfully");
+      navigate("/vendor/products");
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Failed to create product');
+      toast.error(error.response?.data?.message || "Failed to create product");
     },
   });
 
@@ -62,23 +62,27 @@ const AddProduct = () => {
   const uploadImagesMutation = useMutation({
     mutationFn: (formData) => uploadAPI.uploadMultipleImages(formData),
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Failed to upload images');
+      toast.error(error.response?.data?.message || "Failed to upload images");
     },
   });
 
   // Create category mutation
   const createCategoryMutation = useMutation({
-    mutationFn: (categoryData) => categoriesAPI.createVendorCategory(categoryData),
+    mutationFn: (categoryData) =>
+      categoriesAPI.createVendorCategory(categoryData),
     onSuccess: (response) => {
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
-      setFormData(prev => ({ ...prev, category: response.data.category._id }));
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      setFormData((prev) => ({
+        ...prev,
+        category: response.data.category._id,
+      }));
       setShowCreateCategory(false);
-      setNewCategoryName('');
-      setNewCategoryDescription('');
-      toast.success('Category created successfully');
+      setNewCategoryName("");
+      setNewCategoryDescription("");
+      toast.success("Category created successfully");
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Failed to create category');
+      toast.error(error.response?.data?.message || "Failed to create category");
     },
   });
 
@@ -86,68 +90,68 @@ const AddProduct = () => {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    
-    if (name.includes('.')) {
-      const [parent, child] = name.split('.');
-      setFormData(prev => ({
+
+    if (name.includes(".")) {
+      const [parent, child] = name.split(".");
+      setFormData((prev) => ({
         ...prev,
         [parent]: {
           ...prev[parent],
-          [child]: value
-        }
+          [child]: value,
+        },
       }));
     } else {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        [name]: type === 'checkbox' ? checked : value
+        [name]: type === "checkbox" ? checked : value,
       }));
     }
   };
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    
+
     if (files.length + images.length > 5) {
-      toast.error('Maximum 5 images allowed');
+      toast.error("Maximum 5 images allowed");
       return;
     }
 
-    setImages(prev => [...prev, ...files]);
-    
+    setImages((prev) => [...prev, ...files]);
+
     // Create previews
-    files.forEach(file => {
+    files.forEach((file) => {
       const reader = new FileReader();
       reader.onload = (e) => {
-        setImagePreviews(prev => [...prev, e.target.result]);
+        setImagePreviews((prev) => [...prev, e.target.result]);
       };
       reader.readAsDataURL(file);
     });
   };
 
   const removeImage = (index) => {
-    setImages(prev => prev.filter((_, i) => i !== index));
-    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+    setImages((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   const addTag = () => {
     if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        tags: [...prev.tags, tagInput.trim()]
+        tags: [...prev.tags, tagInput.trim()],
       }));
-      setTagInput('');
+      setTagInput("");
     }
   };
 
   const removeTag = (tagToRemove) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      tags: prev.tags.filter(tag => tag !== tagToRemove)
+      tags: prev.tags.filter((tag) => tag !== tagToRemove),
     }));
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       addTag();
     }
@@ -155,51 +159,54 @@ const AddProduct = () => {
 
   const handleCreateCategory = () => {
     if (!newCategoryName.trim()) {
-      toast.error('Category name is required');
+      toast.error("Category name is required");
       return;
     }
 
     createCategoryMutation.mutate({
       name: newCategoryName.trim(),
-      description: newCategoryDescription.trim()
+      description: newCategoryDescription.trim(),
     });
   };
 
   const handleCategoryChange = (e) => {
     const value = e.target.value;
-    if (value === 'create_new') {
+    if (value === "create_new") {
       setShowCreateCategory(true);
     } else {
-      setFormData(prev => ({ ...prev, category: value }));
+      setFormData((prev) => ({ ...prev, category: value }));
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Prevent submission if creating a category
     if (showCreateCategory) {
-      toast.error('Please complete category creation or cancel it before submitting');
+      toast.error(
+        "Please complete category creation or cancel it before submitting",
+      );
       return;
     }
 
     // Validate category is selected
     if (!formData.category) {
-      toast.error('Please select or create a category');
+      toast.error("Please select or create a category");
       return;
     }
-    
+
     try {
       let imageUrls = [];
-      
+
       // Upload images if any
       if (images.length > 0) {
         const imageFormData = new FormData();
-        images.forEach(image => {
-          imageFormData.append('images', image);
+        images.forEach((image) => {
+          imageFormData.append("images", image);
         });
-        
-        const uploadResponse = await uploadImagesMutation.mutateAsync(imageFormData);
+
+        const uploadResponse =
+          await uploadImagesMutation.mutateAsync(imageFormData);
         imageUrls = uploadResponse.data.urls;
       }
 
@@ -210,26 +217,36 @@ const AddProduct = () => {
         quantity: parseInt(formData.quantity),
         weight: formData.weight ? parseFloat(formData.weight) : undefined,
         dimensions: {
-          length: formData.dimensions.length ? parseFloat(formData.dimensions.length) : undefined,
-          width: formData.dimensions.width ? parseFloat(formData.dimensions.width) : undefined,
-          height: formData.dimensions.height ? parseFloat(formData.dimensions.height) : undefined,
+          length: formData.dimensions.length
+            ? parseFloat(formData.dimensions.length)
+            : undefined,
+          width: formData.dimensions.width
+            ? parseFloat(formData.dimensions.width)
+            : undefined,
+          height: formData.dimensions.height
+            ? parseFloat(formData.dimensions.height)
+            : undefined,
         },
         images: imageUrls.map((url, index) => ({
           url: url,
           alt: `${formData.name} image ${index + 1}`,
-          isPrimary: index === 0
-        }))
+          isPrimary: index === 0,
+        })),
       };
 
       // Remove empty dimensions
-      if (!productData.dimensions.length && !productData.dimensions.width && !productData.dimensions.height) {
+      if (
+        !productData.dimensions.length &&
+        !productData.dimensions.width &&
+        !productData.dimensions.height
+      ) {
         delete productData.dimensions;
       }
 
-      console.log('Sending product data:', productData);
+      console.log("Sending product data:", productData);
       createProductMutation.mutate(productData);
     } catch (error) {
-      console.error('Error creating product:', error);
+      console.error("Error creating product:", error);
     }
   };
 
@@ -243,21 +260,25 @@ const AddProduct = () => {
           {/* Header */}
           <div className="mb-8">
             <button
-              onClick={() => navigate('/vendor/products')}
+              onClick={() => navigate("/vendor/products")}
               className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-4"
             >
               <ArrowLeftIcon className="h-4 w-4 mr-1" />
               Back to Products
             </button>
-            <h1 className="text-2xl font-bold text-gray-900">Add New Product</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Add New Product
+            </h1>
             <p className="text-gray-600">Create a new product for your store</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Basic Information */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-6">Basic Information</h3>
-              
+              <h3 className="text-lg font-medium text-gray-900 mb-6">
+                Basic Information
+              </h3>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -294,7 +315,9 @@ const AddProduct = () => {
                     Price *
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-2 text-gray-500">$</span>
+                    <span className="absolute left-3 top-2 text-gray-500">
+                      $
+                    </span>
                     <input
                       type="number"
                       name="price"
@@ -328,19 +351,23 @@ const AddProduct = () => {
                             {category.name}
                           </option>
                         ))}
-                        <option value="create_new">+ Create New Category</option>
+                        <option value="create_new">
+                          + Create New Category
+                        </option>
                       </select>
                     </div>
                   ) : (
                     <div className="space-y-3 p-4 border border-gray-300 rounded-md bg-gray-50">
                       <div className="flex items-center justify-between">
-                        <h5 className="font-medium text-gray-900">Create New Category</h5>
+                        <h5 className="font-medium text-gray-900">
+                          Create New Category
+                        </h5>
                         <button
                           type="button"
                           onClick={() => {
                             setShowCreateCategory(false);
-                            setNewCategoryName('');
-                            setNewCategoryDescription('');
+                            setNewCategoryName("");
+                            setNewCategoryDescription("");
                           }}
                           className="text-gray-400 hover:text-gray-600"
                         >
@@ -365,7 +392,9 @@ const AddProduct = () => {
                         </label>
                         <textarea
                           value={newCategoryDescription}
-                          onChange={(e) => setNewCategoryDescription(e.target.value)}
+                          onChange={(e) =>
+                            setNewCategoryDescription(e.target.value)
+                          }
                           placeholder="Enter category description"
                           rows={2}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
@@ -378,14 +407,16 @@ const AddProduct = () => {
                           disabled={createCategoryMutation.isLoading}
                           className="px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:opacity-50"
                         >
-                          {createCategoryMutation.isLoading ? 'Creating...' : 'Create Category'}
+                          {createCategoryMutation.isLoading
+                            ? "Creating..."
+                            : "Create Category"}
                         </button>
                         <button
                           type="button"
                           onClick={() => {
                             setShowCreateCategory(false);
-                            setNewCategoryName('');
-                            setNewCategoryDescription('');
+                            setNewCategoryName("");
+                            setNewCategoryDescription("");
                           }}
                           className="px-3 py-2 border border-gray-300 text-gray-700 text-sm rounded-md hover:bg-gray-50"
                         >
@@ -430,8 +461,10 @@ const AddProduct = () => {
 
             {/* Images */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-6">Product Images</h3>
-              
+              <h3 className="text-lg font-medium text-gray-900 mb-6">
+                Product Images
+              </h3>
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -471,8 +504,10 @@ const AddProduct = () => {
 
             {/* Additional Details */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-6">Additional Details</h3>
-              
+              <h3 className="text-lg font-medium text-gray-900 mb-6">
+                Additional Details
+              </h3>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -589,17 +624,23 @@ const AddProduct = () => {
             <div className="flex justify-end space-x-4">
               <button
                 type="button"
-                onClick={() => navigate('/vendor/products')}
+                onClick={() => navigate("/vendor/products")}
                 className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                disabled={createProductMutation.isLoading || uploadImagesMutation.isLoading}
+                disabled={
+                  createProductMutation.isLoading ||
+                  uploadImagesMutation.isLoading
+                }
                 className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
               >
-                {createProductMutation.isLoading || uploadImagesMutation.isLoading ? 'Creating...' : 'Create Product'}
+                {createProductMutation.isLoading ||
+                uploadImagesMutation.isLoading
+                  ? "Creating..."
+                  : "Create Product"}
               </button>
             </div>
           </form>

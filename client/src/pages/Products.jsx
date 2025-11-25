@@ -1,47 +1,60 @@
-import { useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { Helmet } from 'react-helmet-async';
-import { Search, Filter, Grid, List, Star, ShoppingCart, Heart, X } from 'lucide-react';
-import { productsAPI, categoriesAPI } from '../services/api';
-import useCartStore from '../store/cartStore';
-import SearchBar from '../components/SearchBar';
-import toast from 'react-hot-toast';
+import { useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { Helmet } from "react-helmet-async";
+import {
+  Search,
+  Filter,
+  Grid,
+  List,
+  Star,
+  ShoppingCart,
+  Heart,
+  X,
+} from "lucide-react";
+import { productsAPI, categoriesAPI } from "../services/api";
+import useCartStore from "../store/cartStore";
+import SearchBar from "../components/SearchBar";
+import toast from "react-hot-toast";
 
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [viewMode, setViewMode] = useState('grid');
+  const [viewMode, setViewMode] = useState("grid");
   const [showFilters, setShowFilters] = useState(false);
   const { addItem } = useCartStore();
 
   // Get filters from URL
-  const page = parseInt(searchParams.get('page')) || 1;
-  const search = searchParams.get('search') || '';
-  const category = searchParams.get('category') || '';
-  const minPrice = searchParams.get('minPrice') || '';
-  const maxPrice = searchParams.get('maxPrice') || '';
-  const sortBy = searchParams.get('sortBy') || 'createdAt';
-  const sortOrder = searchParams.get('sortOrder') || 'desc';
+  const page = parseInt(searchParams.get("page")) || 1;
+  const search = searchParams.get("search") || "";
+  const category = searchParams.get("category") || "";
+  const minPrice = searchParams.get("minPrice") || "";
+  const maxPrice = searchParams.get("maxPrice") || "";
+  const sortBy = searchParams.get("sortBy") || "createdAt";
+  const sortOrder = searchParams.get("sortOrder") || "desc";
 
   // Fetch products
   const { data: productsData, isLoading } = useQuery({
-    queryKey: ['products', { page, search, category, minPrice, maxPrice, sortBy, sortOrder }],
-    queryFn: () => productsAPI.getProducts({
-      page,
-      limit: 12,
-      search,
-      category,
-      minPrice,
-      maxPrice,
-      sortBy,
-      sortOrder,
-    }),
+    queryKey: [
+      "products",
+      { page, search, category, minPrice, maxPrice, sortBy, sortOrder },
+    ],
+    queryFn: () =>
+      productsAPI.getProducts({
+        page,
+        limit: 12,
+        search,
+        category,
+        minPrice,
+        maxPrice,
+        sortBy,
+        sortOrder,
+      }),
     select: (response) => response.data,
   });
 
   // Fetch categories
   const { data: categories } = useQuery({
-    queryKey: ['categories'],
+    queryKey: ["categories"],
     queryFn: () => categoriesAPI.getCategories(),
     select: (response) => response.data,
   });
@@ -53,7 +66,7 @@ const Products = () => {
     } else {
       newParams.delete(key);
     }
-    newParams.set('page', 1);
+    newParams.set("page", 1);
     setSearchParams(newParams);
   };
 
@@ -74,7 +87,10 @@ const Products = () => {
     <>
       <Helmet>
         <title>Products - Marketplace</title>
-        <meta name="description" content="Browse our wide selection of products from trusted vendors." />
+        <meta
+          name="description"
+          content="Browse our wide selection of products from trusted vendors."
+        />
       </Helmet>
 
       <div className="min-h-screen bg-gray-50">
@@ -82,13 +98,15 @@ const Products = () => {
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-4">
-              {search ? `Search Results for "${search}"` : 'Products'}
+              {search ? `Search Results for "${search}"` : "Products"}
             </h1>
-            
+
             {/* Search Results Info */}
             {search && (
               <div className="mb-4 flex items-center gap-2 text-sm text-gray-600">
-                <span>Found {productsData?.products?.length || 0} products</span>
+                <span>
+                  Found {productsData?.products?.length || 0} products
+                </span>
                 <button
                   onClick={() => setSearchParams({})}
                   className="flex items-center gap-1 text-red-600 hover:text-red-700"
@@ -98,10 +116,10 @@ const Products = () => {
                 </button>
               </div>
             )}
-            
+
             {/* Search Bar */}
             <div className="max-w-md">
-              <SearchBar 
+              <SearchBar
                 variant="header"
                 placeholder="Search products..."
                 showSuggestions={true}
@@ -123,17 +141,21 @@ const Products = () => {
                   </button>
                 </div>
 
-                <div className={`space-y-6 ${showFilters ? 'block' : 'hidden lg:block'}`}>
+                <div
+                  className={`space-y-6 ${showFilters ? "block" : "hidden lg:block"}`}
+                >
                   {/* Categories */}
                   <div>
-                    <h3 className="text-sm font-medium text-gray-900 mb-3">Categories</h3>
+                    <h3 className="text-sm font-medium text-gray-900 mb-3">
+                      Categories
+                    </h3>
                     <div className="space-y-2">
                       <button
-                        onClick={() => handleFilterChange('category', '')}
+                        onClick={() => handleFilterChange("category", "")}
                         className={`block w-full text-left px-3 py-2 rounded-md text-sm ${
                           !category
-                            ? 'bg-primary-100 text-primary-700'
-                            : 'text-gray-700 hover:bg-gray-100'
+                            ? "bg-primary-100 text-primary-700"
+                            : "text-gray-700 hover:bg-gray-100"
                         }`}
                       >
                         All Categories
@@ -141,11 +163,13 @@ const Products = () => {
                       {categories?.map((cat) => (
                         <button
                           key={cat._id}
-                          onClick={() => handleFilterChange('category', cat._id)}
+                          onClick={() =>
+                            handleFilterChange("category", cat._id)
+                          }
                           className={`block w-full text-left px-3 py-2 rounded-md text-sm ${
                             category === cat._id
-                              ? 'bg-primary-100 text-primary-700'
-                              : 'text-gray-700 hover:bg-gray-100'
+                              ? "bg-primary-100 text-primary-700"
+                              : "text-gray-700 hover:bg-gray-100"
                           }`}
                         >
                           {cat.name}
@@ -156,24 +180,34 @@ const Products = () => {
 
                   {/* Price Range */}
                   <div>
-                    <h3 className="text-sm font-medium text-gray-900 mb-3">Price Range</h3>
+                    <h3 className="text-sm font-medium text-gray-900 mb-3">
+                      Price Range
+                    </h3>
                     <div className="space-y-3">
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">Min Price</label>
+                        <label className="block text-xs text-gray-500 mb-1">
+                          Min Price
+                        </label>
                         <input
                           type="number"
                           value={minPrice}
-                          onChange={(e) => handleFilterChange('minPrice', e.target.value)}
+                          onChange={(e) =>
+                            handleFilterChange("minPrice", e.target.value)
+                          }
                           placeholder="0"
                           className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">Max Price</label>
+                        <label className="block text-xs text-gray-500 mb-1">
+                          Max Price
+                        </label>
                         <input
                           type="number"
                           value={maxPrice}
-                          onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
+                          onChange={(e) =>
+                            handleFilterChange("maxPrice", e.target.value)
+                          }
                           placeholder="1000"
                           className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
                         />
@@ -183,13 +217,16 @@ const Products = () => {
 
                   {/* Sort By */}
                   <div>
-                    <h3 className="text-sm font-medium text-gray-900 mb-3">Sort By</h3>
+                    <h3 className="text-sm font-medium text-gray-900 mb-3">
+                      Sort By
+                    </h3>
                     <select
                       value={`${sortBy}-${sortOrder}`}
                       onChange={(e) => {
-                        const [newSortBy, newSortOrder] = e.target.value.split('-');
-                        handleFilterChange('sortBy', newSortBy);
-                        handleFilterChange('sortOrder', newSortOrder);
+                        const [newSortBy, newSortOrder] =
+                          e.target.value.split("-");
+                        handleFilterChange("sortBy", newSortBy);
+                        handleFilterChange("sortOrder", newSortOrder);
                       }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
                     >
@@ -197,7 +234,9 @@ const Products = () => {
                       <option value="createdAt-asc">Oldest First</option>
                       <option value="price-asc">Price: Low to High</option>
                       <option value="price-desc">Price: High to Low</option>
-                      <option value="stats.rating.average-desc">Highest Rated</option>
+                      <option value="stats.rating.average-desc">
+                        Highest Rated
+                      </option>
                       <option value="stats.sales-desc">Best Selling</option>
                     </select>
                   </div>
@@ -210,25 +249,26 @@ const Products = () => {
               {/* Toolbar */}
               <div className="flex items-center justify-between mb-6">
                 <p className="text-sm text-gray-700">
-                  Showing {products.length} of {productsData?.total || 0} products
+                  Showing {products.length} of {productsData?.total || 0}{" "}
+                  products
                 </p>
                 <div className="flex items-center space-x-2">
                   <button
-                    onClick={() => setViewMode('grid')}
+                    onClick={() => setViewMode("grid")}
                     className={`p-2 rounded-md ${
-                      viewMode === 'grid'
-                        ? 'bg-primary-100 text-primary-600'
-                        : 'text-gray-400 hover:text-gray-600'
+                      viewMode === "grid"
+                        ? "bg-primary-100 text-primary-600"
+                        : "text-gray-400 hover:text-gray-600"
                     }`}
                   >
                     <Grid className="h-5 w-5" />
                   </button>
                   <button
-                    onClick={() => setViewMode('list')}
+                    onClick={() => setViewMode("list")}
                     className={`p-2 rounded-md ${
-                      viewMode === 'list'
-                        ? 'bg-primary-100 text-primary-600'
-                        : 'text-gray-400 hover:text-gray-600'
+                      viewMode === "list"
+                        ? "bg-primary-100 text-primary-600"
+                        : "text-gray-400 hover:text-gray-600"
                     }`}
                   >
                     <List className="h-5 w-5" />
@@ -240,7 +280,10 @@ const Products = () => {
               {isLoading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {[...Array(6)].map((_, index) => (
-                    <div key={index} className="bg-white rounded-lg shadow-sm p-6 animate-pulse">
+                    <div
+                      key={index}
+                      className="bg-white rounded-lg shadow-sm p-6 animate-pulse"
+                    >
                       <div className="w-full h-48 bg-gray-200 rounded-md mb-4"></div>
                       <div className="h-4 bg-gray-200 rounded mb-2"></div>
                       <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
@@ -249,24 +292,33 @@ const Products = () => {
                   ))}
                 </div>
               ) : products.length > 0 ? (
-                <div className={`grid gap-6 ${
-                  viewMode === 'grid'
-                    ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
-                    : 'grid-cols-1'
-                }`}>
+                <div
+                  className={`grid gap-6 ${
+                    viewMode === "grid"
+                      ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+                      : "grid-cols-1"
+                  }`}
+                >
                   {products.map((product) => (
                     <div
                       key={product._id}
                       className={`bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-300 group ${
-                        viewMode === 'list' ? 'flex' : ''
+                        viewMode === "list" ? "flex" : ""
                       }`}
                     >
-                      <div className={`relative ${viewMode === 'list' ? 'w-48' : ''}`}>
+                      <div
+                        className={`relative ${viewMode === "list" ? "w-48" : ""}`}
+                      >
                         <img
-                          src={product.images?.[0]?.url || '/placeholder-product.jpg'}
+                          src={
+                            product.images?.[0]?.url ||
+                            "/placeholder-product.jpg"
+                          }
                           alt={product.name}
                           className={`w-full object-cover rounded-t-lg ${
-                            viewMode === 'list' ? 'rounded-l-lg rounded-t-none h-48' : 'h-48'
+                            viewMode === "list"
+                              ? "rounded-l-lg rounded-t-none h-48"
+                              : "h-48"
                           }`}
                         />
                         <div className="absolute top-2 right-2 flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -278,8 +330,10 @@ const Products = () => {
                           </button>
                         </div>
                       </div>
-                      
-                      <div className={`p-4 ${viewMode === 'list' ? 'flex-1' : ''}`}>
+
+                      <div
+                        className={`p-4 ${viewMode === "list" ? "flex-1" : ""}`}
+                      >
                         <h3 className="font-medium text-gray-900 mb-2 line-clamp-2">
                           {product.name}
                         </h3>
@@ -292,9 +346,12 @@ const Products = () => {
                               <Star
                                 key={i}
                                 className={`h-4 w-4 ${
-                                  i < Math.floor(product.stats?.rating?.average || 0)
-                                    ? 'text-yellow-400'
-                                    : 'text-gray-300'
+                                  i <
+                                  Math.floor(
+                                    product.stats?.rating?.average || 0,
+                                  )
+                                    ? "text-yellow-400"
+                                    : "text-gray-300"
                                 }`}
                                 fill="currentColor"
                               />
@@ -348,32 +405,47 @@ const Products = () => {
                 <div className="mt-8 flex justify-center">
                   <nav className="flex space-x-2">
                     <button
-                      onClick={() => setSearchParams({ ...Object.fromEntries(searchParams), page: currentPage - 1 })}
+                      onClick={() =>
+                        setSearchParams({
+                          ...Object.fromEntries(searchParams),
+                          page: currentPage - 1,
+                        })
+                      }
                       disabled={currentPage === 1}
                       className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Previous
                     </button>
-                    
+
                     {[...Array(totalPages)].map((_, index) => {
                       const page = index + 1;
                       return (
                         <button
                           key={page}
-                          onClick={() => setSearchParams({ ...Object.fromEntries(searchParams), page })}
+                          onClick={() =>
+                            setSearchParams({
+                              ...Object.fromEntries(searchParams),
+                              page,
+                            })
+                          }
                           className={`px-3 py-2 text-sm font-medium rounded-md ${
                             currentPage === page
-                              ? 'bg-primary-600 text-white'
-                              : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50'
+                              ? "bg-primary-600 text-white"
+                              : "text-gray-500 bg-white border border-gray-300 hover:bg-gray-50"
                           }`}
                         >
                           {page}
                         </button>
                       );
                     })}
-                    
+
                     <button
-                      onClick={() => setSearchParams({ ...Object.fromEntries(searchParams), page: currentPage + 1 })}
+                      onClick={() =>
+                        setSearchParams({
+                          ...Object.fromEntries(searchParams),
+                          page: currentPage + 1,
+                        })
+                      }
                       disabled={currentPage === totalPages}
                       className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
@@ -391,4 +463,3 @@ const Products = () => {
 };
 
 export default Products;
-

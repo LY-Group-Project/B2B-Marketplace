@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { Helmet } from 'react-helmet-async';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { 
+import { useState } from "react";
+import { Helmet } from "react-helmet-async";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
   MagnifyingGlassIcon,
   EyeIcon,
   PencilIcon,
@@ -11,53 +11,71 @@ import {
   UserIcon,
   EnvelopeIcon,
   CalendarIcon,
-  FunnelIcon
-} from '@heroicons/react/24/outline';
-import { adminAPI } from '../../services/api';
-import { toast } from 'react-hot-toast';
+  FunnelIcon,
+} from "@heroicons/react/24/outline";
+import { adminAPI } from "../../services/api";
+import { toast } from "react-hot-toast";
 
 const AdminUsers = () => {
   const queryClient = useQueryClient();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [roleFilter, setRoleFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [sortBy, setSortBy] = useState('createdAt');
-  const [sortOrder, setSortOrder] = useState('desc');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sortOrder, setSortOrder] = useState("desc");
   const [selectedUser, setSelectedUser] = useState(null);
   const [showUserModal, setShowUserModal] = useState(false);
 
   // Fetch users
-  const { data: usersData, isLoading, error } = useQuery({
-    queryKey: ['adminUsers', { search: searchTerm, role: roleFilter, status: statusFilter, sortBy, sortOrder }],
-    queryFn: () => adminAPI.getAllUsers({ 
-      search: searchTerm, 
-      role: roleFilter !== 'all' ? roleFilter : undefined,
-      status: statusFilter !== 'all' ? statusFilter : undefined,
-      sortBy,
-      sortOrder
-    }),
+  const {
+    data: usersData,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: [
+      "adminUsers",
+      {
+        search: searchTerm,
+        role: roleFilter,
+        status: statusFilter,
+        sortBy,
+        sortOrder,
+      },
+    ],
+    queryFn: () =>
+      adminAPI.getAllUsers({
+        search: searchTerm,
+        role: roleFilter !== "all" ? roleFilter : undefined,
+        status: statusFilter !== "all" ? statusFilter : undefined,
+        sortBy,
+        sortOrder,
+      }),
     select: (response) => response.data,
   });
 
   // Update user status mutation
   const updateUserStatusMutation = useMutation({
-    mutationFn: ({ userId, status }) => adminAPI.updateUserStatus(userId, { status }),
+    mutationFn: ({ userId, status }) =>
+      adminAPI.updateUserStatus(userId, { status }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['adminUsers']);
-      toast.success('User status updated successfully');
+      queryClient.invalidateQueries(["adminUsers"]);
+      toast.success("User status updated successfully");
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Failed to update user status');
-    }
+      toast.error(
+        error.response?.data?.message || "Failed to update user status",
+      );
+    },
   });
 
   const users = usersData?.users || [];
   const totalUsers = usersData?.total || 0;
 
   // Filter users based on search and filters
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch =
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesSearch;
   });
 
@@ -67,15 +85,15 @@ const AdminUsers = () => {
 
   const getUserRoleBadge = (role) => {
     const roleStyles = {
-      admin: 'bg-red-100 text-red-800',
-      vendor: 'bg-purple-100 text-purple-800',
-      user: 'bg-blue-100 text-blue-800'
+      admin: "bg-red-100 text-red-800",
+      vendor: "bg-purple-100 text-purple-800",
+      user: "bg-blue-100 text-blue-800",
     };
-    return roleStyles[role] || 'bg-gray-100 text-gray-800';
+    return roleStyles[role] || "bg-gray-100 text-gray-800";
   };
 
   const getUserStatusIcon = (status, isVerified) => {
-    if (status === 'suspended') {
+    if (status === "suspended") {
       return <ShieldExclamationIcon className="h-5 w-5 text-red-500" />;
     }
     if (isVerified) {
@@ -97,13 +115,17 @@ const AdminUsers = () => {
       <Helmet>
         <title>User Management - Admin Dashboard</title>
       </Helmet>
-      
+
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-            <p className="mt-2 text-gray-600">Manage all users, vendors, and administrators</p>
+            <h1 className="text-3xl font-bold text-gray-900">
+              User Management
+            </h1>
+            <p className="mt-2 text-gray-600">
+              Manage all users, vendors, and administrators
+            </p>
           </div>
 
           {/* Stats Cards */}
@@ -112,43 +134,49 @@ const AdminUsers = () => {
               <div className="flex items-center">
                 <UserIcon className="h-12 w-12 text-blue-600" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Total Users</p>
-                  <p className="text-2xl font-bold text-gray-900">{totalUsers}</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex items-center">
-                <ShieldCheckIcon className="h-12 w-12 text-green-600" />
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Verified Users</p>
+                  <p className="text-sm font-medium text-gray-500">
+                    Total Users
+                  </p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {users.filter(u => u.isVerified).length}
+                    {totalUsers}
                   </p>
                 </div>
               </div>
             </div>
-            
+
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="flex items-center">
+                <ShieldCheckIcon className="h-12 w-12 text-green-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">
+                    Verified Users
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {users.filter((u) => u.isVerified).length}
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <div className="bg-white rounded-lg shadow-sm p-6">
               <div className="flex items-center">
                 <UserIcon className="h-12 w-12 text-purple-600" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">Vendors</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {users.filter(u => u.role === 'vendor').length}
+                    {users.filter((u) => u.role === "vendor").length}
                   </p>
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-white rounded-lg shadow-sm p-6">
               <div className="flex items-center">
                 <ShieldExclamationIcon className="h-12 w-12 text-red-600" />
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">Suspended</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {users.filter(u => u.status === 'suspended').length}
+                    {users.filter((u) => u.status === "suspended").length}
                   </p>
                 </div>
               </div>
@@ -169,7 +197,7 @@ const AdminUsers = () => {
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              
+
               {/* Role Filter */}
               <select
                 value={roleFilter}
@@ -181,7 +209,7 @@ const AdminUsers = () => {
                 <option value="vendor">Vendors</option>
                 <option value="admin">Admins</option>
               </select>
-              
+
               {/* Status Filter */}
               <select
                 value={statusFilter}
@@ -193,12 +221,12 @@ const AdminUsers = () => {
                 <option value="suspended">Suspended</option>
                 <option value="pending">Pending</option>
               </select>
-              
+
               {/* Sort */}
               <select
                 value={`${sortBy}-${sortOrder}`}
                 onChange={(e) => {
-                  const [field, order] = e.target.value.split('-');
+                  const [field, order] = e.target.value.split("-");
                   setSortBy(field);
                   setSortOrder(order);
                 }}
@@ -257,7 +285,9 @@ const AdminUsers = () => {
                             )}
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                            <div className="text-sm font-medium text-gray-900">
+                              {user.name}
+                            </div>
                             <div className="text-sm text-gray-500 flex items-center">
                               <EnvelopeIcon className="h-4 w-4 mr-1" />
                               {user.email}
@@ -265,37 +295,50 @@ const AdminUsers = () => {
                           </div>
                         </div>
                       </td>
-                      
+
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getUserRoleBadge(user.role)}`}>
-                          {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getUserRoleBadge(user.role)}`}
+                        >
+                          {user.role.charAt(0).toUpperCase() +
+                            user.role.slice(1)}
                         </span>
                       </td>
-                      
+
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           {getUserStatusIcon(user.status, user.isVerified)}
-                          <span className={`ml-2 text-sm ${
-                            user.status === 'suspended' ? 'text-red-600' : 
-                            user.isVerified ? 'text-green-600' : 'text-gray-500'
-                          }`}>
-                            {user.status === 'suspended' ? 'Suspended' : 
-                             user.isVerified ? 'Verified' : 'Unverified'}
+                          <span
+                            className={`ml-2 text-sm ${
+                              user.status === "suspended"
+                                ? "text-red-600"
+                                : user.isVerified
+                                  ? "text-green-600"
+                                  : "text-gray-500"
+                            }`}
+                          >
+                            {user.status === "suspended"
+                              ? "Suspended"
+                              : user.isVerified
+                                ? "Verified"
+                                : "Unverified"}
                           </span>
                         </div>
                       </td>
-                      
+
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div className="flex items-center">
                           <CalendarIcon className="h-4 w-4 mr-1" />
                           {new Date(user.createdAt).toLocaleDateString()}
                         </div>
                       </td>
-                      
+
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {user.lastActive ? new Date(user.lastActive).toLocaleDateString() : 'Never'}
+                        {user.lastActive
+                          ? new Date(user.lastActive).toLocaleDateString()
+                          : "Never"}
                       </td>
-                      
+
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex justify-end space-x-2">
                           <button
@@ -307,10 +350,12 @@ const AdminUsers = () => {
                           >
                             <EyeIcon className="h-4 w-4" />
                           </button>
-                          
-                          {user.status !== 'suspended' ? (
+
+                          {user.status !== "suspended" ? (
                             <button
-                              onClick={() => handleStatusChange(user._id, 'suspended')}
+                              onClick={() =>
+                                handleStatusChange(user._id, "suspended")
+                              }
                               className="text-red-600 hover:text-red-900"
                               disabled={updateUserStatusMutation.isPending}
                             >
@@ -318,7 +363,9 @@ const AdminUsers = () => {
                             </button>
                           ) : (
                             <button
-                              onClick={() => handleStatusChange(user._id, 'active')}
+                              onClick={() =>
+                                handleStatusChange(user._id, "active")
+                              }
                               className="text-green-600 hover:text-green-900"
                               disabled={updateUserStatusMutation.isPending}
                             >
@@ -332,12 +379,16 @@ const AdminUsers = () => {
                 </tbody>
               </table>
             </div>
-            
+
             {filteredUsers.length === 0 && (
               <div className="text-center py-12">
                 <UserIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No users found</h3>
-                <p className="text-gray-500">Try adjusting your search criteria</p>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No users found
+                </h3>
+                <p className="text-gray-500">
+                  Try adjusting your search criteria
+                </p>
               </div>
             )}
           </div>
@@ -349,7 +400,9 @@ const AdminUsers = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">User Details</h3>
+              <h3 className="text-lg font-semibold text-gray-900">
+                User Details
+              </h3>
               <button
                 onClick={() => setShowUserModal(false)}
                 className="text-gray-400 hover:text-gray-600"
@@ -357,7 +410,7 @@ const AdminUsers = () => {
                 ×
               </button>
             </div>
-            
+
             <div className="space-y-6">
               {/* User Info */}
               <div className="flex items-center space-x-4">
@@ -375,11 +428,16 @@ const AdminUsers = () => {
                   )}
                 </div>
                 <div>
-                  <h4 className="text-xl font-bold text-gray-900">{selectedUser.name}</h4>
+                  <h4 className="text-xl font-bold text-gray-900">
+                    {selectedUser.name}
+                  </h4>
                   <p className="text-gray-600">{selectedUser.email}</p>
                   <div className="flex items-center mt-2 space-x-2">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getUserRoleBadge(selectedUser.role)}`}>
-                      {selectedUser.role.charAt(0).toUpperCase() + selectedUser.role.slice(1)}
+                    <span
+                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getUserRoleBadge(selectedUser.role)}`}
+                    >
+                      {selectedUser.role.charAt(0).toUpperCase() +
+                        selectedUser.role.slice(1)}
                     </span>
                     {selectedUser.isVerified && (
                       <span className="inline-flex items-center text-green-600 text-sm">
@@ -390,54 +448,75 @@ const AdminUsers = () => {
                   </div>
                 </div>
               </div>
-              
+
               {/* Details Grid */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Phone</label>
-                  <p className="text-sm text-gray-900">{selectedUser.phone || 'Not provided'}</p>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Phone
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {selectedUser.phone || "Not provided"}
+                  </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Status</label>
-                  <p className="text-sm text-gray-900">{selectedUser.status || 'Active'}</p>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Status
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {selectedUser.status || "Active"}
+                  </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Joined</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Joined
+                  </label>
                   <p className="text-sm text-gray-900">
                     {new Date(selectedUser.createdAt).toLocaleDateString()}
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Last Active</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Last Active
+                  </label>
                   <p className="text-sm text-gray-900">
-                    {selectedUser.lastActive ? new Date(selectedUser.lastActive).toLocaleDateString() : 'Never'}
+                    {selectedUser.lastActive
+                      ? new Date(selectedUser.lastActive).toLocaleDateString()
+                      : "Never"}
                   </p>
                 </div>
               </div>
-              
+
               {/* Address */}
               {selectedUser.address && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Address
+                  </label>
                   <div className="text-sm text-gray-900">
                     <p>{selectedUser.address}</p>
                     {selectedUser.city && (
-                      <p>{selectedUser.city}, {selectedUser.state} {selectedUser.zipCode}</p>
+                      <p>
+                        {selectedUser.city}, {selectedUser.state}{" "}
+                        {selectedUser.zipCode}
+                      </p>
                     )}
                     {selectedUser.country && <p>{selectedUser.country}</p>}
                   </div>
                 </div>
               )}
-              
+
               {/* Bio */}
               {selectedUser.bio && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Bio</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Bio
+                  </label>
                   <p className="text-sm text-gray-900">{selectedUser.bio}</p>
                 </div>
               )}
             </div>
-            
+
             <div className="mt-6 flex justify-end space-x-3">
               <button
                 onClick={() => setShowUserModal(false)}
@@ -454,4 +533,3 @@ const AdminUsers = () => {
 };
 
 export default AdminUsers;
-

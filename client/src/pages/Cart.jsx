@@ -1,16 +1,17 @@
-import { Link } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
-import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
-import useCartStore from '../store/cartStore';
-import toast from 'react-hot-toast';
+import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
+import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
+import useCartStore from "../store/cartStore";
+import toast from "react-hot-toast";
 
 const Cart = () => {
-  const { items, total, itemCount, updateQuantity, removeItem, clearCart } = useCartStore();
+  const { items, total, itemCount, updateQuantity, removeItem, clearCart } =
+    useCartStore();
 
   const handleQuantityChange = (productId, variant, newQuantity) => {
     if (newQuantity <= 0) {
       removeItem(productId, variant);
-      toast.success('Item removed from cart');
+      toast.success("Item removed from cart");
     } else {
       updateQuantity(productId, newQuantity, variant);
     }
@@ -18,12 +19,12 @@ const Cart = () => {
 
   const handleRemoveItem = (productId, variant) => {
     removeItem(productId, variant);
-    toast.success('Item removed from cart');
+    toast.success("Item removed from cart");
   };
 
   const handleClearCart = () => {
     clearCart();
-    toast.success('Cart cleared');
+    toast.success("Cart cleared");
   };
 
   if (items.length === 0) {
@@ -38,7 +39,9 @@ const Cart = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
             <div className="text-center">
               <ShoppingBag className="mx-auto h-24 w-24 text-gray-400 mb-4" />
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">Your cart is empty</h1>
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                Your cart is empty
+              </h1>
               <p className="text-lg text-gray-500 mb-8">
                 Looks like you haven't added any items to your cart yet.
               </p>
@@ -66,7 +69,9 @@ const Cart = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
-            <p className="text-gray-500 mt-2">{itemCount} item(s) in your cart</p>
+            <p className="text-gray-500 mt-2">
+              {itemCount} item(s) in your cart
+            </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -87,12 +92,18 @@ const Cart = () => {
 
                 <div className="divide-y divide-gray-200">
                   {items.map((item, index) => (
-                    <div key={`${item.product._id}-${JSON.stringify(item.variant)}`} className="p-6">
+                    <div
+                      key={`${item.product._id}-${JSON.stringify(item.variant)}`}
+                      className="p-6"
+                    >
                       <div className="flex items-center space-x-4">
                         {/* Product Image */}
                         <div className="flex-shrink-0">
                           <img
-                            src={item.product.images?.[0]?.url || '/placeholder-product.jpg'}
+                            src={
+                              item.product.images?.[0]?.url ||
+                              "/placeholder-product.jpg"
+                            }
                             alt={item.product.name}
                             className="h-20 w-20 object-cover rounded-md"
                           />
@@ -116,11 +127,13 @@ const Cart = () => {
                         {/* Quantity Controls */}
                         <div className="flex items-center space-x-2">
                           <button
-                            onClick={() => handleQuantityChange(
-                              item.product._id,
-                              item.variant,
-                              item.quantity - 1
-                            )}
+                            onClick={() =>
+                              handleQuantityChange(
+                                item.product._id,
+                                item.variant,
+                                item.quantity - 1,
+                              )
+                            }
                             className="p-1 rounded-full hover:bg-gray-100 transition-colors"
                           >
                             <Minus className="h-4 w-4 text-gray-500" />
@@ -129,11 +142,13 @@ const Cart = () => {
                             {item.quantity}
                           </span>
                           <button
-                            onClick={() => handleQuantityChange(
-                              item.product._id,
-                              item.variant,
-                              item.quantity + 1
-                            )}
+                            onClick={() =>
+                              handleQuantityChange(
+                                item.product._id,
+                                item.variant,
+                                item.quantity + 1,
+                              )
+                            }
                             className="p-1 rounded-full hover:bg-gray-100 transition-colors"
                           >
                             <Plus className="h-4 w-4 text-gray-500" />
@@ -149,7 +164,9 @@ const Cart = () => {
 
                         {/* Remove Button */}
                         <button
-                          onClick={() => handleRemoveItem(item.product._id, item.variant)}
+                          onClick={() =>
+                            handleRemoveItem(item.product._id, item.variant)
+                          }
                           className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -165,7 +182,7 @@ const Cart = () => {
             <div className="lg:col-span-1">
               <div className="bg-white rounded-lg shadow-sm p-6 sticky top-8">
                 <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
-                
+
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Subtotal</span>
@@ -177,7 +194,9 @@ const Cart = () => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Tax</span>
-                    <span className="font-medium">${(total * 0.1).toFixed(2)}</span>
+                    <span className="font-medium">
+                      ${(total * 0.1).toFixed(2)}
+                    </span>
                   </div>
                   <hr className="border-gray-200" />
                   <div className="flex justify-between text-lg font-semibold">
@@ -204,8 +223,16 @@ const Cart = () => {
                 {/* Security Badge */}
                 <div className="mt-6 pt-6 border-t border-gray-200">
                   <div className="flex items-center text-sm text-gray-500">
-                    <svg className="h-4 w-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                    <svg
+                      className="h-4 w-4 mr-2"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                     Secure checkout
                   </div>
@@ -220,4 +247,3 @@ const Cart = () => {
 };
 
 export default Cart;
-

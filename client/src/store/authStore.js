@@ -1,6 +1,5 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 const useAuthStore = create(
   persist(
@@ -50,18 +49,18 @@ const useAuthStore = create(
       // Check if user is vendor and approved
       isVendorApproved: () => {
         const user = get().user;
-        return user?.role === 'vendor' && user?.vendorProfile?.isApproved;
+        return user?.role === "vendor" && user?.vendorProfile?.isApproved;
       },
     }),
     {
-      name: 'auth-storage',
+      name: "auth-storage",
       partialize: (state) => ({
         user: state.user,
         token: state.token,
         isAuthenticated: state.isAuthenticated,
       }),
-    }
-  )
+    },
+  ),
 );
 
 export default useAuthStore;

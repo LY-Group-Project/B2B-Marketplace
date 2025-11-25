@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 const useCartStore = create(
   persist(
@@ -12,9 +12,9 @@ const useCartStore = create(
       addItem: (product, quantity = 1, variant = null) => {
         const items = get().items;
         const existingItemIndex = items.findIndex(
-          item => 
-            item.product._id === product._id && 
-            JSON.stringify(item.variant) === JSON.stringify(variant)
+          (item) =>
+            item.product._id === product._id &&
+            JSON.stringify(item.variant) === JSON.stringify(variant),
         );
 
         if (existingItemIndex > -1) {
@@ -22,7 +22,7 @@ const useCartStore = create(
           const updatedItems = items.map((item, index) =>
             index === existingItemIndex
               ? { ...item, quantity: item.quantity + quantity }
-              : item
+              : item,
           );
           set({ items: updatedItems });
         } else {
@@ -41,9 +41,11 @@ const useCartStore = create(
 
       removeItem: (productId, variant = null) => {
         const items = get().items.filter(
-          item => 
-            !(item.product._id === productId && 
-              JSON.stringify(item.variant) === JSON.stringify(variant))
+          (item) =>
+            !(
+              item.product._id === productId &&
+              JSON.stringify(item.variant) === JSON.stringify(variant)
+            ),
         );
         set({ items });
         get().calculateTotals();
@@ -55,11 +57,11 @@ const useCartStore = create(
           return;
         }
 
-        const items = get().items.map(item =>
-          item.product._id === productId && 
+        const items = get().items.map((item) =>
+          item.product._id === productId &&
           JSON.stringify(item.variant) === JSON.stringify(variant)
             ? { ...item, quantity }
-            : item
+            : item,
         );
         set({ items });
         get().calculateTotals();
@@ -72,7 +74,7 @@ const useCartStore = create(
       calculateTotals: () => {
         const items = get().items;
         const total = items.reduce((sum, item) => {
-          return sum + (item.product.price * item.quantity);
+          return sum + item.product.price * item.quantity;
         }, 0);
         const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
         set({ total, itemCount });
@@ -81,9 +83,9 @@ const useCartStore = create(
       // Get item by product and variant
       getItem: (productId, variant = null) => {
         return get().items.find(
-          item => 
-            item.product._id === productId && 
-            JSON.stringify(item.variant) === JSON.stringify(variant)
+          (item) =>
+            item.product._id === productId &&
+            JSON.stringify(item.variant) === JSON.stringify(variant),
         );
       },
 
@@ -93,10 +95,9 @@ const useCartStore = create(
       },
     }),
     {
-      name: 'cart-storage',
-    }
-  )
+      name: "cart-storage",
+    },
+  ),
 );
 
 export default useCartStore;
-

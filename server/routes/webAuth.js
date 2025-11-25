@@ -1,21 +1,21 @@
-import express from 'express';
-import cors from 'cors';
-import crypto from 'crypto';
-import rateLimit from 'express-rate-limit';
+import express from "express";
+import cors from "cors";
+import crypto from "crypto";
+import rateLimit from "express-rate-limit";
 import {
   generateRegistrationOptions,
   verifyRegistrationResponse,
   generateAuthenticationOptions,
   verifyAuthenticationResponse,
-} from '@simplewebauthn/server';
-import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
-import {auth, adminAuth} from '../middleware/auth.js';
+} from "@simplewebauthn/server";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+import { auth, adminAuth } from "../middleware/auth.js";
 dotenv.config();
 
 // Schemas
-import { Passkey, InProcessItem } from '../models/PasskeyAuth.js';
-import User from '../models/userModel.js';
+import { Passkey, InProcessItem } from "../models/PasskeyAuth.js";
+import User from "../models/userModel.js";
 
 const webauthRouter = express.Router();
 const HOST = process.env.HOST || null;
@@ -24,7 +24,7 @@ const HOST_URL = process.env.HOST_URL || null;
 const currentChallenges = new Map(); // Currently in-process challenges for login
 
 if (!HOST || !HOST_URL) {
-  console.error('Please set the HOST and HOST_URL environment variables');
+  console.error("Please set the HOST and HOST_URL environment variables");
   process.exit(1);
 }
 
@@ -50,31 +50,27 @@ const loginLimiter = rateLimit({
 
 webauthRouter.use(generalLimiter);
 
-webauthRouter.get('/', (req, res) => {
-  res.json({ message: 'Working' });
+webauthRouter.get("/", (req, res) => {
+  res.json({ message: "Working" });
 });
 
-webauthRouter.post(
-  '/register',
-  auth,
-  loginLimiter,
-  async (req, res) => {
-    const user = await User.findById(req.user.id).select('-password'); // Exclude password
-    if (!user) return res.status(404).json({ msg: 'User not found' });
-    const { username } = req.body;
-    const email = user.email;
-    if (!username) {
-      return res.status(400).json({ error: 'Username is required' });
-    }
-    if (username !== email) {
-      return res.status(400).json({ error: 'Username does not match email' });
-    }
-    // console.log('Username', username);
-    // console.log('MONGO', process.env.MONGO_URI);
-    // check if user exists
+webauthRouter.post("/register", auth, loginLimiter, async (req, res) => {
+  const user = await User.findById(req.user.id).select("-password"); // Exclude password
+  if (!user) return res.status(404).json({ msg: "User not found" });
+  const { username } = req.body;
+  const email = user.email;
+  if (!username) {
+    return res.status(400).json({ error: "Username is required" });
+  }
+  if (username !== email) {
+    return res.status(400).json({ error: "Username does not match email" });
+  }
+  // console.log('Username', username);
+  // console.log('MONGO', process.env.MONGO_URI);
+  // check if user exists
 
-    // Disabled temporarily
-    /*
+  // Disabled temporarily
+  /*
   const user = await User.findOne({
     email: username});
   if (!user) {
@@ -82,65 +78,64 @@ webauthRouter.post(
   }
     */
 
-    // They are registered now, so find if they are in the passkey database
+  // They are registered now, so find if they are in the passkey database
 
-    var passkeyUser = await Passkey.findOne({
+  var passkeyUser = await Passkey.findOne({
+    username: username,
+  });
+
+  console.log("Username", passkeyUser);
+
+  var userID = new Uint8Array(32);
+
+  if (!passkeyUser) {
+    // Create the user in the passkey database
+    crypto.randomFillSync(userID);
+
+    const newPasskeyUser = new Passkey({
       username: username,
-    });
-
-    console.log('Username', passkeyUser);
-
-    var userID = new Uint8Array(32);
-
-    if (!passkeyUser) {
-      // Create the user in the passkey database
-      crypto.randomFillSync(userID);
-
-      const newPasskeyUser = new Passkey({
-        username: username,
-        userID: userID,
-        passkeys: [],
-        inProcess: [],
-      });
-      await newPasskeyUser.save();
-
-      passkeyUser = newPasskeyUser;
-    } else {
-      userID = passkeyUser.userID;
-    }
-
-    const options = await generateRegistrationOptions({
-      rpName: 'VerCert',
-      rpID: HOST,
       userID: userID,
-      userName: username,
-      attestationType: 'none',
-      authenticatorSelection: {
-        residentKey: 'preferred',
-        userVerification: 'preferred',
-      },
+      passkeys: [],
+      inProcess: [],
     });
+    await newPasskeyUser.save();
 
-    const newInProcessItem = new InProcessItem({
-      challenge: options.challenge,
-    });
-
-    await newInProcessItem.save();
-
-    passkeyUser.inProcess.push(newInProcessItem);
-    await passkeyUser.save();
-    // console.log('Passkey User', passkeyUser);
-    res.json(options);
+    passkeyUser = newPasskeyUser;
+  } else {
+    userID = passkeyUser.userID;
   }
-);
 
-webauthRouter.post('/verify-registration', async (req, res) => {
+  const options = await generateRegistrationOptions({
+    rpName: "VerCert",
+    rpID: HOST,
+    userID: userID,
+    userName: username,
+    attestationType: "none",
+    authenticatorSelection: {
+      residentKey: "preferred",
+      userVerification: "preferred",
+    },
+  });
+
+  const newInProcessItem = new InProcessItem({
+    challenge: options.challenge,
+  });
+
+  await newInProcessItem.save();
+
+  passkeyUser.inProcess.push(newInProcessItem);
+  await passkeyUser.save();
+  // console.log('Passkey User', passkeyUser);
+  res.json(options);
+});
+
+webauthRouter.post("/verify-registration", async (req, res) => {
   const { username, credential } = req.body;
   const user = await Passkey.findOne({
     username: username,
   });
 
-  if (!user) return res.status(400).json({ error: 'User not found' });
+  if (!user) return res.status(400).json({ error: "User not found" });
 
   // console.log('User', user);
   // console.log('Credential', credential);
@@ -152,7 +147,7 @@ webauthRouter.post('/verify-registration', async (req, res) => {
 
     // Parse the clientDataJSON from base64
     const clientDataJSON = JSON.parse(
-      Buffer.from(credential.response.clientDataJSON, 'base64').toString()
+      Buffer.from(credential.response.clientDataJSON, "base64").toString(),
     );
     const receivedChallenge = clientDataJSON.challenge;
 
@@ -198,29 +193,29 @@ webauthRouter.post('/verify-registration', async (req, res) => {
   }
 });
 
-webauthRouter.post('/login', loginLimiter, async (req, res) => {
+webauthRouter.post("/login", loginLimiter, async (req, res) => {
   const { username } = req.body;
   const user = await Passkey.findOne({
     username: username,
   });
 
-  console.log('Login User', user);
+  console.log("Login User", user);
 
-  if (!user) return res.status(400).json({ error: 'User not found' });
+  if (!user) return res.status(400).json({ error: "User not found" });
   if (user.passkeys.length === 0) {
-    return res.status(400).json({ error: 'No passkeys registered' });
+    return res.status(400).json({ error: "No passkeys registered" });
   }
 
   const allowedCreds = [];
   for (const cred of user.passkeys) {
     allowedCreds.push({
       id: cred.id,
-      type: 'public-key',
+      type: "public-key",
     });
   }
   const options = await generateAuthenticationOptions({
     rpID: HOST,
-    userVerification: 'preferred',
+    userVerification: "preferred",
     allowCredentials: allowedCreds,
   });
 
@@ -244,23 +239,23 @@ webauthRouter.post('/login', loginLimiter, async (req, res) => {
     }
   }, 300000);
 });
-webauthRouter.post('/verify-login', async (req, res) => {
+webauthRouter.post("/verify-login", async (req, res) => {
   const { username, assertion } = req.body;
   const user = await Passkey.findOne({ username: username });
-  if (!user) return res.status(400).json({ error: 'User not found' });
+  if (!user) return res.status(400).json({ error: "User not found" });
 
   // Retrieve stored challenge info from our in-memory map
   const challengeData = currentChallenges.get(username);
   if (!challengeData) {
-    return res.status(400).json({ error: 'No challenge found for user' });
+    return res.status(400).json({ error: "No challenge found for user" });
   }
 
   // Find the credential object from the user's stored passkeys that matches the assertion
   const credentialRecord = user.passkeys.find(
-    (cred) => cred.id === assertion.id
+    (cred) => cred.id === assertion.id,
   );
   if (!credentialRecord) {
-    return res.status(400).json({ error: 'Credential not found' });
+    return res.status(400).json({ error: "Credential not found" });
   }
 
   // console.log('Credential Record', credentialRecord);
@@ -275,8 +270,8 @@ webauthRouter.post('/verify-login', async (req, res) => {
         ? credentialRecord.publicKey
         : Buffer.from(
             credentialRecord.publicKey.$binary?.base64 ||
-              credentialRecord.publicKey.toString('base64'),
-            'base64'
+              credentialRecord.publicKey.toString("base64"),
+            "base64",
           ),
   };
 
@@ -311,29 +306,30 @@ webauthRouter.post('/verify-login', async (req, res) => {
         email: username,
       });
 
-      if (!loggedUser) return res.status(400).json({ error: 'User not found' });
+      if (!loggedUser) return res.status(400).json({ error: "User not found" });
       // Ensure JWT secret is available
       if (!process.env.JWT_SECRET) {
-        throw new Error('Missing JWT_SECRET in .env file');
+        throw new Error("Missing JWT_SECRET in .env file");
       }
 
       // Generate JWT Token
-      const token = jwt.sign({userId: loggedUser._id },
+      const token = jwt.sign(
+        { userId: loggedUser._id },
         process.env.JWT_SECRET,
         {
-          expiresIn: '30d',
-        }
+          expiresIn: "30d",
+        },
       );
 
       // Set secure HTTP-only cookie
-      res.cookie('token', token, {
+      res.cookie("token", token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'Strict',
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "Strict",
       });
       res.json({
         success: true,
-        message: 'Authentication successful',
+        message: "Authentication successful",
         token,
         user: {
           id: loggedUser._id,
@@ -343,7 +339,6 @@ webauthRouter.post('/verify-login', async (req, res) => {
           isEmailVerified: loggedUser.isEmailVerified,
           vendorProfile: loggedUser.vendorProfile || null,
         },
-
       });
     } else {
       res.json({ success: false });

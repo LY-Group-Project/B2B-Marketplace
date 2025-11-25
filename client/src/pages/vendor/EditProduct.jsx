@@ -1,49 +1,49 @@
-import { useState, useEffect } from 'react';
-import { Helmet } from 'react-helmet-async';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useParams } from 'react-router-dom';
-import { productsAPI, categoriesAPI, uploadAPI } from '../../services/api';
+import { useState, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate, useParams } from "react-router-dom";
+import { productsAPI, categoriesAPI, uploadAPI } from "../../services/api";
 import {
   ArrowLeftIcon,
   PhotoIcon,
   XMarkIcon,
   PlusIcon,
-} from '@heroicons/react/24/outline';
-import { toast } from 'react-hot-toast';
+} from "@heroicons/react/24/outline";
+import { toast } from "react-hot-toast";
 
 const EditProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  
+
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: '',
-    category: '',
-    quantity: '',
-    sku: '',
-    weight: '',
+    name: "",
+    description: "",
+    price: "",
+    category: "",
+    quantity: "",
+    sku: "",
+    weight: "",
     dimensions: {
-      length: '',
-      width: '',
-      height: ''
+      length: "",
+      width: "",
+      height: "",
     },
     tags: [],
-    isActive: true
+    isActive: true,
   });
-  
+
   const [existingImages, setExistingImages] = useState([]);
   const [newImages, setNewImages] = useState([]);
   const [newImagePreviews, setNewImagePreviews] = useState([]);
-  const [tagInput, setTagInput] = useState('');
+  const [tagInput, setTagInput] = useState("");
   const [showCreateCategory, setShowCreateCategory] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState('');
-  const [newCategoryDescription, setNewCategoryDescription] = useState('');
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [newCategoryDescription, setNewCategoryDescription] = useState("");
 
   // Fetch product details
   const { data: productData, isLoading: productLoading } = useQuery({
-    queryKey: ['product', id],
+    queryKey: ["product", id],
     queryFn: () => productsAPI.getProduct(id),
     enabled: !!id,
     select: (response) => response.data,
@@ -51,7 +51,7 @@ const EditProduct = () => {
 
   // Fetch categories
   const { data: categoriesData } = useQuery({
-    queryKey: ['categories'],
+    queryKey: ["categories"],
     queryFn: () => categoriesAPI.getCategories(),
     select: (response) => response.data,
   });
@@ -60,13 +60,13 @@ const EditProduct = () => {
   const updateProductMutation = useMutation({
     mutationFn: (productData) => productsAPI.updateProduct(id, productData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vendorProducts'] });
-      queryClient.invalidateQueries({ queryKey: ['product', id] });
-      toast.success('Product updated successfully');
-      navigate('/vendor/products');
+      queryClient.invalidateQueries({ queryKey: ["vendorProducts"] });
+      queryClient.invalidateQueries({ queryKey: ["product", id] });
+      toast.success("Product updated successfully");
+      navigate("/vendor/products");
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Failed to update product');
+      toast.error(error.response?.data?.message || "Failed to update product");
     },
   });
 
@@ -74,23 +74,27 @@ const EditProduct = () => {
   const uploadImagesMutation = useMutation({
     mutationFn: (formData) => uploadAPI.uploadMultipleImages(formData),
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Failed to upload images');
+      toast.error(error.response?.data?.message || "Failed to upload images");
     },
   });
 
   // Create category mutation
   const createCategoryMutation = useMutation({
-    mutationFn: (categoryData) => categoriesAPI.createVendorCategory(categoryData),
+    mutationFn: (categoryData) =>
+      categoriesAPI.createVendorCategory(categoryData),
     onSuccess: (response) => {
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
-      setFormData(prev => ({ ...prev, category: response.data.category._id }));
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      setFormData((prev) => ({
+        ...prev,
+        category: response.data.category._id,
+      }));
       setShowCreateCategory(false);
-      setNewCategoryName('');
-      setNewCategoryDescription('');
-      toast.success('Category created successfully');
+      setNewCategoryName("");
+      setNewCategoryDescription("");
+      toast.success("Category created successfully");
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Failed to create category');
+      toast.error(error.response?.data?.message || "Failed to create category");
     },
   });
 
@@ -101,20 +105,20 @@ const EditProduct = () => {
   useEffect(() => {
     if (product) {
       setFormData({
-        name: product.name || '',
-        description: product.description || '',
-        price: product.price?.toString() || '',
-        category: product.category?._id || '',
-        quantity: product.quantity?.toString() || '',
-        sku: product.sku || '',
-        weight: product.weight?.toString() || '',
+        name: product.name || "",
+        description: product.description || "",
+        price: product.price?.toString() || "",
+        category: product.category?._id || "",
+        quantity: product.quantity?.toString() || "",
+        sku: product.sku || "",
+        weight: product.weight?.toString() || "",
         dimensions: {
-          length: product.dimensions?.length?.toString() || '',
-          width: product.dimensions?.width?.toString() || '',
-          height: product.dimensions?.height?.toString() || ''
+          length: product.dimensions?.length?.toString() || "",
+          width: product.dimensions?.width?.toString() || "",
+          height: product.dimensions?.height?.toString() || "",
         },
         tags: product.tags || [],
-        isActive: product.isActive !== undefined ? product.isActive : true
+        isActive: product.isActive !== undefined ? product.isActive : true,
       });
       setExistingImages(product.images || []);
     }
@@ -122,72 +126,72 @@ const EditProduct = () => {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    
-    if (name.includes('.')) {
-      const [parent, child] = name.split('.');
-      setFormData(prev => ({
+
+    if (name.includes(".")) {
+      const [parent, child] = name.split(".");
+      setFormData((prev) => ({
         ...prev,
         [parent]: {
           ...prev[parent],
-          [child]: value
-        }
+          [child]: value,
+        },
       }));
     } else {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        [name]: type === 'checkbox' ? checked : value
+        [name]: type === "checkbox" ? checked : value,
       }));
     }
   };
 
   const handleNewImageChange = (e) => {
     const files = Array.from(e.target.files);
-    
+
     if (files.length + newImages.length + existingImages.length > 5) {
-      toast.error('Maximum 5 images allowed');
+      toast.error("Maximum 5 images allowed");
       return;
     }
 
-    setNewImages(prev => [...prev, ...files]);
-    
+    setNewImages((prev) => [...prev, ...files]);
+
     // Create previews
-    files.forEach(file => {
+    files.forEach((file) => {
       const reader = new FileReader();
       reader.onload = (e) => {
-        setNewImagePreviews(prev => [...prev, e.target.result]);
+        setNewImagePreviews((prev) => [...prev, e.target.result]);
       };
       reader.readAsDataURL(file);
     });
   };
 
   const removeExistingImage = (index) => {
-    setExistingImages(prev => prev.filter((_, i) => i !== index));
+    setExistingImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const removeNewImage = (index) => {
-    setNewImages(prev => prev.filter((_, i) => i !== index));
-    setNewImagePreviews(prev => prev.filter((_, i) => i !== index));
+    setNewImages((prev) => prev.filter((_, i) => i !== index));
+    setNewImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   const addTag = () => {
     if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        tags: [...prev.tags, tagInput.trim()]
+        tags: [...prev.tags, tagInput.trim()],
       }));
-      setTagInput('');
+      setTagInput("");
     }
   };
 
   const removeTag = (tagToRemove) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      tags: prev.tags.filter(tag => tag !== tagToRemove)
+      tags: prev.tags.filter((tag) => tag !== tagToRemove),
     }));
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       addTag();
     }
@@ -195,51 +199,54 @@ const EditProduct = () => {
 
   const handleCreateCategory = () => {
     if (!newCategoryName.trim()) {
-      toast.error('Category name is required');
+      toast.error("Category name is required");
       return;
     }
 
     createCategoryMutation.mutate({
       name: newCategoryName.trim(),
-      description: newCategoryDescription.trim()
+      description: newCategoryDescription.trim(),
     });
   };
 
   const handleCategoryChange = (e) => {
     const value = e.target.value;
-    if (value === 'create_new') {
+    if (value === "create_new") {
       setShowCreateCategory(true);
     } else {
-      setFormData(prev => ({ ...prev, category: value }));
+      setFormData((prev) => ({ ...prev, category: value }));
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Prevent submission if creating a category
     if (showCreateCategory) {
-      toast.error('Please complete category creation or cancel it before submitting');
+      toast.error(
+        "Please complete category creation or cancel it before submitting",
+      );
       return;
     }
 
     // Validate category is selected
     if (!formData.category) {
-      toast.error('Please select or create a category');
+      toast.error("Please select or create a category");
       return;
     }
-    
+
     try {
       let newImageUrls = [];
-      
+
       // Upload new images if any
       if (newImages.length > 0) {
         const imageFormData = new FormData();
-        newImages.forEach(image => {
-          imageFormData.append('images', image);
+        newImages.forEach((image) => {
+          imageFormData.append("images", image);
         });
-        
-        const uploadResponse = await uploadImagesMutation.mutateAsync(imageFormData);
+
+        const uploadResponse =
+          await uploadImagesMutation.mutateAsync(imageFormData);
         newImageUrls = uploadResponse.data.urls;
       }
 
@@ -253,28 +260,38 @@ const EditProduct = () => {
         quantity: parseInt(formData.quantity), // Use quantity instead of stock
         weight: formData.weight ? parseFloat(formData.weight) : undefined,
         dimensions: {
-          length: formData.dimensions.length ? parseFloat(formData.dimensions.length) : undefined,
-          width: formData.dimensions.width ? parseFloat(formData.dimensions.width) : undefined,
-          height: formData.dimensions.height ? parseFloat(formData.dimensions.height) : undefined,
+          length: formData.dimensions.length
+            ? parseFloat(formData.dimensions.length)
+            : undefined,
+          width: formData.dimensions.width
+            ? parseFloat(formData.dimensions.width)
+            : undefined,
+          height: formData.dimensions.height
+            ? parseFloat(formData.dimensions.height)
+            : undefined,
         },
         images: allImages.map((url, index) => ({
           url: url,
           alt: `${formData.name} image ${index + 1}`,
-          isPrimary: index === 0
-        }))
+          isPrimary: index === 0,
+        })),
       };
 
       // Remove stock field since we're using quantity
       delete productData.stock;
 
       // Remove empty dimensions
-      if (!productData.dimensions.length && !productData.dimensions.width && !productData.dimensions.height) {
+      if (
+        !productData.dimensions.length &&
+        !productData.dimensions.width &&
+        !productData.dimensions.height
+      ) {
         delete productData.dimensions;
       }
 
       updateProductMutation.mutate(productData);
     } catch (error) {
-      console.error('Error updating product:', error);
+      console.error("Error updating product:", error);
     }
   };
 
@@ -290,10 +307,14 @@ const EditProduct = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-900">Product not found</h2>
-          <p className="text-gray-600 mt-2">The product you're trying to edit doesn't exist.</p>
+          <h2 className="text-xl font-semibold text-gray-900">
+            Product not found
+          </h2>
+          <p className="text-gray-600 mt-2">
+            The product you're trying to edit doesn't exist.
+          </p>
           <button
-            onClick={() => navigate('/vendor/products')}
+            onClick={() => navigate("/vendor/products")}
             className="mt-4 inline-flex items-center text-blue-600 hover:text-blue-800"
           >
             <ArrowLeftIcon className="h-4 w-4 mr-1" />
@@ -314,7 +335,7 @@ const EditProduct = () => {
           {/* Header */}
           <div className="mb-8">
             <button
-              onClick={() => navigate('/vendor/products')}
+              onClick={() => navigate("/vendor/products")}
               className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-4"
             >
               <ArrowLeftIcon className="h-4 w-4 mr-1" />
@@ -327,8 +348,10 @@ const EditProduct = () => {
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Basic Information */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-6">Basic Information</h3>
-              
+              <h3 className="text-lg font-medium text-gray-900 mb-6">
+                Basic Information
+              </h3>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -365,7 +388,9 @@ const EditProduct = () => {
                     Price *
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-2 text-gray-500">$</span>
+                    <span className="absolute left-3 top-2 text-gray-500">
+                      $
+                    </span>
                     <input
                       type="number"
                       name="price"
@@ -399,19 +424,23 @@ const EditProduct = () => {
                             {category.name}
                           </option>
                         ))}
-                        <option value="create_new">+ Create New Category</option>
+                        <option value="create_new">
+                          + Create New Category
+                        </option>
                       </select>
                     </div>
                   ) : (
                     <div className="space-y-3 p-4 border border-gray-300 rounded-md bg-gray-50">
                       <div className="flex items-center justify-between">
-                        <h5 className="font-medium text-gray-900">Create New Category</h5>
+                        <h5 className="font-medium text-gray-900">
+                          Create New Category
+                        </h5>
                         <button
                           type="button"
                           onClick={() => {
                             setShowCreateCategory(false);
-                            setNewCategoryName('');
-                            setNewCategoryDescription('');
+                            setNewCategoryName("");
+                            setNewCategoryDescription("");
                           }}
                           className="text-gray-400 hover:text-gray-600"
                         >
@@ -436,7 +465,9 @@ const EditProduct = () => {
                         </label>
                         <textarea
                           value={newCategoryDescription}
-                          onChange={(e) => setNewCategoryDescription(e.target.value)}
+                          onChange={(e) =>
+                            setNewCategoryDescription(e.target.value)
+                          }
                           placeholder="Enter category description"
                           rows={2}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
@@ -449,14 +480,16 @@ const EditProduct = () => {
                           disabled={createCategoryMutation.isLoading}
                           className="px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:opacity-50"
                         >
-                          {createCategoryMutation.isLoading ? 'Creating...' : 'Create Category'}
+                          {createCategoryMutation.isLoading
+                            ? "Creating..."
+                            : "Create Category"}
                         </button>
                         <button
                           type="button"
                           onClick={() => {
                             setShowCreateCategory(false);
-                            setNewCategoryName('');
-                            setNewCategoryDescription('');
+                            setNewCategoryName("");
+                            setNewCategoryDescription("");
                           }}
                           className="px-3 py-2 border border-gray-300 text-gray-700 text-sm rounded-md hover:bg-gray-50"
                         >
@@ -501,8 +534,10 @@ const EditProduct = () => {
 
             {/* Images */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-6">Product Images</h3>
-              
+              <h3 className="text-lg font-medium text-gray-900 mb-6">
+                Product Images
+              </h3>
+
               <div className="space-y-4">
                 {/* Existing Images */}
                 {existingImages.length > 0 && (
@@ -576,8 +611,10 @@ const EditProduct = () => {
 
             {/* Additional Details */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-6">Additional Details</h3>
-              
+              <h3 className="text-lg font-medium text-gray-900 mb-6">
+                Additional Details
+              </h3>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -694,17 +731,23 @@ const EditProduct = () => {
             <div className="flex justify-end space-x-4">
               <button
                 type="button"
-                onClick={() => navigate('/vendor/products')}
+                onClick={() => navigate("/vendor/products")}
                 className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                disabled={updateProductMutation.isLoading || uploadImagesMutation.isLoading}
+                disabled={
+                  updateProductMutation.isLoading ||
+                  uploadImagesMutation.isLoading
+                }
                 className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
               >
-                {updateProductMutation.isLoading || uploadImagesMutation.isLoading ? 'Updating...' : 'Update Product'}
+                {updateProductMutation.isLoading ||
+                uploadImagesMutation.isLoading
+                  ? "Updating..."
+                  : "Update Product"}
               </button>
             </div>
           </form>

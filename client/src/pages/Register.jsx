@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { Helmet } from 'react-helmet-async';
-import { Eye, EyeOff, Mail, Lock, User, Building } from 'lucide-react';
-import { useMutation } from '@tanstack/react-query';
-import toast from 'react-hot-toast';
-import { authAPI } from '../services/api';
-import useAuthStore from '../store/authStore';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { Helmet } from "react-helmet-async";
+import { Eye, EyeOff, Mail, Lock, User, Building } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import toast from "react-hot-toast";
+import { authAPI } from "../services/api";
+import useAuthStore from "../store/authStore";
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -21,18 +21,18 @@ const Register = () => {
     formState: { errors },
   } = useForm();
 
-  const password = watch('password');
+  const password = watch("password");
 
   const registerMutation = useMutation({
     mutationFn: authAPI.register,
     onSuccess: (response) => {
       const { user, token } = response.data;
       login(user, token);
-      toast.success('Registration successful!');
-      navigate('/');
+      toast.success("Registration successful!");
+      navigate("/");
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Registration failed');
+      toast.error(error.response?.data?.message || "Registration failed");
     },
   });
 
@@ -44,7 +44,10 @@ const Register = () => {
     <>
       <Helmet>
         <title>Register - Marketplace</title>
-        <meta name="description" content="Create your Marketplace account to start shopping and selling." />
+        <meta
+          name="description"
+          content="Create your Marketplace account to start shopping and selling."
+        />
       </Helmet>
 
       <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -59,7 +62,7 @@ const Register = () => {
               Create your account
             </h2>
             <p className="mt-2 text-center text-sm text-gray-600">
-              Or{' '}
+              Or{" "}
               <Link
                 to="/login"
                 className="font-medium text-primary-600 hover:text-primary-500"
@@ -73,7 +76,10 @@ const Register = () => {
             <div className="space-y-4">
               {/* Name Field */}
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Full Name
                 </label>
                 <div className="mt-1 relative">
@@ -81,11 +87,11 @@ const Register = () => {
                     <User className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
-                    {...register('name', {
-                      required: 'Name is required',
+                    {...register("name", {
+                      required: "Name is required",
                       minLength: {
                         value: 2,
-                        message: 'Name must be at least 2 characters',
+                        message: "Name must be at least 2 characters",
                       },
                     })}
                     type="text"
@@ -95,13 +101,18 @@ const Register = () => {
                   />
                 </div>
                 {errors.name && (
-                  <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.name.message}
+                  </p>
                 )}
               </div>
 
               {/* Email Field */}
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Email address
                 </label>
                 <div className="mt-1 relative">
@@ -109,11 +120,11 @@ const Register = () => {
                     <Mail className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
-                    {...register('email', {
-                      required: 'Email is required',
+                    {...register("email", {
+                      required: "Email is required",
                       pattern: {
                         value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                        message: 'Invalid email address',
+                        message: "Invalid email address",
                       },
                     })}
                     type="email"
@@ -123,13 +134,18 @@ const Register = () => {
                   />
                 </div>
                 {errors.email && (
-                  <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.email.message}
+                  </p>
                 )}
               </div>
 
               {/* Role Selection */}
               <div>
-                <label htmlFor="role" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="role"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Account Type
                 </label>
                 <div className="mt-1 relative">
@@ -137,24 +153,31 @@ const Register = () => {
                     <Building className="h-5 w-5 text-gray-400" />
                   </div>
                   <select
-                    {...register('role', {
-                      required: 'Please select an account type',
+                    {...register("role", {
+                      required: "Please select an account type",
                     })}
                     className="appearance-none rounded-md relative block w-full pl-10 pr-3 py-2 border border-gray-300 text-gray-900 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
                   >
                     <option value="">Select account type</option>
-                    <option value="customer">Customer - Shop and buy products</option>
+                    <option value="customer">
+                      Customer - Shop and buy products
+                    </option>
                     <option value="vendor">Vendor - Sell your products</option>
                   </select>
                 </div>
                 {errors.role && (
-                  <p className="mt-1 text-sm text-red-600">{errors.role.message}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.role.message}
+                  </p>
                 )}
               </div>
 
               {/* Password Field */}
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Password
                 </label>
                 <div className="mt-1 relative">
@@ -162,14 +185,14 @@ const Register = () => {
                     <Lock className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
-                    {...register('password', {
-                      required: 'Password is required',
+                    {...register("password", {
+                      required: "Password is required",
                       minLength: {
                         value: 6,
-                        message: 'Password must be at least 6 characters',
+                        message: "Password must be at least 6 characters",
                       },
                     })}
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     autoComplete="new-password"
                     className="appearance-none rounded-md relative block w-full pl-10 pr-10 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
                     placeholder="Create a password"
@@ -187,13 +210,18 @@ const Register = () => {
                   </button>
                 </div>
                 {errors.password && (
-                  <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.password.message}
+                  </p>
                 )}
               </div>
 
               {/* Confirm Password Field */}
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="confirmPassword"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Confirm Password
                 </label>
                 <div className="mt-1 relative">
@@ -201,12 +229,12 @@ const Register = () => {
                     <Lock className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
-                    {...register('confirmPassword', {
-                      required: 'Please confirm your password',
+                    {...register("confirmPassword", {
+                      required: "Please confirm your password",
                       validate: (value) =>
-                        value === password || 'Passwords do not match',
+                        value === password || "Passwords do not match",
                     })}
-                    type={showConfirmPassword ? 'text' : 'password'}
+                    type={showConfirmPassword ? "text" : "password"}
                     autoComplete="new-password"
                     className="appearance-none rounded-md relative block w-full pl-10 pr-10 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
                     placeholder="Confirm your password"
@@ -224,7 +252,9 @@ const Register = () => {
                   </button>
                 </div>
                 {errors.confirmPassword && (
-                  <p className="mt-1 text-sm text-red-600">{errors.confirmPassword.message}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.confirmPassword.message}
+                  </p>
                 )}
               </div>
             </div>
@@ -238,13 +268,22 @@ const Register = () => {
                 required
                 className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
               />
-              <label htmlFor="terms" className="ml-2 block text-sm text-gray-900">
-                I agree to the{' '}
-                <Link to="/terms" className="text-primary-600 hover:text-primary-500">
+              <label
+                htmlFor="terms"
+                className="ml-2 block text-sm text-gray-900"
+              >
+                I agree to the{" "}
+                <Link
+                  to="/terms"
+                  className="text-primary-600 hover:text-primary-500"
+                >
                   Terms of Service
-                </Link>{' '}
-                and{' '}
-                <Link to="/privacy" className="text-primary-600 hover:text-primary-500">
+                </Link>{" "}
+                and{" "}
+                <Link
+                  to="/privacy"
+                  className="text-primary-600 hover:text-primary-500"
+                >
                   Privacy Policy
                 </Link>
               </label>
@@ -263,7 +302,7 @@ const Register = () => {
                     Creating account...
                   </div>
                 ) : (
-                  'Create account'
+                  "Create account"
                 )}
               </button>
             </div>
@@ -275,4 +314,3 @@ const Register = () => {
 };
 
 export default Register;
-

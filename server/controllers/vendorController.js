@@ -1,28 +1,28 @@
-const User = require('../models/userModel');
-const Product = require('../models/productModel');
-const Order = require('../models/orderModel');
+const User = require("../models/userModel");
+const Product = require("../models/productModel");
+const Order = require("../models/orderModel");
 
 // Get all vendors (Admin)
 const getAllVendors = async (req, res) => {
   try {
     const { page = 1, limit = 10, status, search } = req.query;
-    
-    const query = { role: 'vendor' };
-    
+
+    const query = { role: "vendor" };
+
     if (status) {
-      query['vendorProfile.isApproved'] = status === 'approved';
+      query["vendorProfile.isApproved"] = status === "approved";
     }
-    
+
     if (search) {
       query.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
-        { 'vendorProfile.businessName': { $regex: search, $options: 'i' } }
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+        { "vendorProfile.businessName": { $regex: search, $options: "i" } },
       ];
     }
 
     const vendors = await User.find(query)
-      .select('-password')
+      .select("-password")
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
@@ -33,11 +33,11 @@ const getAllVendors = async (req, res) => {
       vendors,
       totalPages: Math.ceil(total / limit),
       currentPage: page,
-      total
+      total,
     });
   } catch (error) {
-    console.error('Get all vendors error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Get all vendors error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -46,33 +46,38 @@ const getVendorDetails = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const vendor = await User.findById(id).select('-password');
-    if (!vendor || vendor.role !== 'vendor') {
-      return res.status(404).json({ message: 'Vendor not found' });
+    const vendor = await User.findById(id).select("-password");
+    if (!vendor || vendor.role !== "vendor") {
+      return res.status(404).json({ message: "Vendor not found" });
     }
 
     // Get vendor stats
     const productCount = await Product.countDocuments({ vendor: id });
-    const activeProductCount = await Product.countDocuments({ vendor: id, isActive: true });
-    const totalOrders = await Order.countDocuments({ 'vendorOrders.vendor': id });
+    const activeProductCount = await Product.countDocuments({
+      vendor: id,
+      isActive: true,
+    });
+    const totalOrders = await Order.countDocuments({
+      "vendorOrders.vendor": id,
+    });
     const totalSales = await Order.aggregate([
-      { $match: { 'vendorOrders.vendor': id } },
-      { $unwind: '$vendorOrders' },
-      { $match: { 'vendorOrders.vendor': id } },
-      { $group: { _id: null, total: { $sum: '$vendorOrders.vendorAmount' } } }
+      { $match: { "vendorOrders.vendor": id } },
+      { $unwind: "$vendorOrders" },
+      { $match: { "vendorOrders.vendor": id } },
+      { $group: { _id: null, total: { $sum: "$vendorOrders.vendorAmount" } } },
     ]);
 
     const stats = {
       productCount,
       activeProductCount,
       totalOrders,
-      totalSales: totalSales[0]?.total || 0
+      totalSales: totalSales[0]?.total || 0,
     };
 
     res.json({ vendor, stats });
   } catch (error) {
-    console.error('Get vendor details error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Get vendor details error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -83,8 +88,8 @@ const updateVendorStatus = async (req, res) => {
     const { isApproved, reason } = req.body;
 
     const vendor = await User.findById(id);
-    if (!vendor || vendor.role !== 'vendor') {
-      return res.status(404).json({ message: 'Vendor not found' });
+    if (!vendor || vendor.role !== "vendor") {
+      return res.status(404).json({ message: "Vendor not found" });
     }
 
     vendor.vendorProfile.isApproved = isApproved;
@@ -97,17 +102,17 @@ const updateVendorStatus = async (req, res) => {
     // TODO: Send email notification to vendor
 
     res.json({
-      message: `Vendor ${isApproved ? 'approved' : 'rejected'} successfully`,
+      message: `Vendor ${isApproved ? "approved" : "rejected"} successfully`,
       vendor: {
         id: vendor._id,
         name: vendor.name,
         email: vendor.email,
-        isApproved: vendor.vendorProfile.isApproved
-      }
+        isApproved: vendor.vendorProfile.isApproved,
+      },
     });
   } catch (error) {
-    console.error('Update vendor status error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Update vendor status error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -118,8 +123,8 @@ const updateVendorProfile = async (req, res) => {
     const updateData = req.body;
 
     const vendor = await User.findById(vendorId);
-    if (!vendor || vendor.role !== 'vendor') {
-      return res.status(404).json({ message: 'Vendor not found' });
+    if (!vendor || vendor.role !== "vendor") {
+      return res.status(404).json({ message: "Vendor not found" });
     }
 
     // Update vendor profile fields
@@ -148,15 +153,15 @@ const updateVendorProfile = async (req, res) => {
     await vendor.save();
 
     res.json({
-      message: 'Vendor profile updated successfully',
+      message: "Vendor profile updated successfully",
       vendor: {
         id: vendor._id,
-        vendorProfile: vendor.vendorProfile
-      }
+        vendorProfile: vendor.vendorProfile,
+      },
     });
   } catch (error) {
-    console.error('Update vendor profile error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Update vendor profile error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -167,16 +172,19 @@ const getVendorStats = async (req, res) => {
 
     // Get basic stats
     const productCount = await Product.countDocuments({ vendor: vendorId });
-    const activeProductCount = await Product.countDocuments({ vendor: vendorId, isActive: true });
-    
+    const activeProductCount = await Product.countDocuments({
+      vendor: vendorId,
+      isActive: true,
+    });
+
     // Get all orders containing vendor products
-    const allOrders = await Order.find({ 'items.vendor': vendorId });
+    const allOrders = await Order.find({ "items.vendor": vendorId });
     const totalOrders = allOrders.length;
 
     // Calculate total revenue from all orders
     let totalRevenue = 0;
-    allOrders.forEach(order => {
-      order.items.forEach(item => {
+    allOrders.forEach((order) => {
+      order.items.forEach((item) => {
         if (item.vendor && item.vendor.toString() === vendorId) {
           totalRevenue += item.price * item.quantity;
         }
@@ -186,26 +194,26 @@ const getVendorStats = async (req, res) => {
     // Get stats for last 30 days for growth calculation
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
+
     const sixtyDaysAgo = new Date();
     sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
 
     // Current month stats
     const currentMonthOrders = await Order.find({
-      'items.vendor': vendorId,
-      createdAt: { $gte: thirtyDaysAgo }
+      "items.vendor": vendorId,
+      createdAt: { $gte: thirtyDaysAgo },
     });
 
     // Previous month stats
     const previousMonthOrders = await Order.find({
-      'items.vendor': vendorId,
-      createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo }
+      "items.vendor": vendorId,
+      createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo },
     });
 
     // Calculate current month revenue
     let currentMonthRevenue = 0;
-    currentMonthOrders.forEach(order => {
-      order.items.forEach(item => {
+    currentMonthOrders.forEach((order) => {
+      order.items.forEach((item) => {
         if (item.vendor && item.vendor.toString() === vendorId) {
           currentMonthRevenue += item.price * item.quantity;
         }
@@ -214,8 +222,8 @@ const getVendorStats = async (req, res) => {
 
     // Calculate previous month revenue
     let previousMonthRevenue = 0;
-    previousMonthOrders.forEach(order => {
-      order.items.forEach(item => {
+    previousMonthOrders.forEach((order) => {
+      order.items.forEach((item) => {
         if (item.vendor && item.vendor.toString() === vendorId) {
           previousMonthRevenue += item.price * item.quantity;
         }
@@ -225,53 +233,66 @@ const getVendorStats = async (req, res) => {
     // Calculate growth percentages
     const orderGrowthCount = currentMonthOrders.length;
     const previousOrderCount = previousMonthOrders.length;
-    const orderGrowth = previousOrderCount > 0 
-      ? ((orderGrowthCount - previousOrderCount) / previousOrderCount * 100)
-      : orderGrowthCount > 0 ? 100 : 0;
+    const orderGrowth =
+      previousOrderCount > 0
+        ? ((orderGrowthCount - previousOrderCount) / previousOrderCount) * 100
+        : orderGrowthCount > 0
+          ? 100
+          : 0;
 
-    const revenueGrowth = previousMonthRevenue > 0 
-      ? ((currentMonthRevenue - previousMonthRevenue) / previousMonthRevenue * 100)
-      : currentMonthRevenue > 0 ? 100 : 0;
+    const revenueGrowth =
+      previousMonthRevenue > 0
+        ? ((currentMonthRevenue - previousMonthRevenue) /
+            previousMonthRevenue) *
+          100
+        : currentMonthRevenue > 0
+          ? 100
+          : 0;
 
     // Get products created in last 30 days vs previous 30 days
     const currentMonthProducts = await Product.countDocuments({
       vendor: vendorId,
-      createdAt: { $gte: thirtyDaysAgo }
-    });
-    
-    const previousMonthProducts = await Product.countDocuments({
-      vendor: vendorId,
-      createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo }
+      createdAt: { $gte: thirtyDaysAgo },
     });
 
-    const productGrowth = previousMonthProducts > 0 
-      ? ((currentMonthProducts - previousMonthProducts) / previousMonthProducts * 100)
-      : currentMonthProducts > 0 ? 100 : 0;
+    const previousMonthProducts = await Product.countDocuments({
+      vendor: vendorId,
+      createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo },
+    });
+
+    const productGrowth =
+      previousMonthProducts > 0
+        ? ((currentMonthProducts - previousMonthProducts) /
+            previousMonthProducts) *
+          100
+        : currentMonthProducts > 0
+          ? 100
+          : 0;
 
     // Get monthly sales data for chart (last 6 months)
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
     const monthlySales = await Order.aggregate([
-      { 
-        $match: { 
-          'items.vendor': vendorId,
-          createdAt: { $gte: sixMonthsAgo }
-        } 
+      {
+        $match: {
+          "items.vendor": vendorId,
+          createdAt: { $gte: sixMonthsAgo },
+        },
       },
-      { $unwind: '$items' },
-      { $match: { 'items.vendor': vendorId } },
+      { $unwind: "$items" },
+      { $match: { "items.vendor": vendorId } },
       {
         $group: {
           _id: {
-            year: { $year: '$createdAt' },
-            month: { $month: '$createdAt' }
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
           },
-          total: { $sum: { $multiply: ['$items.price', '$items.quantity'] } },
-          count: { $sum: 1 }
-        }
+          total: { $sum: { $multiply: ["$items.price", "$items.quantity"] } },
+          count: { $sum: 1 },
+        },
       },
-      { $sort: { '_id.year': 1, '_id.month': 1 } }
+      { $sort: { "_id.year": 1, "_id.month": 1 } },
     ]);
 
     // Get top selling products
@@ -279,22 +300,24 @@ const getVendorStats = async (req, res) => {
       { $match: { vendor: vendorId } },
       { $sort: { sold: -1 } },
       { $limit: 5 },
-      { $project: { name: 1, price: 1, sold: 1, images: 1, stock: 1 } }
+      { $project: { name: 1, price: 1, sold: 1, images: 1, stock: 1 } },
     ]);
 
     // Get low stock products (less than 10 items)
     const lowStockProducts = await Product.find({
       vendor: vendorId,
-      stock: { $lt: 10, $gt: 0 }
-    }).select('name stock').limit(5);
+      stock: { $lt: 10, $gt: 0 },
+    })
+      .select("name stock")
+      .limit(5);
 
     // Get recent activity (last 10 orders)
-    const recentActivity = await Order.find({ 'items.vendor': vendorId })
-      .populate('user', 'name email')
-      .populate('items.product', 'name images')
+    const recentActivity = await Order.find({ "items.vendor": vendorId })
+      .populate("user", "name email")
+      .populate("items.product", "name images")
       .sort({ createdAt: -1 })
       .limit(10)
-      .select('orderNumber status createdAt user items totalAmount');
+      .select("orderNumber status createdAt user items totalAmount");
 
     res.json({
       data: {
@@ -308,12 +331,12 @@ const getVendorStats = async (req, res) => {
         monthlySales,
         topProducts,
         lowStockProducts,
-        recentActivity
-      }
+        recentActivity,
+      },
     });
   } catch (error) {
-    console.error('Get vendor stats error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Get vendor stats error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -321,30 +344,31 @@ const getVendorStats = async (req, res) => {
 const getVendorOrders = async (req, res) => {
   try {
     const vendorId = req.user.id;
-    const { page = 1, limit = 10, status, sort = '-createdAt' } = req.query;
+    const { page = 1, limit = 10, status, sort = "-createdAt" } = req.query;
 
-    const query = { 'items.vendor': vendorId };
-    
+    const query = { "items.vendor": vendorId };
+
     if (status) {
       query.status = status;
     }
 
     const orders = await Order.find(query)
-      .populate('user', 'name email phone')
-      .populate('items.product', 'name images price')
-      .populate('shippingAddress')
+      .populate("user", "name email phone")
+      .populate("items.product", "name images price")
+      .populate("shippingAddress")
       .sort(sort)
       .limit(limit * 1)
       .skip((page - 1) * limit);
 
     // Filter and calculate vendor-specific amounts for each order
-    const processedOrders = orders.map(order => {
-      const vendorItems = order.items.filter(item => 
-        item.vendor && item.vendor.toString() === vendorId
+    const processedOrders = orders.map((order) => {
+      const vendorItems = order.items.filter(
+        (item) => item.vendor && item.vendor.toString() === vendorId,
       );
-      
-      const vendorAmount = vendorItems.reduce((sum, item) => 
-        sum + (item.price * item.quantity), 0
+
+      const vendorAmount = vendorItems.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0,
       );
 
       return {
@@ -358,7 +382,7 @@ const getVendorOrders = async (req, res) => {
         vendorAmount,
         shippingAddress: order.shippingAddress,
         paymentMethod: order.paymentMethod,
-        paymentStatus: order.paymentStatus
+        paymentStatus: order.paymentStatus,
       };
     });
 
@@ -369,12 +393,12 @@ const getVendorOrders = async (req, res) => {
         orders: processedOrders,
         totalPages: Math.ceil(total / limit),
         currentPage: parseInt(page),
-        total
-      }
+        total,
+      },
     });
   } catch (error) {
-    console.error('Get vendor orders error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error("Get vendor orders error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -384,5 +408,5 @@ module.exports = {
   updateVendorStatus,
   updateVendorProfile,
   getVendorStats,
-  getVendorOrders
+  getVendorOrders,
 };

@@ -1,18 +1,18 @@
-import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Search, X, Clock, Trash2 } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { searchAPI } from '../services/api';
-import useSearchStore from '../store/searchStore';
+import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Search, X, Clock, Trash2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { searchAPI } from "../services/api";
+import useSearchStore from "../store/searchStore";
 
-const SearchBar = ({ 
-  variant = 'header', // 'header' or 'hero'
-  placeholder = 'Search products...',
-  className = '',
-  showSuggestions = true
+const SearchBar = ({
+  variant = "header", // 'header' or 'hero'
+  placeholder = "Search products...",
+  className = "",
+  showSuggestions = true,
 }) => {
   const navigate = useNavigate();
-  const [localSearchTerm, setLocalSearchTerm] = useState('');
+  const [localSearchTerm, setLocalSearchTerm] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef(null);
@@ -23,12 +23,12 @@ const SearchBar = ({
     addToHistory,
     removeFromHistory,
     clearHistory,
-    setSearchTerm
+    setSearchTerm,
   } = useSearchStore();
 
   // Get search suggestions when typing
   const { data: suggestions } = useQuery({
-    queryKey: ['searchSuggestions', localSearchTerm],
+    queryKey: ["searchSuggestions", localSearchTerm],
     queryFn: () => searchAPI.searchSuggestions(localSearchTerm),
     enabled: showSuggestions && localSearchTerm.length >= 2 && isFocused,
     staleTime: 30000, // Cache for 30 seconds
@@ -39,14 +39,14 @@ const SearchBar = ({
     if (!searchValue.trim()) return;
 
     const trimmedSearch = searchValue.trim();
-    
+
     // Add to history and global state
     addToHistory(trimmedSearch);
     setSearchTerm(trimmedSearch);
-    
+
     // Navigate to products page with search query
     navigate(`/products?search=${encodeURIComponent(trimmedSearch)}`);
-    
+
     // Close dropdown and blur input
     setShowDropdown(false);
     inputRef.current?.blur();
@@ -56,7 +56,7 @@ const SearchBar = ({
   const handleInputChange = (e) => {
     const value = e.target.value;
     setLocalSearchTerm(value);
-    
+
     if (value.length >= 2 && showSuggestions) {
       setShowDropdown(true);
     } else {
@@ -66,9 +66,9 @@ const SearchBar = ({
 
   // Handle key press
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleSearch();
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       setShowDropdown(false);
       inputRef.current?.blur();
     }
@@ -94,26 +94,32 @@ const SearchBar = ({
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // Styling variants
   const variants = {
     header: {
-      container: 'relative w-full',
-      input: 'block w-full pl-10 pr-12 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary-500 focus:border-primary-500 sm:text-sm',
-      button: 'absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary-600 transition-colors',
-      searchIcon: 'h-4 w-4',
-      iconContainer: 'absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'
+      container: "relative w-full",
+      input:
+        "block w-full pl-10 pr-12 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary-500 focus:border-primary-500 sm:text-sm",
+      button:
+        "absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary-600 transition-colors",
+      searchIcon: "h-4 w-4",
+      iconContainer:
+        "absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none",
     },
     hero: {
-      container: 'relative w-full',
-      input: 'w-full px-6 py-4 text-lg rounded-full text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-primary-300 pr-20',
-      button: 'absolute right-2 top-2 bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-full transition-colors',
-      searchIcon: 'h-5 w-5',
-      iconContainer: 'absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none'
-    }
+      container: "relative w-full",
+      input:
+        "w-full px-6 py-4 text-lg rounded-full text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-primary-300 pr-20",
+      button:
+        "absolute right-2 top-2 bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-full transition-colors",
+      searchIcon: "h-5 w-5",
+      iconContainer:
+        "absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none",
+    },
   };
 
   const style = variants[variant];
@@ -122,12 +128,12 @@ const SearchBar = ({
     <div className={`${style.container} ${className}`} ref={dropdownRef}>
       {/* Search Input */}
       <div className="relative">
-        {variant === 'header' && (
+        {variant === "header" && (
           <div className={style.iconContainer}>
             <Search className={`${style.searchIcon} text-gray-400`} />
           </div>
         )}
-        
+
         <input
           ref={inputRef}
           type="text"
@@ -148,7 +154,7 @@ const SearchBar = ({
         {localSearchTerm && (
           <button
             onClick={() => {
-              setLocalSearchTerm('');
+              setLocalSearchTerm("");
               setShowDropdown(false);
               inputRef.current?.focus();
             }}
@@ -159,12 +165,9 @@ const SearchBar = ({
         )}
 
         {/* Search Button */}
-        <button
-          onClick={() => handleSearch()}
-          className={style.button}
-        >
-          {variant === 'hero' ? (
-            'Search'
+        <button onClick={() => handleSearch()} className={style.button}>
+          {variant === "hero" ? (
+            "Search"
           ) : (
             <Search className={style.searchIcon} />
           )}
@@ -210,41 +213,47 @@ const SearchBar = ({
           )}
 
           {/* Product Suggestions */}
-          {suggestions?.data?.products?.length > 0 && localSearchTerm.length >= 2 && (
-            <div className="p-2">
-              <div className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">
-                Product Suggestions
+          {suggestions?.data?.products?.length > 0 &&
+            localSearchTerm.length >= 2 && (
+              <div className="p-2">
+                <div className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide">
+                  Product Suggestions
+                </div>
+                {suggestions.data.products.map((product) => (
+                  <button
+                    key={product._id}
+                    onClick={() => navigate(`/products/${product._id}`)}
+                    className="w-full flex items-center px-3 py-2 text-sm text-left hover:bg-gray-50"
+                  >
+                    <div className="flex-shrink-0 h-8 w-8 bg-gray-200 rounded mr-3">
+                      {product.images?.[0] && (
+                        <img
+                          src={product.images[0].url || product.images[0]}
+                          alt={product.name}
+                          className="h-8 w-8 rounded object-cover"
+                        />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-900">
+                        {product.name}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        ${product.price}
+                      </div>
+                    </div>
+                  </button>
+                ))}
               </div>
-              {suggestions.data.products.map((product) => (
-                <button
-                  key={product._id}
-                  onClick={() => navigate(`/products/${product._id}`)}
-                  className="w-full flex items-center px-3 py-2 text-sm text-left hover:bg-gray-50"
-                >
-                  <div className="flex-shrink-0 h-8 w-8 bg-gray-200 rounded mr-3">
-                    {product.images?.[0] && (
-                      <img
-                        src={product.images[0].url || product.images[0]}
-                        alt={product.name}
-                        className="h-8 w-8 rounded object-cover"
-                      />
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-medium text-gray-900">{product.name}</div>
-                    <div className="text-xs text-gray-500">${product.price}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
+            )}
 
           {/* No results */}
-          {localSearchTerm.length >= 2 && suggestions?.data?.products?.length === 0 && (
-            <div className="px-3 py-4 text-sm text-gray-500 text-center">
-              No products found for "{localSearchTerm}"
-            </div>
-          )}
+          {localSearchTerm.length >= 2 &&
+            suggestions?.data?.products?.length === 0 && (
+              <div className="px-3 py-4 text-sm text-gray-500 text-center">
+                No products found for "{localSearchTerm}"
+              </div>
+            )}
         </div>
       )}
     </div>

@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { Helmet } from 'react-helmet-async';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { vendorAPI, ordersAPI } from '../../services/api';
-import useAuthStore from '../../store/authStore';
+import { useState } from "react";
+import { Helmet } from "react-helmet-async";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { vendorAPI, ordersAPI } from "../../services/api";
+import useAuthStore from "../../store/authStore";
 import {
   EyeIcon,
   TruckIcon,
@@ -13,37 +13,44 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   FunnelIcon,
-} from '@heroicons/react/24/outline';
-import { Link } from 'react-router-dom';
-import { toast } from 'react-hot-toast';
+} from "@heroicons/react/24/outline";
+import { Link } from "react-router-dom";
+import { toast } from "react-hot-toast";
 
 const VendorOrders = () => {
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Fetch vendor orders
   const { data: ordersData, isLoading } = useQuery({
-    queryKey: ['vendorOrders', { page, status: statusFilter, search: searchTerm }],
-    queryFn: () => vendorAPI.getVendorOrders({ 
-      page, 
-      limit: 10, 
-      status: statusFilter,
-      search: searchTerm 
-    }),
+    queryKey: [
+      "vendorOrders",
+      { page, status: statusFilter, search: searchTerm },
+    ],
+    queryFn: () =>
+      vendorAPI.getVendorOrders({
+        page,
+        limit: 10,
+        status: statusFilter,
+        search: searchTerm,
+      }),
   });
 
   // Update order status mutation
   const updateOrderStatusMutation = useMutation({
-    mutationFn: ({ orderId, status }) => ordersAPI.updateOrderStatus(orderId, { status }),
+    mutationFn: ({ orderId, status }) =>
+      ordersAPI.updateOrderStatus(orderId, { status }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vendorOrders'] });
-      toast.success('Order status updated successfully');
+      queryClient.invalidateQueries({ queryKey: ["vendorOrders"] });
+      toast.success("Order status updated successfully");
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Failed to update order status');
+      toast.error(
+        error.response?.data?.message || "Failed to update order status",
+      );
     },
   });
 
@@ -53,40 +60,54 @@ const VendorOrders = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'confirmed': return 'bg-blue-100 text-blue-800';
-      case 'processing': return 'bg-purple-100 text-purple-800';
-      case 'shipped': return 'bg-indigo-100 text-indigo-800';
-      case 'delivered': return 'bg-green-100 text-green-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "confirmed":
+        return "bg-blue-100 text-blue-800";
+      case "processing":
+        return "bg-purple-100 text-purple-800";
+      case "shipped":
+        return "bg-indigo-100 text-indigo-800";
+      case "delivered":
+        return "bg-green-100 text-green-800";
+      case "cancelled":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'pending': return <ClockIcon className="h-4 w-4" />;
-      case 'confirmed': return <CheckCircleIcon className="h-4 w-4" />;
-      case 'processing': return <ClockIcon className="h-4 w-4" />;
-      case 'shipped': return <TruckIcon className="h-4 w-4" />;
-      case 'delivered': return <CheckCircleIcon className="h-4 w-4" />;
-      case 'cancelled': return <XCircleIcon className="h-4 w-4" />;
-      default: return <ClockIcon className="h-4 w-4" />;
+      case "pending":
+        return <ClockIcon className="h-4 w-4" />;
+      case "confirmed":
+        return <CheckCircleIcon className="h-4 w-4" />;
+      case "processing":
+        return <ClockIcon className="h-4 w-4" />;
+      case "shipped":
+        return <TruckIcon className="h-4 w-4" />;
+      case "delivered":
+        return <CheckCircleIcon className="h-4 w-4" />;
+      case "cancelled":
+        return <XCircleIcon className="h-4 w-4" />;
+      default:
+        return <ClockIcon className="h-4 w-4" />;
     }
   };
 
   const getNextStatus = (currentStatus) => {
     const statusFlow = {
-      'pending': 'confirmed',
-      'confirmed': 'processing',
-      'processing': 'shipped',
-      'shipped': 'delivered'
+      pending: "confirmed",
+      confirmed: "processing",
+      processing: "shipped",
+      shipped: "delivered",
     };
     return statusFlow[currentStatus];
   };
 
   const canUpdateStatus = (status) => {
-    return ['pending', 'confirmed', 'processing', 'shipped'].includes(status);
+    return ["pending", "confirmed", "processing", "shipped"].includes(status);
   };
 
   const handleUpdateOrderStatus = (orderId, newStatus) => {
@@ -94,8 +115,8 @@ const VendorOrders = () => {
   };
 
   const handleCancelOrder = (orderId) => {
-    if (window.confirm('Are you sure you want to cancel this order?')) {
-      updateOrderStatusMutation.mutate({ orderId, status: 'cancelled' });
+    if (window.confirm("Are you sure you want to cancel this order?")) {
+      updateOrderStatusMutation.mutate({ orderId, status: "cancelled" });
     }
   };
 
@@ -132,7 +153,7 @@ const VendorOrders = () => {
                 />
                 <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-2.5" />
               </form>
-              
+
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
@@ -149,8 +170,8 @@ const VendorOrders = () => {
 
               <button
                 onClick={() => {
-                  setSearchTerm('');
-                  setStatusFilter('');
+                  setSearchTerm("");
+                  setStatusFilter("");
                   setPage(1);
                 }}
                 className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
@@ -214,23 +235,28 @@ const VendorOrders = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm text-gray-900">
-                              {order.user?.name || 'N/A'}
+                              {order.user?.name || "N/A"}
                             </div>
                             <div className="text-sm text-gray-500">
-                              {order.user?.email || 'N/A'}
+                              {order.user?.email || "N/A"}
                             </div>
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex -space-x-2">
-                              {order.vendorItems?.slice(0, 3).map((item, index) => (
-                                <img
-                                  key={index}
-                                  className="h-8 w-8 rounded-full border-2 border-white object-cover"
-                                  src={item.product?.images?.[0] || '/placeholder-product.jpg'}
-                                  alt={item.product?.name || 'Product'}
-                                  title={item.product?.name || 'Product'}
-                                />
-                              ))}
+                              {order.vendorItems
+                                ?.slice(0, 3)
+                                .map((item, index) => (
+                                  <img
+                                    key={index}
+                                    className="h-8 w-8 rounded-full border-2 border-white object-cover"
+                                    src={
+                                      item.product?.images?.[0] ||
+                                      "/placeholder-product.jpg"
+                                    }
+                                    alt={item.product?.name || "Product"}
+                                    title={item.product?.name || "Product"}
+                                  />
+                                ))}
                               {order.vendorItems?.length > 3 && (
                                 <div className="h-8 w-8 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center">
                                   <span className="text-xs text-gray-600">
@@ -242,13 +268,15 @@ const VendorOrders = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className="text-sm font-medium text-gray-900">
-                              ${order.vendorAmount?.toFixed(2) || '0.00'}
+                              ${order.vendorAmount?.toFixed(2) || "0.00"}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
                               {getStatusIcon(order.status)}
-                              <span className={`ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>
+                              <span
+                                className={`ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}
+                              >
                                 {order.status}
                               </span>
                             </div>
@@ -267,10 +295,15 @@ const VendorOrders = () => {
                               >
                                 <EyeIcon className="h-4 w-4" />
                               </Link>
-                              
+
                               {canUpdateStatus(order.status) && (
                                 <button
-                                  onClick={() => handleUpdateOrderStatus(order._id, getNextStatus(order.status))}
+                                  onClick={() =>
+                                    handleUpdateOrderStatus(
+                                      order._id,
+                                      getNextStatus(order.status),
+                                    )
+                                  }
                                   disabled={updateOrderStatusMutation.isLoading}
                                   className="text-green-600 hover:text-green-900 p-1"
                                   title={`Mark as ${getNextStatus(order.status)}`}
@@ -278,8 +311,10 @@ const VendorOrders = () => {
                                   <CheckCircleIcon className="h-4 w-4" />
                                 </button>
                               )}
-                              
-                              {['pending', 'confirmed'].includes(order.status) && (
+
+                              {["pending", "confirmed"].includes(
+                                order.status,
+                              ) && (
                                 <button
                                   onClick={() => handleCancelOrder(order._id)}
                                   disabled={updateOrderStatusMutation.isLoading}
@@ -319,11 +354,16 @@ const VendorOrders = () => {
                     <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                       <div>
                         <p className="text-sm text-gray-700">
-                          Showing <span className="font-medium">{(page - 1) * 10 + 1}</span> to{' '}
+                          Showing{" "}
+                          <span className="font-medium">
+                            {(page - 1) * 10 + 1}
+                          </span>{" "}
+                          to{" "}
                           <span className="font-medium">
                             {Math.min(page * 10, total)}
-                          </span>{' '}
-                          of <span className="font-medium">{total}</span> results
+                          </span>{" "}
+                          of <span className="font-medium">{total}</span>{" "}
+                          results
                         </p>
                       </div>
                       <div>
@@ -343,8 +383,8 @@ const VendorOrders = () => {
                                 onClick={() => setPage(pageNum)}
                                 className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
                                   page === pageNum
-                                    ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
-                                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                                    ? "z-10 bg-blue-50 border-blue-500 text-blue-600"
+                                    : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
                                 }`}
                               >
                                 {pageNum}
@@ -352,7 +392,9 @@ const VendorOrders = () => {
                             );
                           })}
                           <button
-                            onClick={() => setPage(Math.min(totalPages, page + 1))}
+                            onClick={() =>
+                              setPage(Math.min(totalPages, page + 1))
+                            }
                             disabled={page === totalPages}
                             className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400"
                           >
@@ -368,10 +410,17 @@ const VendorOrders = () => {
               <div className="p-8 text-center">
                 <div className="mx-auto h-12 w-12 text-gray-400">
                   <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                    />
                   </svg>
                 </div>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No orders found</h3>
+                <h3 className="mt-2 text-sm font-medium text-gray-900">
+                  No orders found
+                </h3>
                 <p className="mt-1 text-sm text-gray-500">
                   When customers place orders, they'll appear here.
                 </p>
@@ -385,4 +434,3 @@ const VendorOrders = () => {
 };
 
 export default VendorOrders;
-

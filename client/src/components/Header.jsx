@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Search, ShoppingCart, User, Menu, X, LogOut } from 'lucide-react';
-import useAuthStore from '../store/authStore';
-import useCartStore from '../store/cartStore';
-import SearchBar from './SearchBar';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Search, ShoppingCart, User, Menu, X, LogOut } from "lucide-react";
+import useAuthStore from "../store/authStore";
+import useCartStore from "../store/cartStore";
+import SearchBar from "./SearchBar";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -14,32 +14,32 @@ const Header = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/');
+    navigate("/");
     setIsUserMenuOpen(false);
   };
 
   const navigation = [
-    { name: 'Home', href: '/' },
-    { name: 'Products', href: '/products' },
-    { name: 'Categories', href: '/categories' },
+    { name: "Home", href: "/" },
+    { name: "Products", href: "/products" },
+    { name: "Categories", href: "/categories" },
   ];
 
   const userNavigation = [
-    { name: 'Profile', href: '/profile' },
-    { name: 'Orders', href: '/orders' },
+    { name: "Profile", href: "/profile" },
+    { name: "Orders", href: "/orders" },
   ];
 
   const vendorNavigation = [
-    { name: 'Dashboard', href: '/vendor' },
-    { name: 'Products', href: '/vendor/products' },
-    { name: 'Orders', href: '/vendor/orders' },
+    { name: "Dashboard", href: "/vendor" },
+    { name: "Products", href: "/vendor/products" },
+    { name: "Orders", href: "/vendor/orders" },
   ];
 
   const adminNavigation = [
-    { name: 'Dashboard', href: '/admin' },
-    { name: 'Users', href: '/admin/users' },
-    { name: 'Products', href: '/admin/products' },
-    { name: 'Orders', href: '/admin/orders' },
+    { name: "Dashboard", href: "/admin" },
+    { name: "Users", href: "/admin/users" },
+    { name: "Products", href: "/admin/products" },
+    { name: "Orders", href: "/admin/orders" },
   ];
 
   return (
@@ -52,7 +52,9 @@ const Header = () => {
               <div className="h-8 w-8 bg-primary-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">M</span>
               </div>
-              <span className="ml-2 text-xl font-bold text-gray-900">Marketplace</span>
+              <span className="ml-2 text-xl font-bold text-gray-900">
+                Marketplace
+              </span>
             </Link>
           </div>
 
@@ -71,7 +73,7 @@ const Header = () => {
 
           {/* Search Bar */}
           <div className="hidden md:flex flex-1 max-w-lg mx-8">
-            <SearchBar 
+            <SearchBar
               variant="header"
               placeholder="Search products..."
               showSuggestions={true}
@@ -108,39 +110,42 @@ const Header = () => {
 
                 {isUserMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
-                    {user?.role === 'customer' && userNavigation.map((item) => (
-                      <Link
-                        key={item.name}
-                        to={item.href}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => setIsUserMenuOpen(false)}
-                      >
-                        {item.name}
-                      </Link>
-                    ))}
-                    
-                    {user?.role === 'vendor' && vendorNavigation.map((item) => (
-                      <Link
-                        key={item.name}
-                        to={item.href}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => setIsUserMenuOpen(false)}
-                      >
-                        {item.name}
-                      </Link>
-                    ))}
-                    
-                    {user?.role === 'admin' && adminNavigation.map((item) => (
-                      <Link
-                        key={item.name}
-                        to={item.href}
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => setIsUserMenuOpen(false)}
-                      >
-                        {item.name}
-                      </Link>
-                    ))}
-                    
+                    {user?.role === "customer" &&
+                      userNavigation.map((item) => (
+                        <Link
+                          key={item.name}
+                          to={item.href}
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          {item.name}
+                        </Link>
+                      ))}
+
+                    {user?.role === "vendor" &&
+                      vendorNavigation.map((item) => (
+                        <Link
+                          key={item.name}
+                          to={item.href}
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          {item.name}
+                        </Link>
+                      ))}
+
+                    {user?.role === "admin" &&
+                      adminNavigation.map((item) => (
+                        <Link
+                          key={item.name}
+                          to={item.href}
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          {item.name}
+                        </Link>
+                      ))}
+
                     <hr className="my-1" />
                     <button
                       onClick={handleLogout}
@@ -174,7 +179,11 @@ const Header = () => {
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="md:hidden p-2 text-gray-700 hover:text-primary-600 transition-colors"
             >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
             </button>
           </div>
         </div>
@@ -233,4 +242,3 @@ const Header = () => {
 };
 
 export default Header;
-

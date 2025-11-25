@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { Helmet } from 'react-helmet-async';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { 
+import { useState } from "react";
+import { Helmet } from "react-helmet-async";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
   UserIcon,
   EnvelopeIcon,
   PhoneIcon,
@@ -11,39 +11,39 @@ import {
   CheckIcon,
   XMarkIcon,
   ShieldCheckIcon,
-  KeyIcon
-} from '@heroicons/react/24/outline';
-import useAuthStore from '../store/authStore';
-import { authAPI } from '../services/api';
-import { toast } from 'react-hot-toast';
+  KeyIcon,
+} from "@heroicons/react/24/outline";
+import useAuthStore from "../store/authStore";
+import { authAPI } from "../services/api";
+import { toast } from "react-hot-toast";
 
 const Profile = () => {
   const { user, setUser } = useAuthStore();
   const queryClient = useQueryClient();
-  
+
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useState("profile");
   const [profileForm, setProfileForm] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
-    address: user?.address || '',
-    city: user?.city || '',
-    state: user?.state || '',
-    zipCode: user?.zipCode || '',
-    country: user?.country || 'United States',
-    bio: user?.bio || ''
+    name: user?.name || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
+    address: user?.address || "",
+    city: user?.city || "",
+    state: user?.state || "",
+    zipCode: user?.zipCode || "",
+    country: user?.country || "United States",
+    bio: user?.bio || "",
   });
-  
+
   const [passwordForm, setPasswordForm] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
 
   // Fetch user profile
   const { data: profileData, isLoading } = useQuery({
-    queryKey: ['userProfile'],
+    queryKey: ["userProfile"],
     queryFn: () => authAPI.getProfile(),
     select: (response) => response.data,
     enabled: !!user,
@@ -54,29 +54,29 @@ const Profile = () => {
     mutationFn: (profileData) => authAPI.updateProfile(profileData),
     onSuccess: (response) => {
       setUser(response.data);
-      queryClient.invalidateQueries(['userProfile']);
-      toast.success('Profile updated successfully');
+      queryClient.invalidateQueries(["userProfile"]);
+      toast.success("Profile updated successfully");
       setIsEditing(false);
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Failed to update profile');
-    }
+      toast.error(error.response?.data?.message || "Failed to update profile");
+    },
   });
 
   // Change password mutation
   const changePasswordMutation = useMutation({
     mutationFn: (passwordData) => authAPI.changePassword(passwordData),
     onSuccess: () => {
-      toast.success('Password changed successfully');
+      toast.success("Password changed successfully");
       setPasswordForm({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
       });
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || 'Failed to change password');
-    }
+      toast.error(error.response?.data?.message || "Failed to change password");
+    },
   });
 
   const handleProfileSubmit = (e) => {
@@ -86,34 +86,34 @@ const Profile = () => {
 
   const handlePasswordSubmit = (e) => {
     e.preventDefault();
-    
+
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      toast.error('New passwords do not match');
+      toast.error("New passwords do not match");
       return;
     }
-    
+
     if (passwordForm.newPassword.length < 6) {
-      toast.error('New password must be at least 6 characters long');
+      toast.error("New password must be at least 6 characters long");
       return;
     }
 
     changePasswordMutation.mutate({
       currentPassword: passwordForm.currentPassword,
-      newPassword: passwordForm.newPassword
+      newPassword: passwordForm.newPassword,
     });
   };
 
   const handleCancel = () => {
     setProfileForm({
-      name: user?.name || '',
-      email: user?.email || '',
-      phone: user?.phone || '',
-      address: user?.address || '',
-      city: user?.city || '',
-      state: user?.state || '',
-      zipCode: user?.zipCode || '',
-      country: user?.country || 'United States',
-      bio: user?.bio || ''
+      name: user?.name || "",
+      email: user?.email || "",
+      phone: user?.phone || "",
+      address: user?.address || "",
+      city: user?.city || "",
+      state: user?.state || "",
+      zipCode: user?.zipCode || "",
+      country: user?.country || "United States",
+      bio: user?.bio || "",
     });
     setIsEditing(false);
   };
@@ -131,13 +131,15 @@ const Profile = () => {
       <Helmet>
         <title>My Profile - B2B Marketplace</title>
       </Helmet>
-      
+
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
-            <p className="mt-2 text-gray-600">Manage your account settings and preferences</p>
+            <p className="mt-2 text-gray-600">
+              Manage your account settings and preferences
+            </p>
           </div>
 
           {/* Profile Header Card */}
@@ -160,17 +162,23 @@ const Profile = () => {
                   <CameraIcon className="w-4 h-4" />
                 </button>
               </div>
-              
+
               {/* User Info */}
               <div className="flex-1">
-                <h2 className="text-2xl font-bold text-gray-900">{user?.name}</h2>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {user?.name}
+                </h2>
                 <p className="text-gray-600">{user?.email}</p>
                 <div className="flex items-center mt-2">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    user?.role === 'vendor' ? 'bg-purple-100 text-purple-800' : 
-                    user?.role === 'admin' ? 'bg-red-100 text-red-800' : 
-                    'bg-green-100 text-green-800'
-                  }`}>
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      user?.role === "vendor"
+                        ? "bg-purple-100 text-purple-800"
+                        : user?.role === "admin"
+                          ? "bg-red-100 text-red-800"
+                          : "bg-green-100 text-green-800"
+                    }`}
+                  >
                     {user?.role?.charAt(0).toUpperCase() + user?.role?.slice(1)}
                   </span>
                   {user?.isVerified && (
@@ -181,7 +189,7 @@ const Profile = () => {
                   )}
                 </div>
               </div>
-              
+
               {/* Edit Button */}
               {!isEditing && (
                 <button
@@ -200,8 +208,12 @@ const Profile = () => {
             <div className="border-b border-gray-200">
               <nav className="flex space-x-8 px-6">
                 {[
-                  { id: 'profile', name: 'Profile Information', icon: UserIcon },
-                  { id: 'security', name: 'Security', icon: KeyIcon }
+                  {
+                    id: "profile",
+                    name: "Profile Information",
+                    icon: UserIcon,
+                  },
+                  { id: "security", name: "Security", icon: KeyIcon },
                 ].map((tab) => {
                   const TabIcon = tab.icon;
                   return (
@@ -210,8 +222,8 @@ const Profile = () => {
                       onClick={() => setActiveTab(tab.id)}
                       className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center ${
                         activeTab === tab.id
-                          ? 'border-blue-500 text-blue-600'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                          ? "border-blue-500 text-blue-600"
+                          : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                       }`}
                     >
                       <TabIcon className="w-5 h-5 mr-2" />
@@ -224,7 +236,7 @@ const Profile = () => {
 
             <div className="p-6">
               {/* Profile Information Tab */}
-              {activeTab === 'profile' && (
+              {activeTab === "profile" && (
                 <form onSubmit={handleProfileSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Name */}
@@ -236,7 +248,12 @@ const Profile = () => {
                       <input
                         type="text"
                         value={profileForm.name}
-                        onChange={(e) => setProfileForm({...profileForm, name: e.target.value})}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            name: e.target.value,
+                          })
+                        }
                         disabled={!isEditing}
                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                       />
@@ -251,7 +268,12 @@ const Profile = () => {
                       <input
                         type="email"
                         value={profileForm.email}
-                        onChange={(e) => setProfileForm({...profileForm, email: e.target.value})}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            email: e.target.value,
+                          })
+                        }
                         disabled={!isEditing}
                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                       />
@@ -266,7 +288,12 @@ const Profile = () => {
                       <input
                         type="tel"
                         value={profileForm.phone}
-                        onChange={(e) => setProfileForm({...profileForm, phone: e.target.value})}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            phone: e.target.value,
+                          })
+                        }
                         disabled={!isEditing}
                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                       />
@@ -280,7 +307,12 @@ const Profile = () => {
                       </label>
                       <select
                         value={profileForm.country}
-                        onChange={(e) => setProfileForm({...profileForm, country: e.target.value})}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            country: e.target.value,
+                          })
+                        }
                         disabled={!isEditing}
                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                       >
@@ -300,7 +332,12 @@ const Profile = () => {
                       <input
                         type="text"
                         value={profileForm.address}
-                        onChange={(e) => setProfileForm({...profileForm, address: e.target.value})}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            address: e.target.value,
+                          })
+                        }
                         disabled={!isEditing}
                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                       />
@@ -314,7 +351,12 @@ const Profile = () => {
                       <input
                         type="text"
                         value={profileForm.city}
-                        onChange={(e) => setProfileForm({...profileForm, city: e.target.value})}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            city: e.target.value,
+                          })
+                        }
                         disabled={!isEditing}
                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                       />
@@ -328,7 +370,12 @@ const Profile = () => {
                       <input
                         type="text"
                         value={profileForm.state}
-                        onChange={(e) => setProfileForm({...profileForm, state: e.target.value})}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            state: e.target.value,
+                          })
+                        }
                         disabled={!isEditing}
                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                       />
@@ -342,7 +389,12 @@ const Profile = () => {
                       <input
                         type="text"
                         value={profileForm.zipCode}
-                        onChange={(e) => setProfileForm({...profileForm, zipCode: e.target.value})}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            zipCode: e.target.value,
+                          })
+                        }
                         disabled={!isEditing}
                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
                       />
@@ -355,7 +407,12 @@ const Profile = () => {
                       </label>
                       <textarea
                         value={profileForm.bio}
-                        onChange={(e) => setProfileForm({...profileForm, bio: e.target.value})}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            bio: e.target.value,
+                          })
+                        }
                         disabled={!isEditing}
                         rows={4}
                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50"
@@ -373,7 +430,9 @@ const Profile = () => {
                         className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
                       >
                         <CheckIcon className="w-4 h-4 mr-2" />
-                        {updateProfileMutation.isPending ? 'Saving...' : 'Save Changes'}
+                        {updateProfileMutation.isPending
+                          ? "Saving..."
+                          : "Save Changes"}
                       </button>
                       <button
                         type="button"
@@ -389,12 +448,17 @@ const Profile = () => {
               )}
 
               {/* Security Tab */}
-              {activeTab === 'security' && (
+              {activeTab === "security" && (
                 <div className="space-y-8">
                   {/* Change Password */}
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Change Password</h3>
-                    <form onSubmit={handlePasswordSubmit} className="space-y-4 max-w-md">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                      Change Password
+                    </h3>
+                    <form
+                      onSubmit={handlePasswordSubmit}
+                      className="space-y-4 max-w-md"
+                    >
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Current Password
@@ -402,12 +466,17 @@ const Profile = () => {
                         <input
                           type="password"
                           value={passwordForm.currentPassword}
-                          onChange={(e) => setPasswordForm({...passwordForm, currentPassword: e.target.value})}
+                          onChange={(e) =>
+                            setPasswordForm({
+                              ...passwordForm,
+                              currentPassword: e.target.value,
+                            })
+                          }
                           className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                           required
                         />
                       </div>
-                      
+
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           New Password
@@ -415,12 +484,17 @@ const Profile = () => {
                         <input
                           type="password"
                           value={passwordForm.newPassword}
-                          onChange={(e) => setPasswordForm({...passwordForm, newPassword: e.target.value})}
+                          onChange={(e) =>
+                            setPasswordForm({
+                              ...passwordForm,
+                              newPassword: e.target.value,
+                            })
+                          }
                           className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                           required
                         />
                       </div>
-                      
+
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Confirm New Password
@@ -428,40 +502,57 @@ const Profile = () => {
                         <input
                           type="password"
                           value={passwordForm.confirmPassword}
-                          onChange={(e) => setPasswordForm({...passwordForm, confirmPassword: e.target.value})}
+                          onChange={(e) =>
+                            setPasswordForm({
+                              ...passwordForm,
+                              confirmPassword: e.target.value,
+                            })
+                          }
                           className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                           required
                         />
                       </div>
-                      
+
                       <button
                         type="submit"
                         disabled={changePasswordMutation.isPending}
                         className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
                       >
-                        {changePasswordMutation.isPending ? 'Changing...' : 'Change Password'}
+                        {changePasswordMutation.isPending
+                          ? "Changing..."
+                          : "Change Password"}
                       </button>
                     </form>
                   </div>
 
                   {/* Account Security */}
                   <div className="border-t border-gray-200 pt-8">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Security</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                      Account Security
+                    </h3>
                     <div className="space-y-4">
                       <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
                         <div>
-                          <h4 className="font-medium text-gray-900">Two-Factor Authentication</h4>
-                          <p className="text-sm text-gray-500">Add an extra layer of security to your account</p>
+                          <h4 className="font-medium text-gray-900">
+                            Two-Factor Authentication
+                          </h4>
+                          <p className="text-sm text-gray-500">
+                            Add an extra layer of security to your account
+                          </p>
                         </div>
                         <button className="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300">
                           Enable
                         </button>
                       </div>
-                      
+
                       <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
                         <div>
-                          <h4 className="font-medium text-gray-900">Login Notifications</h4>
-                          <p className="text-sm text-gray-500">Get notified when someone logs into your account</p>
+                          <h4 className="font-medium text-gray-900">
+                            Login Notifications
+                          </h4>
+                          <p className="text-sm text-gray-500">
+                            Get notified when someone logs into your account
+                          </p>
                         </div>
                         <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
                           Enabled
@@ -480,4 +571,3 @@ const Profile = () => {
 };
 
 export default Profile;
-

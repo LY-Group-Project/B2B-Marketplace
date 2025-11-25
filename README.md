@@ -5,6 +5,7 @@ A comprehensive full-stack multivendor e-commerce platform built with React, Nod
 ## 🚀 Features
 
 ### Customer Features
+
 - **User Registration & Authentication** - Secure account creation and login
 - **Product Browsing** - Browse products with advanced filtering and search
 - **Shopping Cart** - Add/remove items, quantity management
@@ -13,6 +14,7 @@ A comprehensive full-stack multivendor e-commerce platform built with React, Nod
 - **Responsive Design** - Mobile-first, responsive UI
 
 ### Vendor Features
+
 - **Vendor Registration** - Apply to become a vendor
 - **Product Management** - Add, edit, delete products
 - **Inventory Management** - Track stock levels
@@ -21,6 +23,7 @@ A comprehensive full-stack multivendor e-commerce platform built with React, Nod
 - **Commission System** - Automatic commission calculation
 
 ### Admin Features
+
 - **User Management** - Manage customers, vendors, and admins
 - **Vendor Approval** - Approve/reject vendor applications
 - **Product Moderation** - Review and moderate products
@@ -31,6 +34,7 @@ A comprehensive full-stack multivendor e-commerce platform built with React, Nod
 ## 🛠️ Tech Stack
 
 ### Backend
+
 - **Node.js** - Runtime environment
 - **Express.js** - Web framework
 - **MongoDB** - Database
@@ -43,6 +47,7 @@ A comprehensive full-stack multivendor e-commerce platform built with React, Nod
 - **Nodemailer** - Email notifications
 
 ### Frontend
+
 - **React 18** - UI library
 - **React Router** - Client-side routing
 - **React Query** - Data fetching and caching
@@ -80,6 +85,7 @@ B2B Marketplace/
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js (v16 or higher)
 - MongoDB (v4.4 or higher)
 - npm or yarn
@@ -87,42 +93,46 @@ B2B Marketplace/
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd B2B-Marketplace
    ```
 
 2. **Install backend dependencies**
+
    ```bash
    cd server
    npm install
    ```
 
 3. **Install frontend dependencies**
+
    ```bash
    cd ../client
    npm install
    ```
 
 4. **Environment Setup**
-   
+
    Create a `.env` file in the server directory:
+
    ```env
    NODE_ENV=development
    PORT=5000
    MONGO_URI=mongodb://localhost:27017/multivendor-ecommerce
    JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
    CLIENT_URL=http://localhost:3000
-   
+
    # Cloudinary (for image uploads)
    CLOUDINARY_CLOUD_NAME=your-cloudinary-cloud-name
    CLOUDINARY_API_KEY=your-cloudinary-api-key
    CLOUDINARY_API_SECRET=your-cloudinary-api-secret
-   
+
    # Stripe (for payments)
    STRIPE_SECRET_KEY=your-stripe-secret-key
    STRIPE_PUBLISHABLE_KEY=your-stripe-publishable-key
-   
+
    # Email (for notifications)
    EMAIL_HOST=smtp.gmail.com
    EMAIL_PORT=587
@@ -131,23 +141,27 @@ B2B Marketplace/
    ```
 
    Create a `.env` file in the client directory:
+
    ```env
    VITE_API_URL=http://localhost:5000/api
    ```
 
 5. **Start MongoDB**
+
    ```bash
    # Make sure MongoDB is running on your system
    mongod
    ```
 
 6. **Start the backend server**
+
    ```bash
    cd server
    npm run dev
    ```
 
 7. **Start the frontend development server**
+
    ```bash
    cd client
    npm run dev
@@ -160,12 +174,14 @@ B2B Marketplace/
 ## 🔧 Available Scripts
 
 ### Backend Scripts
+
 ```bash
 npm start          # Start production server
 npm run dev        # Start development server with nodemon
 ```
 
 ### Frontend Scripts
+
 ```bash
 npm run dev        # Start development server
 npm run build      # Build for production
@@ -176,12 +192,14 @@ npm run lint       # Run ESLint
 ## 📊 Database Models
 
 ### User Model
+
 - Customer, Vendor, Admin roles
 - Authentication and profile data
 - Vendor-specific business information
 - Commission and approval status
 
 ### Product Model
+
 - Product details and pricing
 - Inventory management
 - Image galleries
@@ -189,12 +207,14 @@ npm run lint       # Run ESLint
 - Vendor association
 
 ### Order Model
+
 - Order processing and tracking
 - Multi-vendor order splitting
 - Payment and shipping information
 - Status management
 
 ### Category Model
+
 - Hierarchical category structure
 - SEO-friendly slugs
 - Active/inactive status
@@ -224,11 +244,13 @@ npm run lint       # Run ESLint
 ## 🚀 Deployment
 
 ### Backend Deployment
+
 1. Set up MongoDB Atlas or your preferred MongoDB hosting
 2. Configure environment variables
 3. Deploy to platforms like Heroku, DigitalOcean, or AWS
 
 ### Frontend Deployment
+
 1. Build the production bundle: `npm run build`
 2. Deploy to platforms like Vercel, Netlify, or AWS S3
 
@@ -247,6 +269,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## 🆘 Support
 
 For support and questions:
+
 - Create an issue in the repository
 - Contact the development team
 - Check the documentation
@@ -267,4 +290,3 @@ For support and questions:
 ---
 
 **Note**: This is a comprehensive multivendor e-commerce platform with all essential features. The codebase is production-ready and follows best practices for security, scalability, and maintainability.
-

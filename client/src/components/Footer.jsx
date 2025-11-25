@@ -1,41 +1,49 @@
-import { Link } from 'react-router-dom';
-import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin } from 'lucide-react';
+import { Link } from "react-router-dom";
+import {
+  Facebook,
+  Twitter,
+  Instagram,
+  Linkedin,
+  Mail,
+  Phone,
+  MapPin,
+} from "lucide-react";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   const footerLinks = {
     company: [
-      { name: 'About Us', href: '/about' },
-      { name: 'Contact', href: '/contact' },
-      { name: 'Careers', href: '/careers' },
-      { name: 'Press', href: '/press' },
+      { name: "About Us", href: "/about" },
+      { name: "Contact", href: "/contact" },
+      { name: "Careers", href: "/careers" },
+      { name: "Press", href: "/press" },
     ],
     support: [
-      { name: 'Help Center', href: '/help' },
-      { name: 'Shipping Info', href: '/shipping' },
-      { name: 'Returns', href: '/returns' },
-      { name: 'Size Guide', href: '/size-guide' },
+      { name: "Help Center", href: "/help" },
+      { name: "Shipping Info", href: "/shipping" },
+      { name: "Returns", href: "/returns" },
+      { name: "Size Guide", href: "/size-guide" },
     ],
     legal: [
-      { name: 'Privacy Policy', href: '/privacy' },
-      { name: 'Terms of Service', href: '/terms' },
-      { name: 'Cookie Policy', href: '/cookies' },
-      { name: 'Refund Policy', href: '/refund' },
+      { name: "Privacy Policy", href: "/privacy" },
+      { name: "Terms of Service", href: "/terms" },
+      { name: "Cookie Policy", href: "/cookies" },
+      { name: "Refund Policy", href: "/refund" },
     ],
     vendors: [
-      { name: 'Become a Vendor', href: '/vendor/register' },
-      { name: 'Vendor Dashboard', href: '/vendor' },
-      { name: 'Vendor Support', href: '/vendor/support' },
-      { name: 'Commission Rates', href: '/vendor/commission' },
+      { name: "Become a Vendor", href: "/vendor/register" },
+      { name: "Vendor Dashboard", href: "/vendor" },
+      { name: "Vendor Support", href: "/vendor/support" },
+      { name: "Commission Rates", href: "/vendor/commission" },
     ],
   };
 
   const socialLinks = [
-    { name: 'Facebook', href: '#', icon: Facebook },
-    { name: 'Twitter', href: '#', icon: Twitter },
-    { name: 'Instagram', href: '#', icon: Instagram },
-    { name: 'LinkedIn', href: '#', icon: Linkedin },
+    { name: "Facebook", href: "#", icon: Facebook },
+    { name: "Twitter", href: "#", icon: Twitter },
+    { name: "Instagram", href: "#", icon: Instagram },
+    { name: "LinkedIn", href: "#", icon: Linkedin },
   ];
 
   return (
@@ -51,7 +59,8 @@ const Footer = () => {
               <span className="ml-2 text-xl font-bold">Marketplace</span>
             </div>
             <p className="text-gray-300 text-sm mb-4">
-              Your one-stop destination for quality products from trusted vendors worldwide.
+              Your one-stop destination for quality products from trusted
+              vendors worldwide.
             </p>
             <div className="space-y-2 text-sm text-gray-300">
               <div className="flex items-center">
@@ -163,7 +172,7 @@ const Footer = () => {
           <p className="text-gray-300 text-sm">
             © {currentYear} Marketplace. All rights reserved.
           </p>
-          
+
           {/* Social Links */}
           <div className="flex space-x-4 mt-4 md:mt-0">
             {socialLinks.map((social) => {
@@ -187,4 +196,3 @@ const Footer = () => {
 };
 
 export default Footer;
-
