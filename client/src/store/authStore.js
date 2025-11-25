@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+
 const useAuthStore = create(
   persist(
     (set, get) => ({
@@ -22,7 +23,6 @@ const useAuthStore = create(
           isLoading: false,
         });
       },
-
       logout: () => {
         set({
           user: null,
@@ -65,4 +65,3 @@ const useAuthStore = create(
 );
 
 export default useAuthStore;
-

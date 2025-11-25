@@ -75,6 +75,7 @@ app.use('/api/vendors', require('./routes/vendors'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/upload', require('./routes/upload'));
 app.use('/api/reviews', require('./routes/reviews'));
+app.use('/api/webauth', require('./routes/webAuth'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -95,9 +96,17 @@ app.use((err, req, res, next) => {
 });
 
 // 404 handler
+app.use('/api/', (req, res) => {
+  res.status(200).json( {
+    message: 'API is running. Please check your endpoint URL.',
+    version: '1.0.0',
+    appName: 'B2B Marketplace'
+  });
+});
 app.use('*', (req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
+
 
 // Database Connection
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/multivendor-ecommerce', {

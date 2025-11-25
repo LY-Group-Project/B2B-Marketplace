@@ -53,6 +53,14 @@ export const authAPI = {
   updateProfile: (userData) => api.put('/auth/profile', userData),
   changePassword: (passwordData) => api.put('/auth/change-password', passwordData),
   deactivateAccount: () => api.put('/auth/deactivate'),
+  webauthLogin: (email) => api.post('/webauth/login', { username: email }),
+  webauthVerify: (username, assertion) => api.post('/webauth/verify-login', { username, assertion}),
+  webauthRegister: (username) => api.post('/webauth/register', { username }),
+
+  webauthVerifyRegistration: (username, credential) => api.post('/webauth/verify-registration', {
+    username,
+    credential,
+  }),
 };
 
 // Products API

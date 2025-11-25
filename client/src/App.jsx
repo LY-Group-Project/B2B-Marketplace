@@ -19,6 +19,7 @@ import Profile from './pages/Profile';
 import Orders from './pages/Orders';
 import OrderDetail from './pages/OrderDetail';
 import Categories from './pages/Categories';
+import PasskeyAuthPage from './pages/RegisterPasskey';
 
 // Vendor Pages
 import VendorDashboard from './pages/vendor/Dashboard';
@@ -69,6 +70,7 @@ function App() {
                 <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                 <Route path="orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
                 <Route path="orders/:id" element={<ProtectedRoute><OrderDetail /></ProtectedRoute>} />
+                <Route path="register-passkey" element={<ProtectedRoute><PasskeyAuthPage /></ProtectedRoute>} />
                 
                 {/* Vendor Routes */}
                 <Route path="vendor" element={<ProtectedRoute requiredRole="vendor"><VendorDashboard /></ProtectedRoute>} />
@@ -78,7 +80,7 @@ function App() {
                 <Route path="vendor/orders" element={<ProtectedRoute requiredRole="vendor"><VendorOrders /></ProtectedRoute>} />
                 <Route path="vendor/orders/:id" element={<ProtectedRoute requiredRole="vendor"><VendorOrderDetail /></ProtectedRoute>} />
                 <Route path="vendor/profile" element={<ProtectedRoute requiredRole="vendor"><VendorProfile /></ProtectedRoute>} />
-                
+
                 {/* Admin Routes */}
                 <Route path="admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
                 <Route path="admin/users" element={<ProtectedRoute requiredRole="admin"><AdminUsers /></ProtectedRoute>} />
