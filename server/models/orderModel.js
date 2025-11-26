@@ -102,6 +102,7 @@ const orderSchema = new mongoose.Schema(
         "debit_card",
         "paypal",
         "stripe",
+        "razorpay",
         "bank_transfer",
         "cash_on_delivery",
       ],
@@ -117,6 +118,13 @@ const orderSchema = new mongoose.Schema(
       type: String,
     },
     paypalCaptureId: {
+      type: String,
+    },
+    // Razorpay-specific fields
+    razorpayOrderId: {
+      type: String,
+    },
+    razorpayPaymentId: {
       type: String,
     },
     shippingMethod: {

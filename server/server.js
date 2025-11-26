@@ -17,7 +17,7 @@ app.use(
       directives: {
         defaultSrc: ["'self'"],
         styleSrc: ["'self'", "'unsafe-inline'", "https:"],
-        scriptSrc: ["'self'", "https://www.paypal.com", "https://www.paypalobjects.com"],
+        scriptSrc: ["'self'", "https://www.paypal.com", "https://www.paypalobjects.com", "https://checkout.razorpay.com"],
         imgSrc: [
           "'self'",
           "data:",
@@ -33,11 +33,13 @@ app.use(
           "http://localhost:5173",
           "https://www.paypal.com",
           "https://www.sandbox.paypal.com",
+          "https://api.razorpay.com",
+          "https://checkout.razorpay.com",
         ],
         fontSrc: ["'self'", "https:", "data:"],
         objectSrc: ["'none'"],
         mediaSrc: ["'self'"],
-        frameSrc: ["'self'", "https://www.paypal.com", "https://www.sandbox.paypal.com"],
+        frameSrc: ["'self'", "https://www.paypal.com", "https://www.sandbox.paypal.com", "https://api.razorpay.com", "https://checkout.razorpay.com"],
       },
     },
     crossOriginEmbedderPolicy: false,
@@ -131,6 +133,7 @@ app.use("/api/reviews", require("./routes/reviews"));
 app.use("/api/webauth", require("./routes/webAuth"));
 app.use("/api/address", require("./routes/address"));
 app.use("/api/paypal", require("./routes/paypal"));
+app.use("/api/razorpay", require("./routes/razorpay"));
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {
