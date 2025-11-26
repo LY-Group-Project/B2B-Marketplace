@@ -211,25 +211,55 @@ function App() {
             </Routes>
 
             <Toaster
-              position="top-right"
+              position="bottom-right"
               toastOptions={{
-                duration: 4000,
+                duration: 4500,
+                // default style for all toasts — lighter card to match site
                 style: {
-                  background: "#363636",
-                  color: "#fff",
+                  background: "#ffffff",
+                  color: "#0f172a",
+                  border: "1px solid rgba(15, 23, 42, 0.06)",
+                  boxShadow: "0 6px 18px rgba(2,6,23,0.08)",
+                  padding: "12px 14px",
+                  borderRadius: "8px",
                 },
+                // Success variant
                 success: {
-                  duration: 3000,
+                  duration: 3200,
+                  style: {
+                    background: "linear-gradient(90deg,#ecfdf5,#ffffff)",
+                    color: "#044e26",
+                    border: "1px solid rgba(34,197,94,0.12)",
+                  },
                   iconTheme: {
-                    primary: "#22c55e",
-                    secondary: "#fff",
+                    primary: "#10b981",
+                    secondary: "#ffffff",
                   },
                 },
+                // Error variant
                 error: {
-                  duration: 5000,
+                  duration: 6000,
+                  style: {
+                    background: "linear-gradient(90deg,#fff1f2,#ffffff)",
+                    color: "#7f1d1d",
+                    border: "1px solid rgba(239,68,68,0.08)",
+                  },
                   iconTheme: {
                     primary: "#ef4444",
-                    secondary: "#fff",
+                    secondary: "#ffffff",
+                  },
+                },
+                // Info/other variants
+                loading: {
+                  duration: 8000,
+                  style: {
+                    background: "linear-gradient(90deg,#eff6ff,#ffffff)",
+                    color: "#1e40af",
+                    border: "1px solid rgba(59,130,246,0.06)",
+                  },
+                  iconTheme: {
+                    primary: "#3b82f6",
+                    secondary: "#ffffff",
                   },
                 },
               }}

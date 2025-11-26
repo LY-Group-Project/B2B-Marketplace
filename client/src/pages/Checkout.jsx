@@ -33,6 +33,7 @@ const Checkout = () => {
     country: "",
   });
 
+
   const [paymentMethod, setPaymentMethod] = useState("credit_card");
   const [cardDetails, setCardDetails] = useState({
     cardNumber: "",
@@ -162,6 +163,14 @@ const Checkout = () => {
       throw error;
     }
   };
+
+  
+const paypalInititalOptions = {
+  clientId: paypalConfig?.clientId || "",
+  dataNamespace: "paypal_sdk", 
+  currency: "USD",
+
+};
 
   // PayPal on approve handler
   const onPayPalApprove = async (data) => {
@@ -641,12 +650,7 @@ const Checkout = () => {
                   {paymentMethod === "paypal" && paypalConfig?.clientId && (
                     <div className="ml-6 mt-4">
                       <PayPalScriptProvider
-                        options={{
-                          "client-id": paypalConfig.clientId,
-                          currency: "USD",
-                          components: "buttons",
-                          intent: "capture",
-                        }}
+                        options={paypalInititalOptions}
                       >
                         <PayPalButtons
                           style={{
