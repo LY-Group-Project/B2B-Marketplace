@@ -54,9 +54,12 @@ const VendorOrders = () => {
     },
   });
 
-  const orders = ordersData?.data?.orders || [];
-  const totalPages = ordersData?.data?.totalPages || 0;
-  const total = ordersData?.data?.total || 0;
+  // Support API responses that may be wrapped as { data: { ... } }
+  const serverPayload = ordersData?.data || {};
+  const payload = serverPayload.data || serverPayload;
+  const orders = payload?.orders || [];
+  const totalPages = payload?.totalPages || 0;
+  const total = payload?.total || 0;
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -250,8 +253,11 @@ const VendorOrders = () => {
                                     key={index}
                                     className="h-8 w-8 rounded-full border-2 border-white object-cover"
                                     src={
-                                      item.product?.images?.[0] ||
-                                      "/placeholder-product.jpg"
+                                      (() => {
+                                        const img0 = item.product?.images?.[0];
+                                        if (!img0) return "/placeholder-product.jpg";
+                                        return typeof img0 === "string" ? img0 : img0?.url || "/placeholder-product.jpg";
+                                      })()
                                     }
                                     alt={item.product?.name || "Product"}
                                     title={item.product?.name || "Product"}

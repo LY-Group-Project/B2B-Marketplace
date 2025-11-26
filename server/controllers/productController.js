@@ -178,7 +178,8 @@ const getVendorProducts = async (req, res) => {
 
     const query = { vendor: vendorId };
     if (status !== undefined) {
-      query.isActive = status === "active";
+      if (status !== "active" && status !== "inactive");
+      else query.isActive = status === "active";
     }
 
     const products = await Product.find(query)

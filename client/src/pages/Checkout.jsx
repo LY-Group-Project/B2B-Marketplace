@@ -12,7 +12,7 @@ import {
 } from "@heroicons/react/24/outline";
 import useAuthStore from "../store/authStore";
 import useCartStore from "../store/cartStore";
-import { ordersAPI } from "../services/api";
+import { ordersAPI, addressAPI } from "../services/api";
 import { toast } from "react-hot-toast";
 
 const Checkout = () => {
@@ -24,14 +24,15 @@ const Checkout = () => {
     fullName: user?.name || "",
     email: user?.email || "",
     phone: "",
+    apartment: "",
     address: "",
     city: "",
     state: "",
     zipCode: "",
-    country: "United States",
+    country: "",
   });
 
-  const [paymentMethod, setPaymentMethod] = useState("card");
+  const [paymentMethod, setPaymentMethod] = useState("credit_card");
   const [cardDetails, setCardDetails] = useState({
     cardNumber: "",
     expiryDate: "",
@@ -42,6 +43,8 @@ const Checkout = () => {
   const [billingAddressSame, setBillingAddressSame] = useState(true);
   const [billingAddress, setBillingAddress] = useState({});
   const [orderNotes, setOrderNotes] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Redirect if cart is empty or user not logged in
   useEffect(() => {
@@ -69,7 +72,8 @@ const Checkout = () => {
     onSuccess: (response) => {
       clearCart();
       toast.success("Order placed successfully!");
-      navigate(`/orders/${response.data._id}`);
+      const orderId = response.data?.order?._id || response.data?._id;
+      if (orderId) navigate(`/orders/${orderId}`);
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || "Failed to place order");
@@ -92,7 +96,7 @@ const Checkout = () => {
       return;
     }
 
-    if (paymentMethod === "card") {
+    if (paymentMethod === "credit_card") {
       if (
         !cardDetails.cardNumber ||
         !cardDetails.expiryDate ||
@@ -104,14 +108,43 @@ const Checkout = () => {
       }
     }
 
+    // Build shipping address with fields the backend expects (name, street, etc.)
+    const fullStreet = shippingAddress.apartment
+      ? `${shippingAddress.apartment}, ${shippingAddress.address}`
+      : shippingAddress.address;
+
+    const formattedShippingAddress = {
+      name: shippingAddress.fullName,
+      email: shippingAddress.email,
+      phone: shippingAddress.phone,
+      street: fullStreet,
+      city: shippingAddress.city,
+      state: shippingAddress.state,
+      zipCode: shippingAddress.zipCode,
+      country: shippingAddress.country,
+    };
+
+    const formattedBillingAddress = billingAddressSame
+      ? formattedShippingAddress
+      : {
+          name: billingAddress.fullName || billingAddress.name,
+          email: billingAddress.email,
+          phone: billingAddress.phone,
+          street: billingAddress.address || billingAddress.street,
+          city: billingAddress.city,
+          state: billingAddress.state,
+          zipCode: billingAddress.zipCode,
+          country: billingAddress.country,
+        };
+
     const orderData = {
       items: items.map((item) => ({
-        product: item.id,
+        product: item.product?._id || item.product?.id || null,
         quantity: item.quantity,
-        price: item.price,
+        price: Number(item.product?.price || 0),
       })),
-      shippingAddress,
-      billingAddress: billingAddressSame ? shippingAddress : billingAddress,
+      shippingAddress: formattedShippingAddress,
+      billingAddress: formattedBillingAddress,
       paymentMethod,
       subtotal,
       shippingCost,
@@ -126,6 +159,32 @@ const Checkout = () => {
   if (!user || items.length === 0) {
     return null;
   }
+
+  // Fetch address suggestions when user types address
+  useEffect(() => {
+    let cancelled = false;
+    const q = shippingAddress.address?.trim();
+    if (!q || q.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+
+    const id = setTimeout(async () => {
+      try {
+        const res = await addressAPI.autocomplete(q);
+        if (!cancelled) {
+          setSuggestions(res.data.features || []);
+        }
+      } catch (err) {
+        console.error("Autocomplete error", err);
+      }
+    }, 300);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(id);
+    };
+  }, [shippingAddress.address]);
 
   return (
     <>
@@ -152,7 +211,7 @@ const Checkout = () => {
                   </h2>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Full Name *
@@ -210,38 +269,109 @@ const Checkout = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Country
                     </label>
-                    <select
+                    <input
+                      type="text"
                       value={shippingAddress.country}
                       onChange={(e) =>
-                        setShippingAddress({
-                          ...shippingAddress,
+                        setShippingAddress((prev) => ({
+                          ...prev,
                           country: e.target.value,
-                        })
+                        }))
                       }
+                      placeholder="Country"
                       className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="United States">United States</option>
-                      <option value="Canada">Canada</option>
-                      <option value="United Kingdom">United Kingdom</option>
-                    </select>
+                    />
                   </div>
 
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Address *
+                      Apartment / Unit / Floor (optional)
                     </label>
                     <input
                       type="text"
-                      value={shippingAddress.address}
+                      value={shippingAddress.apartment}
                       onChange={(e) =>
-                        setShippingAddress({
-                          ...shippingAddress,
-                          address: e.target.value,
-                        })
+                        setShippingAddress((prev) => ({
+                          ...prev,
+                          apartment: e.target.value,
+                        }))
                       }
+                      placeholder="Apt 4B, Floor 2, Building Name, etc."
                       className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
                     />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Street Address *
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={shippingAddress.address}
+                        onChange={(e) => {
+                          setShippingAddress({
+                            ...shippingAddress,
+                            address: e.target.value,
+                          });
+                          setShowSuggestions(true);
+                        }}
+                        onFocus={() => shippingAddress.address && setShowSuggestions(true)}
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                        autoComplete="off"
+                      />
+
+                      {showSuggestions && suggestions.length > 0 && (
+                        <ul className="absolute z-50 left-0 right-0 bg-white border border-gray-200 mt-1 rounded-md max-h-60 overflow-auto shadow-sm">
+                          {suggestions.map((s) => (
+                            <li
+                              key={s.id}
+                              className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                                  onMouseDown={(ev) => {
+                                    // prevent input blur before click
+                                    ev.preventDefault();
+                                    const feature = s;
+                                    const context = feature.context || [];
+
+                                    const getContext = (types) => {
+                                      for (const t of types) {
+                                        const found = context.find((c) => c.id?.startsWith(t));
+                                        if (found) return found.text;
+                                      }
+                                      return "";
+                                    };
+
+                                    const city = getContext(["place", "locality", "localadmin", "neighborhood"])
+                                      || (feature.place_type?.includes("place") ? feature.text : "");
+                                    const state = getContext(["region"]);
+                                    const postcode = getContext(["postcode"]) || feature.properties?.postcode || "";
+                                    const country = getContext(["country"]) || feature.properties?.short_code || "";
+
+                                    const street = feature.address
+                                      ? `${feature.address} ${feature.text}`
+                                      : feature.place_type?.includes("address")
+                                      ? feature.text
+                                      : feature.text || feature.place_name;
+
+                                    setShippingAddress((prev) => ({
+                                      ...prev,
+                                      address: street,
+                                      city: city || prev.city,
+                                      state: state || prev.state,
+                                      zipCode: postcode || prev.zipCode,
+                                      country: country || prev.country || "",
+                                    }));
+                                    setShowSuggestions(false);
+                                    setSuggestions([]);
+                                  }}
+                            >
+                              {s.place_name}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
                   </div>
 
                   <div>
@@ -315,8 +445,8 @@ const Checkout = () => {
                       type="radio"
                       id="card"
                       name="paymentMethod"
-                      value="card"
-                      checked={paymentMethod === "card"}
+                      value="credit_card"
+                      checked={paymentMethod === "credit_card"}
                       onChange={(e) => setPaymentMethod(e.target.value)}
                       className="mr-3"
                     />
@@ -430,8 +560,8 @@ const Checkout = () => {
                       type="radio"
                       id="bank"
                       name="paymentMethod"
-                      value="bank"
-                      checked={paymentMethod === "bank"}
+                      value="bank_transfer"
+                      checked={paymentMethod === "bank_transfer"}
                       onChange={(e) => setPaymentMethod(e.target.value)}
                       className="mr-3"
                     />
@@ -472,29 +602,32 @@ const Checkout = () => {
 
                 {/* Cart Items */}
                 <div className="space-y-4 mb-6">
-                  {items.map((item) => (
-                    <div key={item.id} className="flex items-center space-x-3">
-                      <img
-                        src={
-                          item.image ||
-                          "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjwvc3ZnPg=="
-                        }
-                        alt={item.name}
-                        className="w-16 h-16 object-cover rounded-md"
-                      />
-                      <div className="flex-1">
-                        <h4 className="text-sm font-medium text-gray-900">
-                          {item.name}
-                        </h4>
-                        <p className="text-sm text-gray-500">
-                          Qty: {item.quantity}
+                  {items.map((item) => {
+                    const product = item.product || {};
+                    const imgUrl =
+                      product.images?.[0]?.url || product.images?.[0] ||
+                      product.image ||
+                      "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjwvc3ZnPg==";
+
+                    return (
+                      <div key={product._id || product.id || item.addedAt} className="flex items-center space-x-3">
+                        <img
+                          src={imgUrl}
+                          alt={product.name || "Product"}
+                          className="w-16 h-16 object-cover rounded-md"
+                        />
+                        <div className="flex-1">
+                          <h4 className="text-sm font-medium text-gray-900">
+                            {product.name || "Unnamed product"}
+                          </h4>
+                          <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                        </div>
+                        <p className="text-sm font-medium text-gray-900">
+                          ${(Number(product.price || 0) * item.quantity).toFixed(2)}
                         </p>
                       </div>
-                      <p className="text-sm font-medium text-gray-900">
-                        ${(item.price * item.quantity).toFixed(2)}
-                      </p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* Totals */}

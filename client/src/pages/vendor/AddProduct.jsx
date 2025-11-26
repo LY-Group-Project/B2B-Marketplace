@@ -189,6 +189,11 @@ const AddProduct = () => {
       return;
     }
 
+    if (formData.description.length < 10 && formData.description.length > 2000) {
+      toast.error("Description must be between 10 and 2000 characters");
+      return;
+    }
+
     // Validate category is selected
     if (!formData.category) {
       toast.error("Please select or create a category");

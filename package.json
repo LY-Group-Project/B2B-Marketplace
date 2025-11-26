@@ -1,0 +1,14 @@
+{
+    "name": "b2b-marketplace",
+    "version": "1.0.0",
+    "description": "B2B Marketplace",
+    "main": "server.js",
+    "scripts": {
+        "client": "cd client && npm run dev",
+        "server": "cd server && nodemon server.js",
+        "both": "npm run client & npm run server"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC"
+}

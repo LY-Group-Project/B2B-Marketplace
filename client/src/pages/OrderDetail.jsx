@@ -339,9 +339,12 @@ const OrderDetail = () => {
                     >
                       <img
                         src={
-                          item.product?.images?.[0]?.url ||
-                          item.image ||
-                          "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjwvc3ZnPg=="
+                          (() => {
+                            const img0 = item.product?.images?.[0] || item.image;
+                            if (!img0) return "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjwvc3ZnPg==";
+                            if (typeof img0 === "string") return img0;
+                            return img0?.url || img0?.secure_url || img0?.path || "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjwvc3ZnPg==";
+                          })()
                         }
                         alt={item.product?.name || item.name}
                         className="w-16 h-16 object-cover rounded-md"
@@ -370,12 +373,14 @@ const OrderDetail = () => {
                       </div>
                       <div className="text-center">
                         <p className="text-sm text-gray-500">Unit Price</p>
-                        <p className="font-medium">${item.price.toFixed(2)}</p>
+                        <p className="font-medium">
+                          ${Number(item.price ?? item.product?.price ?? 0).toFixed(2)}
+                        </p>
                       </div>
                       <div className="text-center">
                         <p className="text-sm text-gray-500">Total</p>
                         <p className="font-medium">
-                          ${(item.price * item.quantity).toFixed(2)}
+                          ${(Number(item.price ?? item.product?.price ?? 0) * (Number(item.quantity) || 0)).toFixed(2)}
                         </p>
                       </div>
                     </div>
@@ -405,33 +410,33 @@ const OrderDetail = () => {
                   <div className="flex justify-between">
                     <span className="text-gray-600">Subtotal</span>
                     <span className="text-gray-900">
-                      ${order.subtotal.toFixed(2)}
+                      ${Number(order.subtotal ?? order.total ?? 0).toFixed(2)}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Shipping</span>
                     <span className="text-gray-900">
-                      {order.shippingCost === 0
+                      {(Number(order.shipping ?? order.shippingCost) || 0) === 0
                         ? "Free"
-                        : `$${order.shippingCost.toFixed(2)}`}
+                        : `$${Number(order.shipping ?? order.shippingCost).toFixed(2)}`}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Tax</span>
                     <span className="text-gray-900">
-                      ${order.tax.toFixed(2)}
+                      ${Number(order.tax ?? 0).toFixed(2)}
                     </span>
                   </div>
-                  {order.discount > 0 && (
+                  {Number(order.discount ?? 0) > 0 && (
                     <div className="flex justify-between text-green-600">
                       <span>Discount</span>
-                      <span>-${order.discount.toFixed(2)}</span>
+                      <span>-${Number(order.discount).toFixed(2)}</span>
                     </div>
                   )}
                   <div className="border-t border-gray-200 pt-2 flex justify-between font-semibold">
                     <span className="text-gray-900">Total</span>
                     <span className="text-gray-900">
-                      ${order.total.toFixed(2)}
+                      ${Number(order.total ?? 0).toFixed(2)}
                     </span>
                   </div>
                 </div>
@@ -533,12 +538,10 @@ const OrderDetail = () => {
               </button>
               <button
                 onClick={() => cancelOrderMutation.mutate()}
-                disabled={cancelOrderMutation.isPending}
+                disabled={cancelOrderMutation.isLoading}
                 className="flex-1 bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 disabled:opacity-50"
               >
-                {cancelOrderMutation.isPending
-                  ? "Cancelling..."
-                  : "Cancel Order"}
+                {cancelOrderMutation.isLoading ? "Cancelling..." : "Cancel Order"}
               </button>
             </div>
           </div>

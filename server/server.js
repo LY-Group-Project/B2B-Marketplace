@@ -71,6 +71,28 @@ app.use(
   }),
 );
 
+// Explicitly handle preflight OPTIONS requests and ensure CORS headers
+app.options("*", cors());
+
+// Fallback middleware to ensure CORS headers are present on all responses
+app.use((req, res, next) => {
+  const origin = req.headers.origin || "*";
+  res.header("Access-Control-Allow-Origin", origin);
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+  );
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization",
+  );
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+  next();
+});
+
 // Body parsing middleware
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
@@ -104,6 +126,7 @@ app.use("/api/admin", require("./routes/admin"));
 app.use("/api/upload", require("./routes/upload"));
 app.use("/api/reviews", require("./routes/reviews"));
 app.use("/api/webauth", require("./routes/webAuth"));
+app.use("/api/address", require("./routes/address"));
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {

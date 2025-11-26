@@ -114,6 +114,11 @@ export const ordersAPI = {
   getAllOrders: (params) => api.get("/orders/admin/all", { params }),
 };
 
+// Address autocomplete (proxied through server)
+export const addressAPI = {
+  autocomplete: (query, country) => api.get(`/address/autocomplete`, { params: { q: query, country } }),
+};
+
 // Reviews API
 export const reviewsAPI = {
   getProductReviews: (productId, params) =>

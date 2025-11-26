@@ -313,11 +313,11 @@ const getVendorStats = async (req, res) => {
 
     // Get recent activity (last 10 orders)
     const recentActivity = await Order.find({ "items.vendor": vendorId })
-      .populate("user", "name email")
+      .populate("customer", "name email")
       .populate("items.product", "name images")
       .sort({ createdAt: -1 })
       .limit(10)
-      .select("orderNumber status createdAt user items totalAmount");
+      .select("orderNumber status createdAt customer items total");
 
     res.json({
       data: {
@@ -353,9 +353,8 @@ const getVendorOrders = async (req, res) => {
     }
 
     const orders = await Order.find(query)
-      .populate("user", "name email phone")
+      .populate("customer", "name email phone")
       .populate("items.product", "name images price")
-      .populate("shippingAddress")
       .sort(sort)
       .limit(limit * 1)
       .skip((page - 1) * limit);
@@ -374,7 +373,7 @@ const getVendorOrders = async (req, res) => {
       return {
         _id: order._id,
         orderNumber: order.orderNumber,
-        user: order.user,
+        user: order.customer, // keep `user` key for compatibility, populated from `customer`
         status: order.status,
         createdAt: order.createdAt,
         updatedAt: order.updatedAt,

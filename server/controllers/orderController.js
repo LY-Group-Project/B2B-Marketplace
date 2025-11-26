@@ -2,6 +2,7 @@ const Order = require("../models/orderModel");
 const Product = require("../models/productModel");
 const Cart = require("../models/cartModel");
 const User = require("../models/userModel");
+const Coupon = require("../models/couponModel");
 
 // Create Order
 const createOrder = async (req, res) => {
@@ -57,55 +58,138 @@ const createOrder = async (req, res) => {
       const vendorOrder = vendorOrders.get(product.vendor._id.toString());
       vendorOrder.items.push({
         product: product._id,
+        vendor: product.vendor._id,
         quantity: item.quantity,
         price: product.price,
+        variant: item.variant,
       });
       vendorOrder.subtotal += itemTotal;
     }
 
-    // Calculate tax, shipping, and total
-    const tax = subtotal * 0.1; // 10% tax
-    const shipping = 0; // Free shipping for now
-    const discount = 0; // Coupon discount calculation
-    const total = subtotal + tax + shipping - discount;
+    // Handle coupon if provided
+    let coupon = null;
+    if (couponCode) {
+      coupon = await Coupon.findOne({ code: couponCode.toUpperCase(), isActive: true });
+      if (!coupon) {
+        return res.status(400).json({ message: "Invalid or inactive coupon code" });
+      }
+      const now = new Date();
+      if (now < coupon.validFrom || now > coupon.validUntil) {
+        return res.status(400).json({ message: "Coupon is not valid at this time" });
+      }
+      if (coupon.usageLimit && coupon.usedCount >= coupon.usageLimit) {
+        return res.status(400).json({ message: "Coupon usage limit reached" });
+      }
+      if (subtotal < (coupon.minimumAmount || 0)) {
+        return res.status(400).json({ message: `Coupon requires minimum order of ${coupon.minimumAmount}` });
+      }
+    }
 
-    // Create order
-    const order = new Order({
-      customer: customerId,
-      items: orderItems,
-      shippingAddress,
-      billingAddress: billingAddress || shippingAddress,
-      subtotal,
-      tax,
-      shipping,
-      discount,
-      total,
-      paymentMethod,
-      vendorOrders: Array.from(vendorOrders.values()),
-    });
+    // Calculate tax, shipping, and total per vendor and create separate orders
+    const createdOrders = [];
 
-    await order.save();
+    for (const [vendorId, vdata] of vendorOrders.entries()) {
+      const vendorSubtotal = vdata.subtotal;
+      const tax = vendorSubtotal * 0.1; // 10% tax
+      let shipping = 0;
 
-    // Update product quantities
-    for (const item of orderItems) {
-      await Product.findByIdAndUpdate(item.product, {
-        $inc: { quantity: -item.quantity },
+      // compute discount for this vendor's order based on coupon
+      let vendorDiscount = 0;
+      if (coupon) {
+        if (coupon.type === "percentage") {
+          vendorDiscount = (vendorSubtotal * coupon.value) / 100;
+          if (coupon.maximumDiscount) vendorDiscount = Math.min(vendorDiscount, coupon.maximumDiscount);
+        } else if (coupon.type === "fixed_amount") {
+          // distribute fixed amount proportionally across vendors
+          vendorDiscount = subtotal > 0 ? (vendorSubtotal / subtotal) * coupon.value : 0;
+          if (coupon.maximumDiscount) vendorDiscount = Math.min(vendorDiscount, coupon.maximumDiscount);
+        } else if (coupon.type === "free_shipping") {
+          shipping = 0;
+          vendorDiscount = 0;
+        }
+        // ensure discount does not exceed subtotal
+        vendorDiscount = Math.min(vendorDiscount, vendorSubtotal);
+        // round to 2 decimals
+        vendorDiscount = Math.round(vendorDiscount * 100) / 100;
+      }
+
+      const total = Math.round((vendorSubtotal + tax + shipping - vendorDiscount) * 100) / 100;
+
+      // build items array for this vendor order
+      const itemsForVendor = vdata.items.map((it) => ({
+        product: it.product,
+        vendor: it.vendor,
+        quantity: it.quantity,
+        price: it.price,
+        variant: it.variant,
+      }));
+
+      const orderNumber =
+        "ORD-" + Date.now() + "-" + Math.random().toString(36).substr(2, 5).toUpperCase();
+
+      // Calculate commission (e.g., 10% platform fee)
+      const commissionRate = 0.1;
+      const commission = Math.round(vendorSubtotal * commissionRate * 100) / 100;
+      const vendorAmount = Math.round((vendorSubtotal - commission) * 100) / 100;
+
+      const orderDoc = new Order({
+        orderNumber,
+        customer: customerId,
+        items: itemsForVendor,
+        shippingAddress,
+        billingAddress: billingAddress || shippingAddress,
+        subtotal: vendorSubtotal,
+        tax,
+        shipping,
+        discount: vendorDiscount,
+        total,
+        paymentMethod,
+        vendorOrders: [
+          {
+            vendor: vdata.vendor,
+            items: vdata.items.map((it) => ({
+              product: it.product,
+              quantity: it.quantity,
+              price: it.price,
+            })),
+            subtotal: vendorSubtotal,
+            commission,
+            vendorAmount,
+            status: "pending",
+          },
+        ],
       });
+
+      await orderDoc.save();
+
+      // Update product quantities for this vendor's items
+      for (const it of itemsForVendor) {
+        await Product.findByIdAndUpdate(it.product, {
+          $inc: { quantity: -it.quantity },
+        });
+      }
+
+      createdOrders.push(orderDoc);
+    }
+
+    // If coupon used, increment usedCount once (counts as one coupon usage per checkout)
+    if (coupon) {
+      coupon.usedCount = (coupon.usedCount || 0) + 1;
+      await coupon.save();
     }
 
     // Clear user's cart
     await Cart.findOneAndDelete({ user: customerId });
 
-    // Populate order details
-    const populatedOrder = await Order.findById(order._id)
+    // Populate the created orders for response
+    const populatedOrders = await Order.find({ _id: { $in: createdOrders.map((o) => o._id) } })
       .populate("customer", "name email")
       .populate("items.product", "name images")
-      .populate("items.vendor", "name vendorProfile.businessName")
-      .populate("vendorOrders.vendor", "name vendorProfile.businessName");
+      .populate("items.vendor", "name vendorProfile.businessName");
 
     res.status(201).json({
-      message: "Order created successfully",
-      order: populatedOrder,
+      message: "Orders created successfully",
+      orders: populatedOrders,
     });
   } catch (error) {
     console.error("Create order error:", error);
