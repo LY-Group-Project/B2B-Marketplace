@@ -17,7 +17,7 @@ app.use(
       directives: {
         defaultSrc: ["'self'"],
         styleSrc: ["'self'", "'unsafe-inline'", "https:"],
-        scriptSrc: ["'self'"],
+        scriptSrc: ["'self'", "https://www.paypal.com", "https://www.paypalobjects.com"],
         imgSrc: [
           "'self'",
           "data:",
@@ -25,16 +25,19 @@ app.use(
           "http://localhost:5173",
           "http://127.0.0.1:5000",
           "http://127.0.0.1:5173",
+          "https://www.paypalobjects.com",
         ],
         connectSrc: [
           "'self'",
           "http://localhost:5000",
           "http://localhost:5173",
+          "https://www.paypal.com",
+          "https://www.sandbox.paypal.com",
         ],
         fontSrc: ["'self'", "https:", "data:"],
         objectSrc: ["'none'"],
         mediaSrc: ["'self'"],
-        frameSrc: ["'self'"],
+        frameSrc: ["'self'", "https://www.paypal.com", "https://www.sandbox.paypal.com"],
       },
     },
     crossOriginEmbedderPolicy: false,
@@ -127,6 +130,7 @@ app.use("/api/upload", require("./routes/upload"));
 app.use("/api/reviews", require("./routes/reviews"));
 app.use("/api/webauth", require("./routes/webAuth"));
 app.use("/api/address", require("./routes/address"));
+app.use("/api/paypal", require("./routes/paypal"));
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {

@@ -538,10 +538,12 @@ const OrderDetail = () => {
               </button>
               <button
                 onClick={() => cancelOrderMutation.mutate()}
-                disabled={cancelOrderMutation.isLoading}
+                disabled={cancelOrderMutation.isPending}
                 className="flex-1 bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 disabled:opacity-50"
               >
-                {cancelOrderMutation.isLoading ? "Cancelling..." : "Cancel Order"}
+                {cancelOrderMutation.isPending
+                  ? "Cancelling..."
+                  : "Cancel Order"}
               </button>
             </div>
           </div>

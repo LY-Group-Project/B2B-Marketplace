@@ -119,6 +119,13 @@ export const addressAPI = {
   autocomplete: (query, country) => api.get(`/address/autocomplete`, { params: { q: query, country } }),
 };
 
+// PayPal API
+export const paypalAPI = {
+  getClientId: () => api.get("/paypal/client-id"),
+  createOrder: (orderData) => api.post("/paypal/create-order", orderData),
+  captureOrder: (orderID, orderData) => api.post(`/paypal/capture-order/${orderID}`, orderData),
+};
+
 // Reviews API
 export const reviewsAPI = {
   getProductReviews: (productId, params) =>

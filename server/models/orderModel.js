@@ -112,6 +112,13 @@ const orderSchema = new mongoose.Schema(
       paymentIntentId: String,
       paidAt: Date,
     },
+    // PayPal-specific fields
+    paypalOrderId: {
+      type: String,
+    },
+    paypalCaptureId: {
+      type: String,
+    },
     shippingMethod: {
       name: String,
       cost: Number,

@@ -16,7 +16,9 @@
   "license": "ISC",
   "description": "Backend for multivendor ecommerce marketplace",
   "dependencies": {
+    "@paypal/checkout-server-sdk": "^1.0.3",
     "@simplewebauthn/server": "^13.2.2",
+    "axios": "^1.4.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.5.0",
     "cors": "^2.8.5",
@@ -31,7 +33,6 @@
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.15",
-    "axios": "^1.4.0",
     "stripe": "^16.12.0"
   },
   "devDependencies": {

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import {
   CreditCardIcon,
   MapPinIcon,
@@ -12,7 +13,7 @@ import {
 } from "@heroicons/react/24/outline";
 import useAuthStore from "../store/authStore";
 import useCartStore from "../store/cartStore";
-import { ordersAPI, addressAPI } from "../services/api";
+import { ordersAPI, addressAPI, paypalAPI } from "../services/api";
 import { toast } from "react-hot-toast";
 
 const Checkout = () => {
@@ -45,6 +46,16 @@ const Checkout = () => {
   const [orderNotes, setOrderNotes] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isPaypalProcessing, setIsPaypalProcessing] = useState(false);
+
+  // Fetch PayPal client ID
+  const { data: paypalConfig } = useQuery({
+    queryKey: ["paypal-client-id"],
+    queryFn: async () => {
+      const response = await paypalAPI.getClientId();
+      return response.data;
+    },
+  });
 
   // Redirect if cart is empty or user not logged in
   useEffect(() => {
@@ -72,43 +83,17 @@ const Checkout = () => {
     onSuccess: (response) => {
       clearCart();
       toast.success("Order placed successfully!");
-      const orderId = response.data?.order?._id || response.data?._id;
+      const orderId = response.data?.order?._id || response.data?._id || response.data?.orders?.[0]?._id;
       if (orderId) navigate(`/orders/${orderId}`);
+      else navigate("/orders");
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || "Failed to place order");
     },
   });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    // Validate required fields
-    if (
-      !shippingAddress.fullName ||
-      !shippingAddress.email ||
-      !shippingAddress.address ||
-      !shippingAddress.city ||
-      !shippingAddress.state ||
-      !shippingAddress.zipCode
-    ) {
-      toast.error("Please fill in all shipping address fields");
-      return;
-    }
-
-    if (paymentMethod === "credit_card") {
-      if (
-        !cardDetails.cardNumber ||
-        !cardDetails.expiryDate ||
-        !cardDetails.cvv ||
-        !cardDetails.nameOnCard
-      ) {
-        toast.error("Please fill in all card details");
-        return;
-      }
-    }
-
-    // Build shipping address with fields the backend expects (name, street, etc.)
+  // Build order data helper
+  const buildOrderData = () => {
     const fullStreet = shippingAddress.apartment
       ? `${shippingAddress.apartment}, ${shippingAddress.address}`
       : shippingAddress.address;
@@ -137,7 +122,7 @@ const Checkout = () => {
           country: billingAddress.country,
         };
 
-    const orderData = {
+    return {
       items: items.map((item) => ({
         product: item.product?._id || item.product?.id || null,
         quantity: item.quantity,
@@ -145,12 +130,101 @@ const Checkout = () => {
       })),
       shippingAddress: formattedShippingAddress,
       billingAddress: formattedBillingAddress,
-      paymentMethod,
       subtotal,
       shippingCost,
       tax,
       total: finalTotal,
       notes: orderNotes,
+    };
+  };
+
+  // PayPal create order handler
+  const createPayPalOrder = async () => {
+    // Validate required fields first
+    if (
+      !shippingAddress.fullName ||
+      !shippingAddress.email ||
+      !shippingAddress.address ||
+      !shippingAddress.city ||
+      !shippingAddress.state ||
+      !shippingAddress.zipCode
+    ) {
+      toast.error("Please fill in all shipping address fields");
+      throw new Error("Missing shipping address fields");
+    }
+
+    try {
+      const orderData = buildOrderData();
+      const response = await paypalAPI.createOrder(orderData);
+      return response.data.id;
+    } catch (error) {
+      toast.error("Failed to create PayPal order");
+      throw error;
+    }
+  };
+
+  // PayPal on approve handler
+  const onPayPalApprove = async (data) => {
+    setIsPaypalProcessing(true);
+    try {
+      const orderData = buildOrderData();
+      const response = await paypalAPI.captureOrder(data.orderID, orderData);
+      clearCart();
+      toast.success("Payment successful! Order placed.");
+      const orderId = response.data?.orders?.[0]?._id;
+      if (orderId) navigate(`/orders/${orderId}`);
+      else navigate("/orders");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Payment failed");
+    } finally {
+      setIsPaypalProcessing(false);
+    }
+  };
+
+  // PayPal on error handler
+  const onPayPalError = (error) => {
+    console.error("PayPal error:", error);
+    toast.error("PayPal encountered an error. Please try again.");
+    setIsPaypalProcessing(false);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // PayPal payments are handled by the PayPal button
+    if (paymentMethod === "paypal") {
+      toast.error("Please use the PayPal button to complete your payment");
+      return;
+    }
+
+    // Validate required fields
+    if (
+      !shippingAddress.fullName ||
+      !shippingAddress.email ||
+      !shippingAddress.address ||
+      !shippingAddress.city ||
+      !shippingAddress.state ||
+      !shippingAddress.zipCode
+    ) {
+      toast.error("Please fill in all shipping address fields");
+      return;
+    }
+
+    if (paymentMethod === "credit_card") {
+      if (
+        !cardDetails.cardNumber ||
+        !cardDetails.expiryDate ||
+        !cardDetails.cvv ||
+        !cardDetails.nameOnCard
+      ) {
+        toast.error("Please fill in all card details");
+        return;
+      }
+    }
+
+    const orderData = {
+      ...buildOrderData(),
+      paymentMethod,
     };
 
     placeOrderMutation.mutate(orderData);
@@ -549,11 +623,55 @@ const Checkout = () => {
                     />
                     <label
                       htmlFor="paypal"
-                      className="text-sm font-medium text-gray-700"
+                      className="text-sm font-medium text-gray-700 flex items-center"
                     >
+                      <svg className="w-16 h-5 mr-2" viewBox="0 0 101 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12.237 6.01H6.862c-.377 0-.7.274-.76.644L3.717 21.87c-.044.276.17.524.452.524h2.57c.376 0 .698-.274.759-.644l.642-4.063c.061-.37.382-.644.759-.644h1.75c3.65 0 5.756-1.764 6.307-5.264.248-1.529.01-2.73-.706-3.573-.787-.926-2.183-1.196-3.924-1.196h-.089zm.639 5.187c-.302 1.992-1.823 1.992-3.293 1.992h-.837l.587-3.71c.036-.224.229-.388.456-.388h.384c1.002 0 1.947 0 2.435.57.292.341.38.847.268 1.536z" fill="#003087"/>
+                        <path d="M35.899 11.12h-2.58c-.227 0-.42.165-.455.388l-.114.72-.18-.261c-.56-.812-1.808-1.083-3.055-1.083-2.858 0-5.299 2.164-5.777 5.2-.249 1.515.104 2.964 .969 3.975.793.928 1.927 1.315 3.275 1.315 2.316 0 3.602-1.489 3.602-1.489l-.115.722c-.045.277.169.526.451.526h2.323c.377 0 .699-.275.76-.645l1.393-8.82c.046-.278-.168-.548-.497-.548zm-3.628 5.032c-.252 1.49-1.433 2.49-2.943 2.49-.758 0-1.364-.243-1.753-.704-.386-.458-.532-1.11-.41-1.835.233-1.478 1.435-2.51 2.922-2.51.742 0 1.344.246 1.741.712.4.47.558 1.125.443 1.847z" fill="#003087"/>
+                        <path d="M55.988 11.12h-2.588c-.256 0-.497.124-.645.333l-3.723 5.481-1.578-5.27c-.098-.327-.398-.544-.74-.544h-2.543c-.314 0-.535.306-.436.606l2.973 8.725-2.797 3.947c-.214.302.001.72.373.72h2.586c.254 0 .493-.122.641-.327l8.98-12.964c.21-.303-.005-.707-.503-.707z" fill="#003087"/>
+                        <path d="M66.785 6.01h-5.375c-.377 0-.7.274-.76.644l-2.386 15.216c-.044.276.17.524.452.524h2.762c.264 0 .49-.192.531-.451l.677-4.256c.061-.37.382-.644.759-.644h1.75c3.65 0 5.756-1.764 6.307-5.264.248-1.529.01-2.73-.706-3.573-.787-.926-2.183-1.196-3.924-1.196h-.087zm.639 5.187c-.302 1.992-1.823 1.992-3.293 1.992h-.837l.587-3.71c.036-.224.229-.388.456-.388h.384c1.002 0 1.947 0 2.435.57.292.341.38.847.268 1.536z" fill="#0070BA"/>
+                        <path d="M90.447 11.12h-2.58c-.227 0-.42.165-.455.388l-.114.72-.18-.261c-.56-.812-1.808-1.083-3.055-1.083-2.858 0-5.299 2.164-5.777 5.2-.249 1.515.104 2.964.969 3.975.793.928 1.927 1.315 3.275 1.315 2.316 0 3.602-1.489 3.602-1.489l-.115.722c-.045.277.169.526.451.526h2.323c.377 0 .699-.275.76-.645l1.393-8.82c.046-.278-.168-.548-.497-.548zm-3.628 5.032c-.252 1.49-1.433 2.49-2.943 2.49-.758 0-1.364-.243-1.753-.704-.386-.458-.532-1.11-.41-1.835.233-1.478 1.435-2.51 2.922-2.51.742 0 1.344.246 1.741.712.4.47.558 1.125.443 1.847z" fill="#0070BA"/>
+                        <path d="M94.478 6.441l-2.422 15.429c-.044.276.17.524.452.524h2.22c.377 0 .7-.274.76-.644l2.387-15.216c.044-.276-.17-.524-.452-.524h-2.494c-.227 0-.42.165-.451.431z" fill="#0070BA"/>
+                      </svg>
                       PayPal
                     </label>
                   </div>
+
+                  {/* PayPal Buttons */}
+                  {paymentMethod === "paypal" && paypalConfig?.clientId && (
+                    <div className="ml-6 mt-4">
+                      <PayPalScriptProvider
+                        options={{
+                          "client-id": paypalConfig.clientId,
+                          currency: "USD",
+                          components: "buttons",
+                          intent: "capture",
+                        }}
+                      >
+                        <PayPalButtons
+                          style={{
+                            layout: "vertical",
+                            color: "blue",
+                            shape: "rect",
+                            label: "paypal",
+                          }}
+                          disabled={isPaypalProcessing}
+                          createOrder={createPayPalOrder}
+                          onApprove={onPayPalApprove}
+                          onError={onPayPalError}
+                          onCancel={() => {
+                            toast.info("Payment cancelled");
+                          }}
+                        />
+                      </PayPalScriptProvider>
+                      {isPaypalProcessing && (
+                        <div className="flex items-center justify-center mt-4">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                          <span className="ml-2 text-sm text-gray-600">Processing payment...</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   <div className="flex items-center">
                     <input
@@ -676,26 +794,37 @@ const Checkout = () => {
                   </p>
                 </div>
 
-                {/* Place Order Button */}
-                <form onSubmit={handleSubmit}>
-                  <button
-                    type="submit"
-                    disabled={placeOrderMutation.isPending}
-                    className="w-full mt-6 bg-blue-600 text-white py-3 px-4 rounded-md font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                  >
-                    {placeOrderMutation.isPending ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        <CheckIcon className="h-5 w-5 mr-2" />
-                        Place Order
-                      </>
-                    )}
-                  </button>
-                </form>
+                {/* Place Order Button - hidden when PayPal is selected */}
+                {paymentMethod !== "paypal" && (
+                  <form onSubmit={handleSubmit}>
+                    <button
+                      type="submit"
+                      disabled={placeOrderMutation.isPending}
+                      className="w-full mt-6 bg-blue-600 text-white py-3 px-4 rounded-md font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    >
+                      {placeOrderMutation.isPending ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <CheckIcon className="h-5 w-5 mr-2" />
+                          Place Order
+                        </>
+                      )}
+                    </button>
+                  </form>
+                )}
+
+                {/* PayPal instruction when PayPal is selected */}
+                {paymentMethod === "paypal" && (
+                  <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                    <p className="text-sm text-blue-800 text-center">
+                      Please use the PayPal button in the Payment Method section to complete your order.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
