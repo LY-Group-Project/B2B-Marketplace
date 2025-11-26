@@ -13,7 +13,7 @@ import {
 } from "@heroicons/react/24/outline";
 import useAuthStore from "../store/authStore";
 import useCartStore from "../store/cartStore";
-import { ordersAPI, addressAPI, paypalAPI } from "../services/api";
+import { ordersAPI, addressAPI, paypalAPI, razorpayAPI } from "../services/api";
 import { toast } from "react-hot-toast";
 
 const Checkout = () => {
@@ -34,13 +34,9 @@ const Checkout = () => {
   });
 
 
-  const [paymentMethod, setPaymentMethod] = useState("credit_card");
-  const [cardDetails, setCardDetails] = useState({
-    cardNumber: "",
-    expiryDate: "",
-    cvv: "",
-    nameOnCard: "",
-  });
+  const [paymentMethod, setPaymentMethod] = useState("razorpay");
+  const [isRazorpayProcessing, setIsRazorpayProcessing] = useState(false);
+  const [razorpayCurrency, setRazorpayCurrency] = useState("INR"); // INR or USD
 
   const [billingAddressSame, setBillingAddressSame] = useState(true);
   const [billingAddress, setBillingAddress] = useState({});
@@ -54,6 +50,15 @@ const Checkout = () => {
     queryKey: ["paypal-client-id"],
     queryFn: async () => {
       const response = await paypalAPI.getClientId();
+      return response.data;
+    },
+  });
+
+  // Fetch Razorpay key ID
+  const { data: razorpayConfig } = useQuery({
+    queryKey: ["razorpay-key-id"],
+    queryFn: async () => {
+      const response = await razorpayAPI.getKeyId();
       return response.data;
     },
   });
@@ -136,6 +141,7 @@ const Checkout = () => {
       tax,
       total: finalTotal,
       notes: orderNotes,
+      currency: razorpayCurrency,
     };
   };
 
@@ -197,12 +203,99 @@ const paypalInititalOptions = {
     setIsPaypalProcessing(false);
   };
 
+  // Razorpay payment handler
+  const handleRazorpayPayment = async () => {
+    // Validate required fields first
+    if (
+      !shippingAddress.fullName ||
+      !shippingAddress.email ||
+      !shippingAddress.address ||
+      !shippingAddress.city ||
+      !shippingAddress.state ||
+      !shippingAddress.zipCode
+    ) {
+      toast.error("Please fill in all shipping address fields");
+      return;
+    }
+
+    setIsRazorpayProcessing(true);
+
+    try {
+      // Create Razorpay order
+      const orderData = buildOrderData();
+      const response = await razorpayAPI.createOrder(orderData);
+      const razorpayOrder = response.data;
+
+      // Load Razorpay checkout
+      const options = {
+        key: razorpayConfig?.keyId,
+        amount: razorpayOrder.amount,
+        currency: razorpayOrder.currency,
+        name: "B2B Marketplace",
+        description: "Order Payment",
+        order_id: razorpayOrder.id,
+        handler: async function (response) {
+          try {
+            // Verify payment with backend
+            const verifyResponse = await razorpayAPI.verifyPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              orderData: buildOrderData(),
+            });
+            
+            clearCart();
+            toast.success("Payment successful! Order placed.");
+            const orderId = verifyResponse.data?.orders?.[0]?._id;
+            if (orderId) navigate(`/orders/${orderId}`);
+            else navigate("/orders");
+          } catch (error) {
+            toast.error(error.response?.data?.message || "Payment verification failed");
+          }
+        },
+        prefill: {
+          name: shippingAddress.fullName,
+          email: shippingAddress.email,
+          contact: shippingAddress.phone,
+        },
+        notes: {
+          address: shippingAddress.address,
+        },
+        theme: {
+          color: "#2563EB",
+        },
+        modal: {
+          ondismiss: function () {
+            setIsRazorpayProcessing(false);
+            toast.info("Payment cancelled");
+          },
+        },
+      };
+
+      const razorpayInstance = new window.Razorpay(options);
+      razorpayInstance.on("payment.failed", function (response) {
+        toast.error(response.error.description || "Payment failed");
+        setIsRazorpayProcessing(false);
+      });
+      razorpayInstance.open();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to initiate payment");
+      setIsRazorpayProcessing(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     // PayPal payments are handled by the PayPal button
     if (paymentMethod === "paypal") {
       toast.error("Please use the PayPal button to complete your payment");
+      return;
+    }
+
+    // Razorpay payments are handled by the Razorpay button
+    if (paymentMethod === "razorpay") {
+      toast.error("Please use the Razorpay button to complete your payment");
       return;
     }
 
@@ -217,18 +310,6 @@ const paypalInititalOptions = {
     ) {
       toast.error("Please fill in all shipping address fields");
       return;
-    }
-
-    if (paymentMethod === "credit_card") {
-      if (
-        !cardDetails.cardNumber ||
-        !cardDetails.expiryDate ||
-        !cardDetails.cvv ||
-        !cardDetails.nameOnCard
-      ) {
-        toast.error("Please fill in all card details");
-        return;
-      }
     }
 
     const orderData = {
@@ -523,99 +604,116 @@ const paypalInititalOptions = {
                 </div>
 
                 <div className="space-y-4">
+                  {/* Razorpay Payment Option */}
                   <div className="flex items-center">
                     <input
                       type="radio"
-                      id="card"
+                      id="razorpay"
                       name="paymentMethod"
-                      value="credit_card"
-                      checked={paymentMethod === "credit_card"}
+                      value="razorpay"
+                      checked={paymentMethod === "razorpay"}
                       onChange={(e) => setPaymentMethod(e.target.value)}
                       className="mr-3"
                     />
                     <label
-                      htmlFor="card"
-                      className="text-sm font-medium text-gray-700"
+                      htmlFor="razorpay"
+                      className="text-sm font-medium text-gray-700 flex items-center"
                     >
-                      Credit/Debit Card
+                      <svg className="w-6 h-6 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M2 17L12 22L22 17" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M2 12L12 17L22 12" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <span className="font-semibold">UPI, Card, Netbanking</span>
+                      <span className="ml-2 text-xs text-gray-500">(Razorpay)</span>
                     </label>
                   </div>
 
-                  {paymentMethod === "card" && (
-                    <div className="ml-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Card Number *
+                  {/* Razorpay Button */}
+                  {paymentMethod === "razorpay" && razorpayConfig?.keyId && (
+                    <div className="ml-6 mt-4">
+                      {/* Currency Toggle */}
+                      <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Select Payment Currency
                         </label>
-                        <input
-                          type="text"
-                          value={cardDetails.cardNumber}
-                          onChange={(e) =>
-                            setCardDetails({
-                              ...cardDetails,
-                              cardNumber: e.target.value,
-                            })
-                          }
-                          placeholder="1234 5678 9012 3456"
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          required
-                        />
+                        <div className="flex items-center space-x-4">
+                          <label className="flex items-center cursor-pointer">
+                            <input
+                              type="radio"
+                              name="razorpayCurrency"
+                              value="INR"
+                              checked={razorpayCurrency === "INR"}
+                              onChange={(e) => setRazorpayCurrency(e.target.value)}
+                              className="mr-2"
+                            />
+                            <span className="flex items-center text-sm">
+                              <span className="font-medium mr-1">₹</span> INR
+                              <span className="ml-1 text-xs text-green-600">(Recommended)</span>
+                            </span>
+                          </label>
+                          <label className="flex items-center cursor-pointer">
+                            <input
+                              type="radio"
+                              name="razorpayCurrency"
+                              value="USD"
+                              checked={razorpayCurrency === "USD"}
+                              onChange={(e) => setRazorpayCurrency(e.target.value)}
+                              className="mr-2"
+                            />
+                            <span className="flex items-center text-sm">
+                              <span className="font-medium mr-1">$</span> USD
+                            </span>
+                          </label>
+                        </div>
+                        {razorpayCurrency === "INR" && (
+                          <p className="mt-2 text-xs text-gray-500">
+                            Amount will be converted to INR at checkout (≈ ₹{(finalTotal * 84).toFixed(2)})
+                          </p>
+                        )}
                       </div>
 
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Expiry Date *
-                        </label>
-                        <input
-                          type="text"
-                          value={cardDetails.expiryDate}
-                          onChange={(e) =>
-                            setCardDetails({
-                              ...cardDetails,
-                              expiryDate: e.target.value,
-                            })
-                          }
-                          placeholder="MM/YY"
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          required
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          CVV *
-                        </label>
-                        <input
-                          type="text"
-                          value={cardDetails.cvv}
-                          onChange={(e) =>
-                            setCardDetails({
-                              ...cardDetails,
-                              cvv: e.target.value,
-                            })
-                          }
-                          placeholder="123"
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          required
-                        />
-                      </div>
-
-                      <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Name on Card *
-                        </label>
-                        <input
-                          type="text"
-                          value={cardDetails.nameOnCard}
-                          onChange={(e) =>
-                            setCardDetails({
-                              ...cardDetails,
-                              nameOnCard: e.target.value,
-                            })
-                          }
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          required
-                        />
+                      <button
+                        type="button"
+                        onClick={handleRazorpayPayment}
+                        disabled={isRazorpayProcessing}
+                        className="w-full bg-blue-600 text-white py-3 px-4 rounded-md font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                      >
+                        {isRazorpayProcessing ? (
+                          <>
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                            Pay {razorpayCurrency === "INR" ? `₹${(finalTotal * 84).toFixed(2)}` : `$${finalTotal.toFixed(2)}`} with Razorpay
+                          </>
+                        )}
+                      </button>
+                      <div className="mt-3 flex items-center justify-center space-x-3 text-xs text-gray-500">
+                        <span className="flex items-center">
+                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                          </svg>
+                          Cards
+                        </span>
+                        <span className="flex items-center">
+                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                          </svg>
+                          UPI
+                        </span>
+                        <span className="flex items-center">
+                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                          </svg>
+                          Netbanking
+                        </span>
                       </div>
                     </div>
                   )}
@@ -798,8 +896,8 @@ const paypalInititalOptions = {
                   </p>
                 </div>
 
-                {/* Place Order Button - hidden when PayPal is selected */}
-                {paymentMethod !== "paypal" && (
+                {/* Place Order Button - hidden when PayPal or Razorpay is selected */}
+                {paymentMethod !== "paypal" && paymentMethod !== "razorpay" && (
                   <form onSubmit={handleSubmit}>
                     <button
                       type="submit"
@@ -826,6 +924,15 @@ const paypalInititalOptions = {
                   <div className="mt-6 p-4 bg-blue-50 rounded-lg">
                     <p className="text-sm text-blue-800 text-center">
                       Please use the PayPal button in the Payment Method section to complete your order.
+                    </p>
+                  </div>
+                )}
+
+                {/* Razorpay instruction when Razorpay is selected */}
+                {paymentMethod === "razorpay" && (
+                  <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                    <p className="text-sm text-blue-800 text-center">
+                      Please use the "Pay with Razorpay" button in the Payment Method section to complete your order.
                     </p>
                   </div>
                 )}

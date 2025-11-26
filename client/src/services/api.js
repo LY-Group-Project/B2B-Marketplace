@@ -126,6 +126,13 @@ export const paypalAPI = {
   captureOrder: (orderID, orderData) => api.post(`/paypal/capture-order/${orderID}`, orderData),
 };
 
+// Razorpay API
+export const razorpayAPI = {
+  getKeyId: () => api.get("/razorpay/key-id"),
+  createOrder: (orderData) => api.post("/razorpay/create-order", orderData),
+  verifyPayment: (paymentData) => api.post("/razorpay/verify-payment", paymentData),
+};
+
 // Reviews API
 export const reviewsAPI = {
   getProductReviews: (productId, params) =>
