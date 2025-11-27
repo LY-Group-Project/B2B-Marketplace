@@ -150,18 +150,6 @@ const updateVendorProfile = async (req, res) => {
       vendor.vendorProfile.bankAccount = updateData.bankAccount;
     }
 
-    // Determine if vendor profile is complete
-    const profile = vendor.vendorProfile;
-    const isComplete = !!(
-      profile.businessName &&
-      profile.businessAddress &&
-      profile.businessAddress.street &&
-      profile.taxId &&
-      profile.bankAccount &&
-      profile.bankAccount.accountNumber
-    );
-    vendor.vendorProfile.isComplete = isComplete;
-
     await vendor.save();
 
     res.json({

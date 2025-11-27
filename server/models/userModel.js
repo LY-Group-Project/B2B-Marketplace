@@ -79,11 +79,6 @@ const userSchema = new mongoose.Schema(
         type: Boolean,
         default: false,
       },
-      // Whether vendor completed required profile fields
-      isComplete: {
-        type: Boolean,
-        default: false,
-      },
       approvalDate: Date,
       commissionRate: {
         type: Number,

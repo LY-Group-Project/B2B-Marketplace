@@ -80,9 +80,6 @@ const register = async (req, res) => {
         email: user.email,
         role: user.role,
         isEmailVerified: user.isEmailVerified,
-        isActive: user.isActive,
-        tokenVersion: user.tokenVersion,
-        vendorProfile: user.vendorProfile,
       },
     });
   } catch (error) {

@@ -40,17 +40,6 @@ const AuthLoader = () => {
         }
 
         setUser(user);
-        // If vendor and profile incomplete, redirect them to vendor profile to complete it
-        if (
-          user?.role === "vendor" &&
-          user?.vendorProfile &&
-          user.vendorProfile.isComplete === false
-        ) {
-          if (window.location.pathname !== "/vendor/profile") {
-            toast('Please complete your vendor profile to continue', { icon: 'ℹ️' });
-            window.location.href = "/vendor/profile";
-          }
-        }
       } catch (error) {
         const status = error?.response?.status;
         const code = error?.response?.data?.code;

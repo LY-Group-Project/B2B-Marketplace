@@ -8,7 +8,7 @@ const {
   getVendorStats,
   getVendorOrders,
 } = require("../controllers/vendorController");
-const { auth, adminAuth, vendorAuth, authorize } = require("../middleware/auth");
+const { auth, adminAuth, vendorAuth } = require("../middleware/auth");
 const { validateObjectId } = require("../middleware/validation");
 
 // Admin routes
@@ -29,8 +29,7 @@ router.patch(
 );
 
 // Vendor routes
-// Allow vendors (even unapproved) to update their profile; authorization checks in vendorAuth would block unapproved vendors from completing their profile
-router.patch("/profile", auth, authorize("vendor"), updateVendorProfile);
+router.patch("/profile", auth, vendorAuth, updateVendorProfile);
 router.get("/stats", auth, vendorAuth, getVendorStats);
 router.get("/orders", auth, vendorAuth, getVendorOrders);
 

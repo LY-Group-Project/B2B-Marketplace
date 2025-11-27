@@ -403,10 +403,6 @@ const updateVendorApproval = async (req, res) => {
     if (!vendor || vendor.role !== "vendor") {
       return res.status(404).json({ message: "Vendor not found" });
     }
-    // Prevent approving vendors with incomplete profiles
-    if (isApproved && !vendor.vendorProfile?.isComplete) {
-      return res.status(400).json({ message: "Vendor profile incomplete. Cannot approve until profile is complete." });
-    }
 
     vendor.vendorProfile.isApproved = isApproved;
     if (isApproved) {
