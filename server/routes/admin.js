@@ -11,6 +11,13 @@ const {
   getAllVendors,
   updateVendorApproval,
 } = require("../controllers/adminController");
+const {
+  getAdminPayouts,
+  getAdminPendingPayouts,
+  adminRetryPayout,
+  markPayoutComplete,
+  updatePayoutStatus,
+} = require("../controllers/payoutController");
 const { auth, adminAuth } = require("../middleware/auth");
 const { validateObjectId } = require("../middleware/validation");
 
@@ -41,5 +48,12 @@ router.get("/orders", getAllOrders);
 
 // Categories management
 router.get("/categories", getAllCategories);
+
+// Payouts management
+router.get("/payouts", getAdminPayouts);
+router.get("/payouts/pending", getAdminPendingPayouts);
+router.post("/payouts/:id/complete", validateObjectId("id"), markPayoutComplete);
+router.patch("/payouts/:id/status", validateObjectId("id"), updatePayoutStatus);
+router.post("/payouts/:id/retry", validateObjectId("id"), adminRetryPayout);
 
 module.exports = router;

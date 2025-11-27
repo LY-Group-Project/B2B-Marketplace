@@ -222,6 +222,11 @@ export const adminAPI = {
   getAllVendors: (params) => api.get("/admin/vendors", { params }),
   updateVendorStatus: (id, data) =>
     api.patch(`/admin/vendors/${id}/status`, data),
+
+  // Payouts management
+  getPayouts: (params) => api.get("/admin/payouts", { params }),
+  markPayoutComplete: (data) => api.post(`/admin/payouts/${data.payoutId}/complete`, data),
+  markPayoutFailed: (payoutId, reason) => api.patch(`/admin/payouts/${payoutId}/status`, { status: "failed", failureReason: reason }),
 };
 
 // Escrow API (Web3 Integration)
@@ -240,6 +245,32 @@ export const escrowAPI = {
   raiseDispute: (orderId) => api.post(`/escrows/${orderId}/dispute`),
   // Resolve dispute (admin only)
   resolveDispute: (orderId, winner) => api.post(`/escrows/${orderId}/resolve`, { winner }),
+};
+
+// Payouts API (KooshCoin Burn & Withdrawal)
+export const payoutsAPI = {
+  // Get user's KooshCoin balance
+  getBalance: () => api.get("/payouts/balance"),
+  // Get user's bank details
+  getBankDetails: () => api.get("/payouts/bank-details"),
+  // Add new bank detail
+  addBankDetail: (bankData) => api.post("/payouts/bank-details", bankData),
+  // Delete bank detail
+  deleteBankDetail: (id) => api.delete(`/payouts/bank-details/${id}`),
+  // Set default bank detail
+  setDefaultBankDetail: (id) => api.patch(`/payouts/bank-details/${id}/default`),
+  // Claim funds (burn tokens and request payout)
+  claimFunds: (claimData) => api.post("/payouts/claim", claimData),
+  // Get claim/payout history
+  getClaimHistory: (params) => api.get("/payouts/claims", { params }),
+  // Get single claim details
+  getClaimDetails: (id) => api.get(`/payouts/claims/${id}`),
+  // Get burn history
+  getBurnHistory: (params) => api.get("/payouts/burns", { params }),
+  // Retry a failed burn
+  retryBurn: (burnRecordId) => api.post(`/payouts/burns/${burnRecordId}/retry`),
+  // Verify/check a burn status
+  verifyBurn: (burnRecordId) => api.post(`/payouts/burns/${burnRecordId}/verify`),
 };
 
 export default api;

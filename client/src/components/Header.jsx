@@ -27,6 +27,7 @@ const Header = () => {
   const userNavigation = [
     { name: "Profile", href: "/profile" },
     { name: "Orders", href: "/orders" },
+    { name: "Claim Funds", href: "/claim-funds" },
     { name: "Passkey Registration", href: "/register-passkey" },
   ];
 
@@ -34,6 +35,7 @@ const Header = () => {
     { name: "Dashboard", href: "/vendor" },
     { name: "Products", href: "/vendor/products" },
     { name: "Orders", href: "/vendor/orders" },
+    { name: "Claim Funds", href: "/claim-funds" },
     { name: "Passkey Registration", href: "/register-passkey" },
   ];
 
@@ -42,6 +44,8 @@ const Header = () => {
     { name: "Users", href: "/admin/users" },
     { name: "Products", href: "/admin/products" },
     { name: "Orders", href: "/admin/orders" },
+    { name: "Payouts", href: "/admin/payouts" },
+    { name: "Claim Funds", href: "/claim-funds" },
     { name: "Passkey Registration", href: "/register-passkey" },
   ];
 

@@ -138,6 +138,7 @@ app.use("/api/address", require("./routes/address"));
 app.use("/api/paypal", require("./routes/paypal"));
 app.use("/api/razorpay", require("./routes/razorpay"));
 app.use("/api/escrows", require("./routes/escrows"));
+app.use("/api/payouts", require("./routes/payouts"));
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {
@@ -189,6 +190,14 @@ mongoose
       await escrowService.initialize();
     } catch (err) {
       console.warn("Escrow service initialization skipped:", err.message);
+    }
+    
+    // Start burn verification background service
+    try {
+      const burnVerificationService = require("./services/burnVerificationService");
+      burnVerificationService.start();
+    } catch (err) {
+      console.warn("Burn verification service initialization skipped:", err.message);
     }
   })
   .catch((err) => console.error("MongoDB connection error:", err));

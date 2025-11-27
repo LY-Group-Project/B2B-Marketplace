@@ -20,6 +20,7 @@ import Orders from "./pages/Orders";
 import OrderDetail from "./pages/OrderDetail";
 import Categories from "./pages/Categories";
 import PasskeyAuthPage from "./pages/RegisterPasskey";
+import ClaimFunds from "./pages/ClaimFunds";
 
 // Vendor Pages
 import VendorDashboard from "./pages/vendor/Dashboard";
@@ -37,6 +38,7 @@ import AdminProducts from "./pages/admin/Products";
 import AdminOrders from "./pages/admin/Orders";
 import AdminCategories from "./pages/admin/Categories";
 import AdminVendorManagement from "./pages/admin/VendorManagement";
+import AdminPayouts from "./pages/admin/Payouts";
 import AuthLoader from "./components/AuthLoader";
 
 // Create a client
@@ -98,6 +100,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <PasskeyAuthPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="claim-funds"
+                  element={
+                    <ProtectedRoute>
+                      <ClaimFunds />
                     </ProtectedRoute>
                   }
                 />
@@ -206,6 +216,14 @@ function App() {
                   element={
                     <ProtectedRoute requiredRole="admin">
                       <AdminCategories />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="admin/payouts"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <AdminPayouts />
                     </ProtectedRoute>
                   }
                 />

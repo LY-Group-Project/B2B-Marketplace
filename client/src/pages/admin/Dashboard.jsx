@@ -235,6 +235,12 @@ const AdminDashboard = () => {
                 >
                   User Management
                 </Link>
+                <Link
+                  to="/admin/payouts"
+                  className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md block"
+                >
+                  Manage Payouts
+                </Link>
               </div>
             </div>
           </div>
