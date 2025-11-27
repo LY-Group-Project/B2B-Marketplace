@@ -376,8 +376,9 @@ const AdminProducts = () => {
                           <span
                             className={`ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(product.status)}`}
                           >
-                            {product.status.charAt(0).toUpperCase() +
-                              product.status.slice(1)}
+                            {product.status
+                              ? product.status.charAt(0).toUpperCase() + product.status.slice(1)
+                              : "Unknown"}
                           </span>
                         </div>
                       </td>
