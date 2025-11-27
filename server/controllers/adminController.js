@@ -170,14 +170,28 @@ const getAllUsers = async (req, res) => {
 const updateUserStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { isActive } = req.body;
+    const { isActive, status } = req.body;
 
     const user = await User.findById(id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    user.isActive = isActive;
+    // Handle status string format (suspended/active)
+    let newIsActive = user.isActive;
+    if (status !== undefined) {
+      newIsActive = status !== 'suspended';
+    } else if (isActive !== undefined) {
+      // Handle boolean isActive format
+      newIsActive = isActive;
+    }
+
+    // If isActive changes, increment tokenVersion to invalidate existing JWTs
+    if (newIsActive !== user.isActive) {
+      user.isActive = newIsActive;
+      user.tokenVersion = (user.tokenVersion || 0) + 1;
+    }
+
     await user.save();
 
     res.json({
@@ -188,6 +202,7 @@ const updateUserStatus = async (req, res) => {
         email: user.email,
         role: user.role,
         isActive: user.isActive,
+        status: user.isActive ? 'active' : 'suspended',
       },
     });
   } catch (error) {
@@ -339,6 +354,82 @@ const getAllCategories = async (req, res) => {
   }
 };
 
+// Get all vendors (Admin)
+const getAllVendors = async (req, res) => {
+  try {
+    const { page = 1, limit = 10, status, search } = req.query;
+
+    const query = { role: "vendor" };
+
+    if (status) {
+      query["vendorProfile.isApproved"] = status === "approved";
+    }
+
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+        { "vendorProfile.businessName": { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const vendors = await User.find(query)
+      .select("-password")
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit);
+
+    const total = await User.countDocuments(query);
+
+    res.json({
+      vendors,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page,
+      total,
+    });
+  } catch (error) {
+    console.error("Get all vendors error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Update vendor approval status (Admin)
+const updateVendorApproval = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isApproved } = req.body;
+
+    const vendor = await User.findById(id);
+    if (!vendor || vendor.role !== "vendor") {
+      return res.status(404).json({ message: "Vendor not found" });
+    }
+    // Prevent approving vendors with incomplete profiles
+    if (isApproved && !vendor.vendorProfile?.isComplete) {
+      return res.status(400).json({ message: "Vendor profile incomplete. Cannot approve until profile is complete." });
+    }
+
+    vendor.vendorProfile.isApproved = isApproved;
+    if (isApproved) {
+      vendor.vendorProfile.approvalDate = new Date();
+    }
+
+    await vendor.save();
+
+    res.json({
+      message: `Vendor ${isApproved ? "approved" : "approval revoked"} successfully`,
+      vendor: {
+        id: vendor._id,
+        name: vendor.name,
+        email: vendor.email,
+        isApproved: vendor.vendorProfile.isApproved,
+      },
+    });
+  } catch (error) {
+    console.error("Update vendor approval error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   getDashboardStats,
   getAllUsers,
@@ -347,4 +438,6 @@ module.exports = {
   updateProductStatus,
   getAllOrders,
   getAllCategories,
+  getAllVendors,
+  updateVendorApproval,
 };

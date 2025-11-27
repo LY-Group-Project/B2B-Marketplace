@@ -37,7 +37,15 @@ const Login = () => {
       navigate(from, { replace: true });
     },
     onError: (error) => {
-      toast.error(error.response?.data?.message || "Login failed");
+      const errorCode = error.response?.data?.code;
+      const errorMessage = error.response?.data?.message || "Login failed";
+      
+      if (errorCode === "ACCOUNT_SUSPENDED") {
+        toast.error(errorMessage, { duration: 5000 });
+        setMessage(errorMessage);
+      } else {
+        toast.error(errorMessage);
+      }
     },
   });
 
@@ -95,6 +103,18 @@ const Login = () => {
 
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
+          {/* Suspended Account Message */}
+          {message && (
+            <div className="bg-red-900/50 border border-red-500 rounded-lg p-4">
+              <div className="flex items-center">
+                <svg className="h-5 w-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+                <span className="text-red-200 text-sm">{message}</span>
+              </div>
+            </div>
+          )}
+
           {/* Header */}
           <div className="text-center">
             <div className="flex justify-center mb-4">

@@ -27,12 +27,14 @@ const Header = () => {
   const userNavigation = [
     { name: "Profile", href: "/profile" },
     { name: "Orders", href: "/orders" },
+    { name: "Passkey Registration", href: "/register-passkey" },
   ];
 
   const vendorNavigation = [
     { name: "Dashboard", href: "/vendor" },
     { name: "Products", href: "/vendor/products" },
     { name: "Orders", href: "/vendor/orders" },
+    { name: "Passkey Registration", href: "/register-passkey" },
   ];
 
   const adminNavigation = [
@@ -40,6 +42,7 @@ const Header = () => {
     { name: "Users", href: "/admin/users" },
     { name: "Products", href: "/admin/products" },
     { name: "Orders", href: "/admin/orders" },
+    { name: "Passkey Registration", href: "/register-passkey" },
   ];
 
   return (

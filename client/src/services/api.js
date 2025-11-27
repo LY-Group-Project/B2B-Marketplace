@@ -36,10 +36,16 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Clear auth data on unauthorized
-      localStorage.removeItem("auth-storage");
-      window.location.href = "/login";
+    const status = error.response?.status;
+    const code = error.response?.data?.code;
+    // On auth errors, clear auth data but don't force redirect here.
+    // Let the client (AuthLoader / route guards) handle navigation to login
+    if (status === 401 || (status === 403 && code === "ACCOUNT_SUSPENDED")) {
+      try {
+        localStorage.removeItem("auth-storage");
+      } catch (e) {
+        /* ignore */
+      }
     }
     return Promise.reject(error);
   },

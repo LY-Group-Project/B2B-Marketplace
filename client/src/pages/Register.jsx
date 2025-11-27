@@ -29,7 +29,13 @@ const Register = () => {
       const { user, token } = response.data;
       login(user, token);
       toast.success("Registration successful!");
-      navigate("/");
+      // If vendor and profile incomplete, force them to complete vendor profile first
+      if (user.role === "vendor" && !user.vendorProfile?.isComplete) {
+        toast.success("Please complete your vendor profile to proceed.");
+        navigate("/vendor/profile");
+      } else {
+        navigate("/");
+      }
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || "Registration failed");

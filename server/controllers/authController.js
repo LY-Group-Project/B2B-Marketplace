@@ -5,9 +5,10 @@ const { encrypt } = require("../utils/crypto");
 const { validationResult } = require("express-validator");
 const { Web3 } = require("web3");
 
-// Generate JWT Token
-const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "7d" });
+// Generate JWT Token (includes tokenVersion to allow invalidation)
+const generateToken = (user) => {
+  const payload = { userId: user._id.toString(), tokenVersion: user.tokenVersion || 0 };
+  return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "7d" });
 };
 
 // Generate Web3 key for a user
@@ -68,7 +69,7 @@ const register = async (req, res) => {
     }
 
     // Generate token
-    const token = generateToken(user._id);
+    const token = generateToken(user);
 
     res.status(201).json({
       message: "User registered successfully",
@@ -79,6 +80,9 @@ const register = async (req, res) => {
         email: user.email,
         role: user.role,
         isEmailVerified: user.isEmailVerified,
+        isActive: user.isActive,
+        tokenVersion: user.tokenVersion,
+        vendorProfile: user.vendorProfile,
       },
     });
   } catch (error) {
@@ -98,9 +102,12 @@ const login = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // Check if account is active
+    // Check if account is suspended
     if (!user.isActive) {
-      return res.status(400).json({ message: "Account is deactivated" });
+      return res.status(403).json({ 
+        message: "Your account has been suspended. Please contact support for assistance.",
+        code: "ACCOUNT_SUSPENDED"
+      });
     }
 
     // Check password
@@ -110,7 +117,7 @@ const login = async (req, res) => {
     }
 
     // Generate token
-    const token = generateToken(user._id);
+    const token = generateToken(user);
 
     res.json({
       message: "Login successful",

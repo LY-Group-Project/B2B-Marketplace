@@ -12,6 +12,8 @@ import {
   EnvelopeIcon,
   CalendarIcon,
   FunnelIcon,
+  CheckCircleIcon,
+  XCircleIcon,
 } from "@heroicons/react/24/outline";
 import { adminAPI } from "../../services/api";
 import { toast } from "react-hot-toast";
@@ -68,6 +70,21 @@ const AdminUsers = () => {
     },
   });
 
+  // Update vendor approval status mutation
+  const updateVendorApprovalMutation = useMutation({
+    mutationFn: ({ vendorId, isApproved }) =>
+      adminAPI.updateVendorStatus(vendorId, { isApproved }),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["adminUsers"]);
+      toast.success("Vendor approval status updated successfully");
+    },
+    onError: (error) => {
+      toast.error(
+        error.response?.data?.message || "Failed to update vendor approval status",
+      );
+    },
+  });
+
   const users = usersData?.users || [];
   const totalUsers = usersData?.total || 0;
 
@@ -83,6 +100,10 @@ const AdminUsers = () => {
     updateUserStatusMutation.mutate({ userId, status: newStatus });
   };
 
+  const handleVendorApprovalChange = (vendorId, isApproved) => {
+    updateVendorApprovalMutation.mutate({ vendorId, isApproved });
+  };
+
   const getUserRoleBadge = (role) => {
     const roleStyles = {
       admin: "bg-red-100 text-red-800",
@@ -92,8 +113,8 @@ const AdminUsers = () => {
     return roleStyles[role] || "bg-gray-100 text-gray-800";
   };
 
-  const getUserStatusIcon = (status, isVerified) => {
-    if (status === "suspended") {
+  const getUserStatusIcon = (isActive, isVerified) => {
+    if (!isActive) {
       return <ShieldExclamationIcon className="h-5 w-5 text-red-500" />;
     }
     if (isVerified) {
@@ -176,7 +197,7 @@ const AdminUsers = () => {
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">Suspended</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {users.filter((u) => u.status === "suspended").length}
+                    {users.filter((u) => u.isActive === false).length}
                   </p>
                 </div>
               </div>
@@ -307,22 +328,34 @@ const AdminUsers = () => {
 
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          {getUserStatusIcon(user.status, user.isVerified)}
+                          {getUserStatusIcon(user.isActive, user.isVerified)}
                           <span
                             className={`ml-2 text-sm ${
-                              user.status === "suspended"
+                              !user.isActive
                                 ? "text-red-600"
                                 : user.isVerified
                                   ? "text-green-600"
                                   : "text-gray-500"
                             }`}
                           >
-                            {user.status === "suspended"
+                            {!user.isActive
                               ? "Suspended"
                               : user.isVerified
                                 ? "Verified"
                                 : "Unverified"}
                           </span>
+                          {/* Show vendor approval status */}
+                          {user.role === "vendor" && (
+                            <span
+                              className={`ml-2 px-2 py-0.5 text-xs rounded-full ${
+                                user.vendorProfile?.isApproved
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-yellow-100 text-yellow-700"
+                              }`}
+                            >
+                              {user.vendorProfile?.isApproved ? "Approved" : "Pending"}
+                            </span>
+                          )}
                         </div>
                       </td>
 
@@ -347,17 +380,47 @@ const AdminUsers = () => {
                               setShowUserModal(true);
                             }}
                             className="text-blue-600 hover:text-blue-900"
+                            title="View Details"
                           >
                             <EyeIcon className="h-4 w-4" />
                           </button>
 
-                          {user.status !== "suspended" ? (
+                          {/* Vendor Approval Toggle */}
+                          {user.role === "vendor" && (
+                            user.vendorProfile?.isApproved ? (
+                              <button
+                                onClick={() =>
+                                  handleVendorApprovalChange(user._id, false)
+                                }
+                                className="text-yellow-600 hover:text-yellow-900"
+                                disabled={updateVendorApprovalMutation.isPending}
+                                title="Revoke Vendor Approval"
+                              >
+                                <XCircleIcon className="h-4 w-4" />
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() =>
+                                  handleVendorApprovalChange(user._id, true)
+                                }
+                                className="text-green-600 hover:text-green-900"
+                                disabled={updateVendorApprovalMutation.isPending}
+                                title="Approve Vendor"
+                              >
+                                <CheckCircleIcon className="h-4 w-4" />
+                              </button>
+                            )
+                          )}
+
+                          {/* Suspend/Activate Toggle */}
+                          {user.isActive !== false ? (
                             <button
                               onClick={() =>
                                 handleStatusChange(user._id, "suspended")
                               }
                               className="text-red-600 hover:text-red-900"
                               disabled={updateUserStatusMutation.isPending}
+                              title="Suspend User"
                             >
                               <ShieldExclamationIcon className="h-4 w-4" />
                             </button>
@@ -368,6 +431,7 @@ const AdminUsers = () => {
                               }
                               className="text-green-600 hover:text-green-900"
                               disabled={updateUserStatusMutation.isPending}
+                              title="Activate User"
                             >
                               <ShieldCheckIcon className="h-4 w-4" />
                             </button>
@@ -463,8 +527,8 @@ const AdminUsers = () => {
                   <label className="block text-sm font-medium text-gray-700">
                     Status
                   </label>
-                  <p className="text-sm text-gray-900">
-                    {selectedUser.status || "Active"}
+                  <p className={`text-sm ${selectedUser.isActive === false ? "text-red-600" : "text-gray-900"}`}>
+                    {selectedUser.isActive === false ? "Suspended" : "Active"}
                   </p>
                 </div>
                 <div>
@@ -515,9 +579,112 @@ const AdminUsers = () => {
                   <p className="text-sm text-gray-900">{selectedUser.bio}</p>
                 </div>
               )}
+
+              {/* Vendor Info */}
+              {selectedUser.role === "vendor" && selectedUser.vendorProfile && (
+                <div className="border-t pt-4">
+                  <h4 className="text-md font-semibold text-gray-900 mb-3">Vendor Information</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Business Name
+                      </label>
+                      <p className="text-sm text-gray-900">
+                        {selectedUser.vendorProfile.businessName || "Not provided"}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Business Type
+                      </label>
+                      <p className="text-sm text-gray-900">
+                        {selectedUser.vendorProfile.businessType || "Not provided"}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Approval Status
+                      </label>
+                      <p className={`text-sm ${selectedUser.vendorProfile.isApproved ? "text-green-600" : "text-yellow-600"}`}>
+                        {selectedUser.vendorProfile.isApproved ? "Approved" : "Pending Approval"}
+                      </p>
+                    </div>
+                    {selectedUser.vendorProfile.approvalDate && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Approved On
+                        </label>
+                        <p className="text-sm text-gray-900">
+                          {new Date(selectedUser.vendorProfile.approvalDate).toLocaleDateString()}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  {selectedUser.vendorProfile.businessDescription && (
+                    <div className="mt-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Business Description
+                      </label>
+                      <p className="text-sm text-gray-900">
+                        {selectedUser.vendorProfile.businessDescription}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="mt-6 flex justify-end space-x-3">
+              {/* Vendor Approval Actions */}
+              {selectedUser.role === "vendor" && (
+                selectedUser.vendorProfile?.isApproved ? (
+                  <button
+                    onClick={() => {
+                      handleVendorApprovalChange(selectedUser._id, false);
+                      setShowUserModal(false);
+                    }}
+                    className="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700"
+                    disabled={updateVendorApprovalMutation.isPending}
+                  >
+                    Revoke Approval
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      handleVendorApprovalChange(selectedUser._id, true);
+                      setShowUserModal(false);
+                    }}
+                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                    disabled={updateVendorApprovalMutation.isPending}
+                  >
+                    Approve Vendor
+                  </button>
+                )
+              )}
+              {/* Suspend/Activate Actions */}
+              {selectedUser.isActive !== false ? (
+                <button
+                  onClick={() => {
+                    handleStatusChange(selectedUser._id, "suspended");
+                    setShowUserModal(false);
+                  }}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                  disabled={updateUserStatusMutation.isPending}
+                >
+                  Suspend User
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    handleStatusChange(selectedUser._id, "active");
+                    setShowUserModal(false);
+                  }}
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                  disabled={updateUserStatusMutation.isPending}
+                >
+                  Activate User
+                </button>
+              )}
               <button
                 onClick={() => setShowUserModal(false)}
                 className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"

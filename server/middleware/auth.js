@@ -18,6 +18,11 @@ const auth = async (req, res, next) => {
       return res.status(401).json({ message: "Token is not valid" });
     }
 
+    // Invalidate token if tokenVersion mismatch (allows immediate logout after admin action)
+    if (typeof decoded.tokenVersion !== 'undefined' && decoded.tokenVersion !== user.tokenVersion) {
+      return res.status(401).json({ message: "Token has been invalidated" });
+    }
+
     if (!user.isActive) {
       return res.status(401).json({ message: "Account is deactivated" });
     }
@@ -51,10 +56,20 @@ const vendorAuth = async (req, res, next) => {
       return res.status(403).json({ message: "Vendor access required" });
     }
 
-    if (req.user.role === "vendor" && !req.user.vendorProfile.isApproved) {
-      return res
-        .status(403)
-        .json({ message: "Vendor account not approved yet" });
+    if (req.user.role === "vendor") {
+      // Check if vendor account is active
+      if (!req.user.isActive) {
+        return res
+          .status(403)
+          .json({ message: "Vendor account is suspended" });
+      }
+
+      // Check if vendor is approved
+      if (!req.user.vendorProfile?.isApproved) {
+        return res
+          .status(403)
+          .json({ message: "Vendor account not approved yet" });
+      }
     }
 
     next();

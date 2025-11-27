@@ -48,6 +48,11 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // Token version used to invalidate existing JWTs when incremented
+    tokenVersion: {
+      type: Number,
+      default: 0,
+    },
     emailVerificationToken: String,
     passwordResetToken: String,
     passwordResetExpires: Date,
@@ -71,6 +76,11 @@ const userSchema = new mongoose.Schema(
         accountHolderName: String,
       },
       isApproved: {
+        type: Boolean,
+        default: false,
+      },
+      // Whether vendor completed required profile fields
+      isComplete: {
         type: Boolean,
         default: false,
       },

@@ -37,6 +37,7 @@ import AdminProducts from "./pages/admin/Products";
 import AdminOrders from "./pages/admin/Orders";
 import AdminCategories from "./pages/admin/Categories";
 import AdminVendorManagement from "./pages/admin/VendorManagement";
+import AuthLoader from "./components/AuthLoader";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -54,6 +55,7 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <Router>
           <div className="min-h-screen bg-gray-50">
+            <AuthLoader />
             <Routes>
               {/* Public Routes */}
               <Route path="/login" element={<Login />} />

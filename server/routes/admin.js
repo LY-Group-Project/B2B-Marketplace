@@ -8,6 +8,8 @@ const {
   updateProductStatus,
   getAllOrders,
   getAllCategories,
+  getAllVendors,
+  updateVendorApproval,
 } = require("../controllers/adminController");
 const { auth, adminAuth } = require("../middleware/auth");
 const { validateObjectId } = require("../middleware/validation");
@@ -21,6 +23,10 @@ router.get("/dashboard", getDashboardStats);
 // Users management
 router.get("/users", getAllUsers);
 router.patch("/users/:id/status", validateObjectId("id"), updateUserStatus);
+
+// Vendors management
+router.get("/vendors", getAllVendors);
+router.patch("/vendors/:id/status", validateObjectId("id"), updateVendorApproval);
 
 // Products management
 router.get("/products", getAllProducts);
