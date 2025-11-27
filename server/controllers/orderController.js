@@ -3,6 +3,7 @@ const Product = require("../models/productModel");
 const Cart = require("../models/cartModel");
 const User = require("../models/userModel");
 const Coupon = require("../models/couponModel");
+const escrowService = require("../services/escrowService");
 
 // Create Order
 const createOrder = async (req, res) => {
@@ -274,6 +275,8 @@ const updateOrderStatus = async (req, res) => {
         .json({ message: "Order not found or unauthorized" });
     }
 
+    const previousStatus = order.status;
+
     // Update vendor order status
     const vendorOrder = order.vendorOrders.find(
       (vo) => vo.vendor.toString() === userId.toString(),
@@ -285,16 +288,24 @@ const updateOrderStatus = async (req, res) => {
       }
     }
 
-    // Update main order status if all vendor orders are completed
-    const allVendorOrdersComplete = order.vendorOrders.every((vo) =>
-      ["shipped", "delivered"].includes(vo.status),
-    );
-
-    if (allVendorOrdersComplete && order.status !== "delivered") {
-      order.status = "shipped";
+    // Also update the main order status
+    order.status = status;
+    if (tracking) {
+      order.tracking = tracking;
     }
 
     await order.save();
+
+    // Create escrow when order is confirmed by vendor
+    if (status === "confirmed" && previousStatus === "pending") {
+      try {
+        await escrowService.createEscrowForOrder(order);
+        console.log(`Escrow created for order ${order.orderNumber}`);
+      } catch (escrowError) {
+        console.error(`Failed to create escrow for order ${order.orderNumber}:`, escrowError);
+        // Non-fatal: order status is still updated
+      }
+    }
 
     res.json({
       message: "Order status updated successfully",

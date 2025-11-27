@@ -47,15 +47,16 @@ app.use(
   }),
 );
 
-// Rate limiting
+// Rate limiting - higher limit for development
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  windowMs: 1 * 60 * 1000, // 2 minutes
+  max: process.env.NODE_ENV === "production" ? 67 : 1000, // Higher limit for development
   message: "Too many requests from this IP, please try again later.",
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
-app.use(limiter);
 
-// Enable CORS for all origins
+// IMPORTANT: CORS must come BEFORE rate limiter so CORS headers are sent even on rate limit errors
 app.use(
   cors({
     origin: [
@@ -75,6 +76,8 @@ app.use(
     ],
   }),
 );
+
+app.use(limiter);
 
 // Explicitly handle preflight OPTIONS requests and ensure CORS headers
 app.options("*", cors());
@@ -134,6 +137,7 @@ app.use("/api/webauth", require("./routes/webAuth"));
 app.use("/api/address", require("./routes/address"));
 app.use("/api/paypal", require("./routes/paypal"));
 app.use("/api/razorpay", require("./routes/razorpay"));
+app.use("/api/escrows", require("./routes/escrows"));
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {
@@ -177,7 +181,16 @@ mongoose
       // useUnifiedTopology: true,
     },
   )
-  .then(() => console.log("MongoDB Connected"))
+  .then(async () => {
+    console.log("MongoDB Connected");
+    // Initialize Escrow Service
+    try {
+      const escrowService = require("./services/escrowService");
+      await escrowService.initialize();
+    } catch (err) {
+      console.warn("Escrow service initialization skipped:", err.message);
+    }
+  })
   .catch((err) => console.error("MongoDB connection error:", err));
 
 const PORT = process.env.PORT || 5000;

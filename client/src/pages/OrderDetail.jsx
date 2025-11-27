@@ -15,6 +15,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { ordersAPI } from "../services/api";
 import { toast } from "react-hot-toast";
+import EscrowCard from "../components/EscrowCard";
 
 const OrderDetail = () => {
   const { id } = useParams();
@@ -486,6 +487,9 @@ const OrderDetail = () => {
                   </p>
                 </div>
               </div>
+
+              {/* Blockchain Escrow */}
+              <EscrowCard orderId={id} userRole="buyer" order={order} />
 
               {/* Actions */}
               <div className="bg-white rounded-lg shadow-sm p-6">

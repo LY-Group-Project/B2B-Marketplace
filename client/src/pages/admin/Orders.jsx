@@ -15,6 +15,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { adminAPI } from "../../services/api";
 import { toast } from "react-hot-toast";
+import EscrowCard from "../../components/EscrowCard";
 
 const AdminOrders = () => {
   const queryClient = useQueryClient();
@@ -544,6 +545,11 @@ const AdminOrders = () => {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Escrow Information */}
+            <div className="mt-6">
+              <EscrowCard orderId={selectedOrder._id} userRole="admin" />
             </div>
 
             <div className="mt-6 flex justify-between">

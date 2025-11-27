@@ -59,12 +59,12 @@ export const authAPI = {
   webauthVerify: (username, assertion) =>
     api.post("/webauth/verify-login", { username, assertion }),
   webauthRegister: (username) => api.post("/webauth/register", { username }),
-
   webauthVerifyRegistration: (username, credential) =>
     api.post("/webauth/verify-registration", {
       username,
       credential,
     }),
+  getWeb3Key: () => api.get("/auth/web3-key"),
 };
 
 // Products API
@@ -216,6 +216,24 @@ export const adminAPI = {
   getAllVendors: (params) => api.get("/admin/vendors", { params }),
   updateVendorStatus: (id, data) =>
     api.patch(`/admin/vendors/${id}/status`, data),
+};
+
+// Escrow API (Web3 Integration)
+export const escrowAPI = {
+  // Get user's blockchain wallet info
+  getWallet: () => api.get("/escrows/wallet"),
+  // Create escrow for an order
+  createEscrow: (orderId) => api.post("/escrows", { orderId }),
+  // Get escrow details for an order
+  getEscrow: (orderId) => api.get(`/escrows/${orderId}`),
+  // Confirm delivery (buyer action)
+  confirmDelivery: (orderId) => api.post(`/escrows/${orderId}/confirm-delivery`),
+  // Release funds (seller action)
+  releaseFunds: (orderId) => api.post(`/escrows/${orderId}/release`),
+  // Raise dispute (buyer or seller)
+  raiseDispute: (orderId) => api.post(`/escrows/${orderId}/dispute`),
+  // Resolve dispute (admin only)
+  resolveDispute: (orderId, winner) => api.post(`/escrows/${orderId}/resolve`, { winner }),
 };
 
 export default api;

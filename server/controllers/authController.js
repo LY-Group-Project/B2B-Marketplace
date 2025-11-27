@@ -1,10 +1,39 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/userModel");
+const Web3Key = require("../models/web3KeyModel");
+const { encrypt } = require("../utils/crypto");
 const { validationResult } = require("express-validator");
+const { Web3 } = require("web3");
 
 // Generate JWT Token
 const generateToken = (userId) => {
   return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "7d" });
+};
+
+// Generate Web3 key for a user
+const generateWeb3Key = async (userId) => {
+  // Check if key already exists
+  const existingKey = await Web3Key.findOne({ user: userId });
+  if (existingKey) {
+    return existingKey;
+  }
+
+  // Create new Ethereum account
+  const web3 = new Web3();
+  const account = web3.eth.accounts.create();
+
+  // Encrypt the private key
+  const encryptedPrivateKey = encrypt(account.privateKey);
+
+  // Save to database
+  const web3Key = new Web3Key({
+    user: userId,
+    address: account.address.toLowerCase(),
+    encryptedPrivateKey,
+  });
+
+  await web3Key.save();
+  return web3Key;
 };
 
 // Register User
@@ -29,6 +58,14 @@ const register = async (req, res) => {
     });
 
     await user.save();
+
+    // Generate Web3 key for the user
+    try {
+      await generateWeb3Key(user._id);
+    } catch (web3Error) {
+      console.error("Failed to generate Web3 key:", web3Error);
+      // Non-fatal: user can still be created, web3 key can be generated later
+    }
 
     // Generate token
     const token = generateToken(user._id);
@@ -173,6 +210,29 @@ const deactivateAccount = async (req, res) => {
   }
 };
 
+// Get or generate Web3 key for current user
+const getWeb3Key = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Try to find existing key or generate new one
+    let web3Key = await Web3Key.findOne({ user: userId });
+    
+    if (!web3Key) {
+      web3Key = await generateWeb3Key(userId);
+    }
+
+    res.json({
+      message: "Web3 key retrieved successfully",
+      address: web3Key.address,
+      createdAt: web3Key.createdAt,
+    });
+  } catch (error) {
+    console.error("Get Web3 key error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -180,4 +240,6 @@ module.exports = {
   updateProfile,
   changePassword,
   deactivateAccount,
+  getWeb3Key,
+  generateWeb3Key,
 };

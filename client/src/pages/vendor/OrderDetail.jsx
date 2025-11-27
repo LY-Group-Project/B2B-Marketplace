@@ -3,6 +3,7 @@ import { Helmet } from "react-helmet-async";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, Link } from "react-router-dom";
 import { ordersAPI } from "../../services/api";
+import EscrowCard from "../../components/EscrowCard";
 import {
   ArrowLeftIcon,
   TruckIcon,
@@ -26,6 +27,7 @@ const VendorOrderDetail = () => {
   const { data: orderData, isLoading } = useQuery({
     queryKey: ["order", id],
     queryFn: () => ordersAPI.getOrder(id),
+    select: (response) => response.data,
     enabled: !!id,
   });
 
@@ -35,6 +37,7 @@ const VendorOrderDetail = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["order", id] });
       queryClient.invalidateQueries({ queryKey: ["vendorOrders"] });
+      queryClient.invalidateQueries({ queryKey: ["escrow", id] });
       toast.success("Order status updated successfully");
       setIsUpdating(false);
     },
@@ -46,7 +49,7 @@ const VendorOrderDetail = () => {
     },
   });
 
-  const order = orderData?.data;
+  const order = orderData;
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -366,6 +369,9 @@ const VendorOrderDetail = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Escrow Information */}
+              <EscrowCard orderId={order._id} userRole="seller" />
 
               {/* Order Summary */}
               <div className="bg-white rounded-lg shadow">

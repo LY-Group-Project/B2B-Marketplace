@@ -176,6 +176,28 @@ const orderSchema = new mongoose.Schema(
         },
       },
     ],
+    // Web3 Escrow fields
+    escrow: {
+      address: String,
+      status: {
+        type: String,
+        enum: ["Locked", "ReleasePending", "Disputed", "Complete", "Refunded"],
+      },
+      buyerAddress: String,
+      sellerAddress: String,
+      amount: String,
+      transactions: [
+        {
+          type: { type: String },
+          txHash: String,
+          blockNumber: Number,
+          timestamp: Date,
+          by: mongoose.Schema.Types.ObjectId,
+          winner: String,
+        },
+      ],
+      createdAt: Date,
+    },
   },
   {
     timestamps: true,

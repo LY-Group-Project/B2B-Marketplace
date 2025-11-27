@@ -7,6 +7,7 @@ const {
   updateProfile,
   changePassword,
   deactivateAccount,
+  getWeb3Key,
 } = require("../controllers/authController");
 const { auth } = require("../middleware/auth");
 const {
@@ -23,5 +24,6 @@ router.get("/me", auth, getCurrentUser);
 router.put("/profile", auth, updateProfile);
 router.put("/change-password", auth, changePassword);
 router.put("/deactivate", auth, deactivateAccount);
+router.get("/web3-key", auth, getWeb3Key);
 
 module.exports = router;
