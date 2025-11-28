@@ -11,6 +11,7 @@ const {
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 const { auth, adminAuth } = require("../middleware/auth");
+const { sendMail } = require("../services/mailerService");
 dotenv.config();
 
 // Schemas
@@ -184,6 +185,25 @@ webauthRouter.post("/verify-registration", async (req, res) => {
       const verifiedCredential = verification.registrationInfo.credential;
       user.passkeys.push(verifiedCredential);
       await user.save();
+      
+      // Send passkey registration confirmation email (non-blocking)
+      // Try to find associated User model by email/username
+      const userAccount = await User.findOne({ email: username }).select('name email');
+      if (userAccount && userAccount.email) {
+        sendMail({
+          to: userAccount.email,
+          subject: 'Passkey Registered Successfully',
+          templateName: 'passkey-registration',
+          templateData: {
+            name: userAccount.name || username,
+            passkeyName: 'Security Key',
+            device: 'Your Device',
+            registrationTime: new Date().toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' }),
+            managePasskeysLink: `${process.env.CLIENT_URL}/account/security`
+          }
+        }).catch(err => console.error('Failed to send passkey registration email:', err));
+      }
+      
       res.json({ success: true });
     } else {
       res.json({ success: false });

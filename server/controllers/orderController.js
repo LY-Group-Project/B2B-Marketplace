@@ -4,6 +4,7 @@ const Cart = require("../models/cartModel");
 const User = require("../models/userModel");
 const Coupon = require("../models/couponModel");
 const escrowService = require("../services/escrowService");
+const { sendMail } = require("../services/mailerService");
 
 // Create Order
 const createOrder = async (req, res) => {
@@ -188,6 +189,39 @@ const createOrder = async (req, res) => {
       .populate("items.product", "name images sku")
       .populate("items.vendor", "name vendorProfile.businessName");
 
+    // Send order notification emails to vendors (non-blocking)
+    for (const order of populatedOrders) {
+      const vendor = order.vendorOrders[0]?.vendor;
+      if (vendor && vendor.email) {
+        const itemsList = order.items.map(item => 
+          `${item.product?.name || 'Product'} (x${item.quantity})`
+        ).join(', ');
+        
+        const formatAddress = (addr) => {
+          if (!addr) return 'N/A';
+          return `${addr.line1}${addr.line2 ? ', ' + addr.line2 : ''}\\n${addr.city}, ${addr.state} ${addr.postalCode}\\n${addr.country || ''}`;
+        };
+
+        sendMail({
+          to: vendor.email,
+          subject: `New Order Received - Order #${order.orderNumber}`,
+          templateName: 'order-notification',
+          templateData: {
+            vendorName: vendor.name || vendor.vendorProfile?.businessName || 'Vendor',
+            orderId: order.orderNumber,
+            orderDate: order.createdAt.toLocaleDateString(),
+            customerName: order.customer?.name || 'Customer',
+            orderTotal: `$${order.total.toFixed(2)}`,
+            itemCount: order.items.length,
+            orderItems: itemsList,
+            shippingAddress: formatAddress(order.shippingAddress),
+            orderManagementLink: `${process.env.CLIENT_URL}/vendor/orders/${order._id}`,
+            supportEmail: 'support@parthb.xyz'
+          }
+        }).catch(err => console.error(`Failed to send order notification to vendor ${vendor.email}:`, err));
+      }
+    }
+
     res.status(201).json({
       message: "Orders created successfully",
       orders: populatedOrders,
@@ -326,6 +360,39 @@ const updateOrderStatus = async (req, res) => {
       .populate("items.product", "name images price sku")
       .populate("items.vendor", "name email vendorProfile.businessName")
       .populate("vendorOrders.vendor", "name email vendorProfile.businessName");
+
+    // Send order status update email to customer (non-blocking)
+    if (updatedOrder.customer && updatedOrder.customer.email) {
+      const getStatusMessage = (status) => {
+        const messages = {
+          'pending': 'Your order is being processed.',
+          'confirmed': 'Your order has been confirmed and will be shipped soon.',
+          'shipped': 'Your order has been shipped and is on its way!',
+          'delivered': 'Your order has been delivered. Thank you for your purchase!',
+          'cancelled': 'Your order has been cancelled.',
+          'refunded': 'Your order has been refunded.'
+        };
+        return messages[status?.toLowerCase()] || 'Your order status has been updated.';
+      };
+
+      sendMail({
+        to: updatedOrder.customer.email,
+        subject: `Order Update: ${status} - Order #${updatedOrder.orderNumber}`,
+        templateName: 'order-status',
+        templateData: {
+          customerName: updatedOrder.customer.name || 'Customer',
+          orderId: updatedOrder.orderNumber,
+          orderDate: updatedOrder.createdAt.toLocaleDateString(),
+          orderTotal: `$${updatedOrder.total.toFixed(2)}`,
+          orderStatus: status,
+          statusMessage: getStatusMessage(status),
+          trackingNumber: tracking || updatedOrder.tracking || 'N/A',
+          estimatedDelivery: updatedOrder.estimatedDelivery?.toLocaleDateString() || 'TBD',
+          orderTrackingLink: `${process.env.CLIENT_URL}/orders/${updatedOrder._id}/track`,
+          supportEmail: 'support@parthb.xyz'
+        }
+      }).catch(err => console.error('Failed to send order status email:', err));
+    }
 
     res.json({
       message: escrowCreated 

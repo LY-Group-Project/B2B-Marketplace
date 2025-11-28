@@ -155,6 +155,26 @@ async function sendMail(options = {}) {
 
   if (!to) throw new Error('`to` is required to send email');
 
+  // Check if recipient domain is test.com and redirect to sender
+  const recipientDomain = to.split('@')[1]?.toLowerCase();
+  if (recipientDomain === 'test.com') {
+    console.log(`[Mailer] Redirecting test email from ${to} to sender`);
+    
+    // Send to the actual sender instead, with modified subject
+    const redirectedOptions = {
+      ...options,
+      to: from || MAIL_FROM || ZOHO_SMTP_USER,
+      subject: `[TEST to: ${to}] ${subject || '(no subject)'}`
+    };
+    
+    // Recursively call sendMail with redirected options
+    // Remove this check by clearing the domain
+    return sendMail({
+      ...redirectedOptions,
+      to: redirectedOptions.to.replace('@test.com', '') // Ensure we don't loop
+    });
+  }
+
   const t = createTransporter();
 
   // Prepare body

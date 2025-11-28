@@ -5,6 +5,8 @@ const BurnRecord = require("../models/burnRecordModel");
 const Payout = require("../models/payoutModel");
 const BankDetail = require("../models/bankDetailModel");
 const Web3Key = require("../models/web3KeyModel");
+const User = require("../models/userModel");
+const { sendMail } = require("../services/mailerService");
 
 // Initialize services on startup
 const initializeServices = async () => {
@@ -245,6 +247,28 @@ const claimFunds = async (req, res) => {
     // Step 4: Initiate Razorpay payout
     try {
       const payoutResult = await razorpayPayoutService.createPayout(payout);
+
+      // Send payout initiated email (non-blocking)
+      const user = await User.findById(userId).select('name email');
+      if (user && user.email) {
+        sendMail({
+          to: user.email,
+          subject: 'Payout Request Submitted Successfully',
+          html: `
+            <h2>Payout Request Submitted</h2>
+            <p>Hi ${user.name || 'User'},</p>
+            <p>Your payout request has been submitted successfully!</p>
+            <ul>
+              <li><strong>Amount:</strong> $${amountUSD} USD (₹${amountINR.toFixed(2)} INR)</li>
+              <li><strong>Bank:</strong> ${bankDetail.bankName} (${bankDetail.accountNumberLast4})</li>
+              <li><strong>Burn Transaction:</strong> <a href="${process.env.BLOCK_EXPLORER_URL}/tx/${burnResult.txHash}">${burnResult.txHash.slice(0, 10)}...</a></li>
+              <li><strong>Status:</strong> Processing</li>
+            </ul>
+            <p>Your payout will be processed within 24-48 hours.</p>
+            <p>You can track the status in your <a href="${process.env.CLIENT_URL}/vendor/payouts">payout history</a>.</p>
+          `
+        }).catch(err => console.error('Failed to send payout initiated email:', err));
+      }
 
       res.status(201).json({
         message: "Claim submitted successfully",
@@ -676,6 +700,28 @@ const markPayoutComplete = async (req, res) => {
     };
     
     await payout.save();
+
+    // Send payout completed email (non-blocking)
+    if (payout.user && payout.user.email) {
+      sendMail({
+        to: payout.user.email,
+        subject: 'Payout Completed Successfully',
+        html: `
+          <h2>Payout Completed!</h2>
+          <p>Hi ${payout.user.name || 'User'},</p>
+          <p>Great news! Your payout has been completed successfully.</p>
+          <ul>
+            <li><strong>Amount:</strong> $${payout.amountUSD} USD (₹${payout.amountINR.toFixed(2)} INR)</li>
+            <li><strong>Bank:</strong> ${payout.bankDetail.bankName} (${payout.bankDetail.accountNumberLast4})</li>
+            <li><strong>Account Holder:</strong> ${payout.bankDetail.accountHolderName}</li>
+            ${utr ? `<li><strong>UTR:</strong> ${utr}</li>` : ''}
+            <li><strong>Completed On:</strong> ${payout.completedAt.toLocaleDateString()}</li>
+          </ul>
+          <p>The funds should reflect in your bank account within 1-2 business days.</p>
+          <p>View details in your <a href="${process.env.CLIENT_URL}/vendor/payouts/${payout._id}">payout history</a>.</p>
+        `
+      }).catch(err => console.error('Failed to send payout completed email:', err));
+    }
 
     res.json({
       message: "Payout marked as completed",

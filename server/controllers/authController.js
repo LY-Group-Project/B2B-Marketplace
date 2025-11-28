@@ -4,6 +4,8 @@ const Web3Key = require("../models/web3KeyModel");
 const { encrypt } = require("../utils/crypto");
 const { validationResult } = require("express-validator");
 const { Web3 } = require("web3");
+const { sendMail } = require("../services/mailerService");
+
 
 // Generate JWT Token (includes tokenVersion to allow invalidation)
 const generateToken = (user) => {
@@ -71,6 +73,18 @@ const register = async (req, res) => {
     // Generate token
     const token = generateToken(user);
 
+    // Send welcome email (non-blocking)
+    sendMail({
+      to: user.email,
+      subject: 'Welcome to B2B Marketplace!',
+      templateName: 'signup-welcome',
+      templateData: {
+        name: user.name,
+        dashboardLink: `${process.env.CLIENT_URL}/dashboard`,
+        supportEmail: 'support@parthb.xyz'
+      }
+    }).catch(err => console.error('Failed to send welcome email:', err));
+
     res.status(201).json({
       message: "User registered successfully",
       token,
@@ -115,6 +129,21 @@ const login = async (req, res) => {
 
     // Generate token
     const token = generateToken(user);
+
+    // Send login notification email (non-blocking)
+    sendMail({
+      to: user.email,
+      subject: 'New Login Detected - B2B Marketplace',
+      templateName: 'login-notification',
+      templateData: {
+        name: user.name,
+        loginTime: new Date().toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' }),
+        device: req.headers['user-agent'] || 'Unknown Device',
+        location: 'Location not available',
+        ipAddress: req.ip || req.connection.remoteAddress || 'Unknown',
+        secureAccountLink: `${process.env.CLIENT_URL}/account/security`
+      }
+    }).catch(err => console.error('Failed to send login notification:', err));
 
     res.json({
       message: "Login successful",

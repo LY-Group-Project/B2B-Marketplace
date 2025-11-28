@@ -1,6 +1,7 @@
 const Order = require("../models/orderModel");
 const Web3Key = require("../models/web3KeyModel");
 const escrowService = require("../services/escrowService");
+const { sendMail } = require("../services/mailerService");
 
 // Create escrow for an order
 const createEscrowForOrder = async (req, res) => {
@@ -70,6 +71,30 @@ const createEscrowForOrder = async (req, res) => {
     };
 
     await order.save();
+
+    // Send fund hold notification email to vendor (non-blocking)
+    const vendor = order.vendorOrders[0]?.vendor;
+    if (vendor && vendor.email) {
+      sendMail({
+        to: vendor.email,
+        subject: `Funds Secured in Escrow - Order #${order.orderNumber}`,
+        templateName: 'fund-hold',
+        templateData: {
+          vendorName: vendor.name || vendor.vendorProfile?.businessName || 'Vendor',
+          amount: `$${order.total.toFixed(2)}`,
+          orderId: order.orderNumber,
+          holdDate: new Date().toLocaleDateString(),
+          holdReason: 'Order Confirmation',
+          holdReasonDetails: 'Funds have been placed in escrow to protect both parties in this transaction. They will be released once you confirm order delivery.',
+          expectedReleaseDate: 'Upon order completion and confirmation',
+          escrowAddress: order.escrow.address,
+          nextSteps: '1. Process and ship the order\\n2. Update the order status to "delivered"\\n3. Funds will be released automatically after delivery confirmation',
+          orderDetailsLink: `${process.env.CLIENT_URL}/vendor/orders/${order._id}`,
+          contactSupportLink: `${process.env.CLIENT_URL}/support`,
+          supportEmail: 'support@parthb.xyz'
+        }
+      }).catch(err => console.error('Failed to send fund hold email:', err));
+    }
 
     res.status(201).json({
       message: "Escrow created successfully",
@@ -227,6 +252,31 @@ const releaseFunds = async (req, res) => {
     // Update payment status
     order.paymentStatus = "paid";
     await order.save();
+
+    // Send fund release notification email to vendor (non-blocking)
+    const vendor = order.vendorOrders[0]?.vendor;
+    if (vendor && vendor.email) {
+      const vendorAmount = order.vendorOrders[0]?.vendorAmount || order.total;
+      
+      sendMail({
+        to: vendor.email,
+        subject: `Funds Released - $${vendorAmount.toFixed(2)}`,
+        templateName: 'fund-release',
+        templateData: {
+          vendorName: vendor.name || vendor.vendorProfile?.businessName || 'Vendor',
+          amount: `$${vendorAmount.toFixed(2)}`,
+          transactionId: result.txHash,
+          orderId: order.orderNumber,
+          releaseDate: new Date().toLocaleDateString(),
+          paymentMethod: 'Blockchain Escrow',
+          escrowAddress: order.escrow.address,
+          availableBalance: `$${vendorAmount.toFixed(2)}`,
+          viewTransactionLink: `${process.env.BLOCK_EXPLORER_URL}/tx/${result.txHash}`,
+          requestPayoutLink: `${process.env.CLIENT_URL}/vendor/payouts`,
+          supportEmail: 'support@parthb.xyz'
+        }
+      }).catch(err => console.error('Failed to send fund release email:', err));
+    }
 
     res.json({
       message: "Funds released successfully",

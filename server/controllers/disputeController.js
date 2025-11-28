@@ -3,6 +3,7 @@ const Order = require("../models/orderModel");
 const escrowService = require("../services/escrowService");
 const path = require("path");
 const fs = require("fs");
+const { sendMail } = require("../services/mailerService");
 
 // Helper to determine user's role in a dispute
 const getUserRole = (dispute, userId) => {
@@ -96,6 +97,52 @@ const createDispute = async (req, res) => {
       { path: "seller", select: "name email" },
       { path: "raisedBy", select: "name email" },
     ]);
+
+    // Send dispute notification emails to both parties (non-blocking)
+    const buyerEmail = dispute.buyer?.email;
+    const sellerEmail = dispute.seller?.email;
+    
+    if (buyerEmail) {
+      sendMail({
+        to: buyerEmail,
+        subject: `Dispute Created - Case #${dispute._id.toString().slice(-8).toUpperCase()}`,
+        templateName: 'dispute-update',
+        templateData: {
+          name: dispute.buyer.name || 'Customer',
+          disputeId: dispute._id.toString().slice(-8).toUpperCase(),
+          orderId: order.orderNumber,
+          disputeCreatedDate: dispute.createdAt.toLocaleDateString(),
+          disputeStatus: 'Open',
+          lastUpdateDate: new Date().toLocaleDateString(),
+          updateMessage: `A dispute has been raised for order #${order.orderNumber}. Our team will review it shortly.`,
+          resolutionDetails: '',
+          nextSteps: 'Our support team will review your dispute within 48 hours. Please provide any additional evidence if requested.',
+          disputeDetailsLink: `${process.env.CLIENT_URL}/disputes/${dispute._id}`,
+          supportEmail: 'support@parthb.xyz'
+        }
+      }).catch(err => console.error('Failed to send dispute email to buyer:', err));
+    }
+    
+    if (sellerEmail && sellerEmail !== buyerEmail) {
+      sendMail({
+        to: sellerEmail,
+        subject: `Dispute Created - Case #${dispute._id.toString().slice(-8).toUpperCase()}`,
+        templateName: 'dispute-update',
+        templateData: {
+          name: dispute.seller.name || 'Vendor',
+          disputeId: dispute._id.toString().slice(-8).toUpperCase(),
+          orderId: order.orderNumber,
+          disputeCreatedDate: dispute.createdAt.toLocaleDateString(),
+          disputeStatus: 'Open',
+          lastUpdateDate: new Date().toLocaleDateString(),
+          updateMessage: `A dispute has been raised against order #${order.orderNumber}. Please respond with your side of the story.`,
+          resolutionDetails: '',
+          nextSteps: 'Please review the dispute details and provide your response. Our team will mediate fairly.',
+          disputeDetailsLink: `${process.env.CLIENT_URL}/disputes/${dispute._id}`,
+          supportEmail: 'support@parthb.xyz'
+        }
+      }).catch(err => console.error('Failed to send dispute email to seller:', err));
+    }
 
     res.status(201).json({
       message: "Dispute created successfully",
@@ -451,8 +498,59 @@ const resolveDispute = async (req, res) => {
       { path: "resolution.resolvedBy", select: "name email" },
     ]);
 
+    // Send dispute resolution emails to both parties (non-blocking)
+    const resolutionMessage = winner === 'buyer' 
+      ? 'The dispute has been resolved in your favor. A refund will be processed.'
+      : 'The dispute has been resolved in your favor. Funds have been released to you.';
+    
+    const loserMessage = winner === 'buyer'
+      ? 'The dispute has been resolved in favor of the buyer. The order will be refunded.'
+      : 'The dispute has been resolved in favor of the seller. Payment has been released to the vendor.';
+
+    if (dispute.buyer?.email) {
+      sendMail({
+        to: dispute.buyer.email,
+        subject: `Dispute Resolved - Case #${dispute._id.toString().slice(-8).toUpperCase()}`,
+        templateName: 'dispute-update',
+        templateData: {
+          name: dispute.buyer.name || 'Customer',
+          disputeId: dispute._id.toString().slice(-8).toUpperCase(),
+          orderId: order.orderNumber,
+          disputeCreatedDate: dispute.createdAt.toLocaleDateString(),
+          disputeStatus: 'Resolved',
+          lastUpdateDate: new Date().toLocaleDateString(),
+          updateMessage: winner === 'buyer' ? resolutionMessage : loserMessage,
+          resolutionDetails: notes || 'The dispute has been reviewed and resolved by our team.',
+          nextSteps: 'The case is now closed. If you have any questions, please contact support.',
+          disputeDetailsLink: `${process.env.CLIENT_URL}/disputes/${dispute._id}`,
+          supportEmail: 'support@parthb.xyz'
+        }
+      }).catch(err => console.error('Failed to send resolution email to buyer:', err));
+    }
+
+    if (dispute.seller?.email) {
+      sendMail({
+        to: dispute.seller.email,
+        subject: `Dispute Resolved - Case #${dispute._id.toString().slice(-8).toUpperCase()}`,
+        templateName: 'dispute-update',
+        templateData: {
+          name: dispute.seller.name || 'Vendor',
+          disputeId: dispute._id.toString().slice(-8).toUpperCase(),
+          orderId: order.orderNumber,
+          disputeCreatedDate: dispute.createdAt.toLocaleDateString(),
+          disputeStatus: 'Resolved',
+          lastUpdateDate: new Date().toLocaleDateString(),
+          updateMessage: winner === 'seller' ? resolutionMessage : loserMessage,
+          resolutionDetails: notes || 'The dispute has been reviewed and resolved by our team.',
+          nextSteps: 'The case is now closed. Thank you for your cooperation.',
+          disputeDetailsLink: `${process.env.CLIENT_URL}/disputes/${dispute._id}`,
+          supportEmail: 'support@parthb.xyz'
+        }
+      }).catch(err => console.error('Failed to send resolution email to seller:', err));
+    }
+
     res.json({
-      message: `Dispute resolved in favor of ${winner}`,
+      message: "Dispute resolved successfully",
       dispute,
     });
   } catch (error) {
