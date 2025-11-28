@@ -1,21 +1,21 @@
-import express from "express";
-import cors from "cors";
-import crypto from "crypto";
-import rateLimit from "express-rate-limit";
-import {
+const express = require("express");
+const cors = require("cors");
+const crypto = require("crypto");
+const rateLimit = require("express-rate-limit");
+const {
   generateRegistrationOptions,
   verifyRegistrationResponse,
   generateAuthenticationOptions,
   verifyAuthenticationResponse,
-} from "@simplewebauthn/server";
-import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
-import { auth, adminAuth } from "../middleware/auth.js";
+} = require("@simplewebauthn/server");
+const jwt = require("jsonwebtoken");
+const dotenv = require("dotenv");
+const { auth, adminAuth } = require("../middleware/auth");
 dotenv.config();
 
 // Schemas
-import { Passkey, InProcessItem } from "../models/PasskeyAuth.js";
-import User from "../models/userModel.js";
+const { Passkey, InProcessItem } = require("../models/PasskeyAuth");
+const User = require("../models/userModel");
 
 const webauthRouter = express.Router();
 const HOST = process.env.HOST || null;
@@ -349,4 +349,4 @@ webauthRouter.post("/verify-login", async (req, res) => {
   }
 });
 
-export default webauthRouter;
+module.exports = webauthRouter;

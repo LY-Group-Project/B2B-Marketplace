@@ -6,7 +6,7 @@ import { authAPI } from "../services/api";
 const POLL_INTERVAL_MS = 30000; // 30s
 
 const AuthLoader = () => {
-  const { setUser, logout } = useAuthStore();
+  const { setUser, logout, token, isAuthenticated } = useAuthStore();
 
   useEffect(() => {
     let mounted = true;
@@ -14,7 +14,7 @@ const AuthLoader = () => {
 
     const fetchCurrentUser = async () => {
       try {
-        // If there's no token stored, stop polling and ensure logged out
+        // If there's no token stored or user is not authenticated, stop polling and ensure logged out
         const stored = localStorage.getItem("auth-storage");
         if (!stored) {
           logout();
@@ -22,6 +22,21 @@ const AuthLoader = () => {
           if (window.location.pathname !== "/login") {
             window.location.href = "/login";
           }
+          return;
+        }
+
+        // Parse and check if there's an actual token
+        let hasValidToken = false;
+        try {
+          const authData = JSON.parse(stored);
+          hasValidToken = !!(authData.state?.token && authData.state?.isAuthenticated);
+        } catch (e) {
+          console.error("Error parsing auth-storage:", e);
+        }
+
+        // If no valid token or not authenticated, don't call the API
+        if (!hasValidToken || !isAuthenticated) {
+          logout();
           return;
         }
 
@@ -71,7 +86,7 @@ const AuthLoader = () => {
       mounted = false;
       if (intervalId) clearInterval(intervalId);
     };
-  }, [setUser, logout]);
+  }, [setUser, logout, token, isAuthenticated]);
 
   return null;
 };
