@@ -4,7 +4,7 @@ const Payout = require("../models/payoutModel");
 const User = require("../models/userModel");
 
 // USD to INR exchange rate (can be made dynamic later)
-const USD_TO_INR_RATE = parseFloat(process.env.USD_TO_INR_RATE) || 84;
+const USD_TO_INR_RATE = parseFloat(process.env.USD_TO_INR_RATE) || 89;
 
 class RazorpayPayoutService {
   constructor() {

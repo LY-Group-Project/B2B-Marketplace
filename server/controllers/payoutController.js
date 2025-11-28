@@ -254,19 +254,17 @@ const claimFunds = async (req, res) => {
         sendMail({
           to: user.email,
           subject: 'Payout Request Submitted Successfully',
-          html: `
-            <h2>Payout Request Submitted</h2>
-            <p>Hi ${user.name || 'User'},</p>
-            <p>Your payout request has been submitted successfully!</p>
-            <ul>
-              <li><strong>Amount:</strong> $${amountUSD} USD (₹${amountINR.toFixed(2)} INR)</li>
-              <li><strong>Bank:</strong> ${bankDetail.bankName} (${bankDetail.accountNumberLast4})</li>
-              <li><strong>Burn Transaction:</strong> <a href="${process.env.BLOCK_EXPLORER_URL}/tx/${burnResult.txHash}">${burnResult.txHash.slice(0, 10)}...</a></li>
-              <li><strong>Status:</strong> Processing</li>
-            </ul>
-            <p>Your payout will be processed within 24-48 hours.</p>
-            <p>You can track the status in your <a href="${process.env.CLIENT_URL}/vendor/payouts">payout history</a>.</p>
-          `
+          templateName: 'payout-initiated',
+          templateData: {
+            name: user.name || 'User',
+            amountUSD: amountUSD,
+            amountINR: amountINR.toFixed(2),
+            bankName: bankDetail.bankName,
+            accountLast4: bankDetail.accountNumberLast4,
+            blockExplorerUrl: `${process.env.BLOCK_EXPLORER_URL}/tx/${burnResult.txHash}`,
+            txHashShort: `${burnResult.txHash.slice(0, 10)}...`,
+            payoutHistoryUrl: `${process.env.CLIENT_URL}/vendor/payouts`
+          }
         }).catch(err => console.error('Failed to send payout initiated email:', err));
       }
 
@@ -287,6 +285,26 @@ const claimFunds = async (req, res) => {
       payout.status = "failed";
       payout.failureReason = payoutError.message;
       await payout.save();
+
+      // Send payout initiated email even for manual processing (non-blocking)
+      const user = await User.findById(userId).select('name email');
+      if (user && user.email) {
+        sendMail({
+          to: user.email,
+          subject: 'Payout Request Submitted Successfully',
+          templateName: 'payout-initiated',
+          templateData: {
+            name: user.name || 'User',
+            amountUSD: amountUSD,
+            amountINR: amountINR.toFixed(2),
+            bankName: bankDetail.bankName,
+            accountLast4: bankDetail.accountNumberLast4,
+            blockExplorerUrl: `${process.env.BLOCK_EXPLORER_URL}/tx/${burnResult.txHash}`,
+            txHashShort: `${burnResult.txHash.slice(0, 10)}...`,
+            payoutHistoryUrl: `${process.env.CLIENT_URL}/vendor/payouts`
+          }
+        }).catch(err => console.error('Failed to send payout initiated email (manual):', err));
+      }
 
       res.status(201).json({
         message: "Tokens burned successfully. Payout will be processed manually.",
@@ -706,20 +724,18 @@ const markPayoutComplete = async (req, res) => {
       sendMail({
         to: payout.user.email,
         subject: 'Payout Completed Successfully',
-        html: `
-          <h2>Payout Completed!</h2>
-          <p>Hi ${payout.user.name || 'User'},</p>
-          <p>Great news! Your payout has been completed successfully.</p>
-          <ul>
-            <li><strong>Amount:</strong> $${payout.amountUSD} USD (₹${payout.amountINR.toFixed(2)} INR)</li>
-            <li><strong>Bank:</strong> ${payout.bankDetail.bankName} (${payout.bankDetail.accountNumberLast4})</li>
-            <li><strong>Account Holder:</strong> ${payout.bankDetail.accountHolderName}</li>
-            ${utr ? `<li><strong>UTR:</strong> ${utr}</li>` : ''}
-            <li><strong>Completed On:</strong> ${payout.completedAt.toLocaleDateString()}</li>
-          </ul>
-          <p>The funds should reflect in your bank account within 1-2 business days.</p>
-          <p>View details in your <a href="${process.env.CLIENT_URL}/vendor/payouts/${payout._id}">payout history</a>.</p>
-        `
+        templateName: 'payout-completed',
+        templateData: {
+          name: payout.user.name || 'User',
+          amountUSD: payout.amountUSD,
+          amountINR: payout.amountINR.toFixed(2),
+          bankName: payout.bankDetail.bankName,
+          accountLast4: payout.bankDetail.accountNumberLast4,
+          accountHolderName: payout.bankDetail.accountHolderName,
+          utr: utr || 'N/A',
+          completedDate: payout.completedAt.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }),
+          payoutDetailsUrl: `${process.env.CLIENT_URL}/vendor/payouts/${payout._id}`
+        }
       }).catch(err => console.error('Failed to send payout completed email:', err));
     }
 

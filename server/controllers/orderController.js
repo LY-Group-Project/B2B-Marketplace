@@ -5,6 +5,7 @@ const User = require("../models/userModel");
 const Coupon = require("../models/couponModel");
 const escrowService = require("../services/escrowService");
 const { sendMail } = require("../services/mailerService");
+const trackingService = require("../services/trackingService");
 
 // Create Order
 const createOrder = async (req, res) => {
@@ -311,6 +312,67 @@ const updateOrderStatus = async (req, res) => {
 
     const previousStatus = order.status;
 
+    // Validate tracking number is required when marking as shipped
+    if (status === "shipped") {
+      if (!tracking || !tracking.trackingNumber || !tracking.carrier) {
+        return res.status(400).json({
+          message: "Tracking number and carrier are required when marking order as shipped",
+        });
+      }
+
+      // Validate tracking number format
+      const validation = trackingService.validateTrackingNumber(
+        tracking.trackingNumber,
+        tracking.carrier
+      );
+
+      if (!validation.valid) {
+        return res.status(400).json({
+          message: validation.error || "Invalid tracking number format",
+        });
+      }
+
+      // Auto-detect carrier if not provided or detect courier code
+      let carrierInfo = tracking.carrier 
+        ? { carrier: tracking.carrier, courierCode: tracking.courierCode }
+        : trackingService.detectCarrier(validation.trackingNumber);
+
+      // Try to fetch initial tracking info to validate the tracking number
+      try {
+        const trackingInfo = await trackingService.getTrackingInfo(
+          validation.trackingNumber,
+          carrierInfo.courierCode || tracking.courierCode
+        );
+
+        if (trackingInfo.success) {
+          // Update tracking with validated info
+          tracking.carrier = trackingInfo.carrier || tracking.carrier;
+          tracking.courierCode = trackingInfo.courierCode;
+          tracking.trackingHistory = trackingInfo.trackingHistory;
+          tracking.lastUpdated = new Date();
+          tracking.validatedAt = new Date();
+        } else {
+          // Allow manual tracking numbers even if API validation fails
+          console.warn(`Could not validate tracking number via API: ${trackingInfo.error}`);
+          tracking.courierCode = carrierInfo.courierCode || tracking.courierCode;
+          tracking.validatedAt = new Date();
+          tracking.trackingHistory = [{
+            timestamp: new Date(),
+            location: 'Unknown',
+            status: 'Shipped',
+            description: 'Package has been shipped',
+          }];
+        }
+      } catch (error) {
+        console.error('Tracking validation error:', error);
+        // Continue even if validation fails - allow manual entry
+        tracking.courierCode = carrierInfo.courierCode || tracking.courierCode;
+        tracking.validatedAt = new Date();
+      }
+
+      tracking.trackingNumber = validation.trackingNumber;
+    }
+
     // Update vendor order status
     const vendorOrder = order.vendorOrders.find(
       (vo) => vo.vendor.toString() === userId.toString(),
@@ -318,14 +380,20 @@ const updateOrderStatus = async (req, res) => {
     if (vendorOrder) {
       vendorOrder.status = status;
       if (tracking) {
-        vendorOrder.tracking = tracking;
+        vendorOrder.tracking = {
+          ...vendorOrder.tracking,
+          ...tracking,
+        };
       }
     }
 
     // Also update the main order status
     order.status = status;
     if (tracking) {
-      order.tracking = tracking;
+      order.tracking = {
+        ...order.tracking,
+        ...tracking,
+      };
     }
 
     await order.save();
@@ -375,6 +443,10 @@ const updateOrderStatus = async (req, res) => {
         return messages[status?.toLowerCase()] || 'Your order status has been updated.';
       };
 
+      const trackingInfo = updatedOrder.tracking?.trackingNumber 
+        ? `Carrier: ${updatedOrder.tracking.carrier || 'N/A'}\nTracking Number: ${updatedOrder.tracking.trackingNumber}\nTrack your order: ${process.env.CLIENT_URL}/orders/${updatedOrder._id}`
+        : 'Tracking information will be provided once available.';
+
       sendMail({
         to: updatedOrder.customer.email,
         subject: `Order Update: ${status} - Order #${updatedOrder.orderNumber}`,
@@ -386,9 +458,11 @@ const updateOrderStatus = async (req, res) => {
           orderTotal: `$${updatedOrder.total.toFixed(2)}`,
           orderStatus: status,
           statusMessage: getStatusMessage(status),
-          trackingNumber: tracking || updatedOrder.tracking || 'N/A',
+          trackingNumber: updatedOrder.tracking?.trackingNumber || 'N/A',
+          trackingCarrier: updatedOrder.tracking?.carrier || 'N/A',
+          trackingInfo: trackingInfo,
           estimatedDelivery: updatedOrder.estimatedDelivery?.toLocaleDateString() || 'TBD',
-          orderTrackingLink: `${process.env.CLIENT_URL}/orders/${updatedOrder._id}/track`,
+          orderTrackingLink: `${process.env.CLIENT_URL}/orders/${updatedOrder._id}`,
           supportEmail: 'support@parthb.xyz'
         }
       }).catch(err => console.error('Failed to send order status email:', err));
@@ -510,6 +584,79 @@ const getAllOrders = async (req, res) => {
   }
 };
 
+// Get Tracking Information
+const getTrackingInfo = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const order = await Order.findOne({
+      _id: id,
+      $or: [{ customer: userId }, { "vendorOrders.vendor": userId }],
+    });
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found or unauthorized" });
+    }
+
+    if (!order.tracking || !order.tracking.trackingNumber) {
+      return res.status(400).json({ message: "No tracking information available for this order" });
+    }
+
+    // Fetch latest tracking info
+    const trackingInfo = await trackingService.getTrackingInfo(
+      order.tracking.trackingNumber,
+      order.tracking.courierCode
+    );
+
+    if (trackingInfo.success) {
+      // Update order with latest tracking
+      order.tracking.trackingHistory = trackingInfo.trackingHistory;
+      order.tracking.lastUpdated = new Date();
+      
+      // Auto-update status if delivered
+      if (trackingInfo.isDelivered && order.status === 'shipped') {
+        order.status = 'delivered';
+      }
+      
+      await order.save();
+
+      return res.json({
+        success: true,
+        tracking: {
+          carrier: order.tracking.carrier,
+          trackingNumber: order.tracking.trackingNumber,
+          trackingUrl: order.tracking.trackingUrl,
+          status: trackingInfo.status,
+          estimatedDelivery: trackingInfo.estimatedDelivery,
+          trackingHistory: trackingInfo.trackingHistory,
+          lastUpdated: order.tracking.lastUpdated,
+          isMockData: trackingInfo.isMockData,
+        },
+      });
+    }
+
+    return res.status(400).json({
+      success: false,
+      message: trackingInfo.error || "Failed to fetch tracking information",
+    });
+  } catch (error) {
+    console.error("Get tracking info error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Get Supported Carriers
+const getSupportedCarriers = async (req, res) => {
+  try {
+    const carriers = trackingService.getSupportedCarriers();
+    res.json({ carriers });
+  } catch (error) {
+    console.error("Get carriers error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   createOrder,
   getUserOrders,
@@ -518,4 +665,6 @@ module.exports = {
   getVendorOrders,
   cancelOrder,
   getAllOrders,
+  getTrackingInfo,
+  getSupportedCarriers,
 };

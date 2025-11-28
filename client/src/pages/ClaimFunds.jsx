@@ -206,7 +206,7 @@ export default function ClaimFunds() {
   const [claimAmount, setClaimAmount] = useState("");
   const [selectedBank, setSelectedBank] = useState(null);
 
-  // Fetch balance
+  // Fetch` balance
   const { data: balanceData, isLoading: balanceLoading, error: balanceError, refetch: refetchBalance } = useQuery({
     queryKey: ["payout-balance"],
     queryFn: async () => {
@@ -215,6 +215,7 @@ export default function ClaimFunds() {
     },
     retry: 1,
   });
+
 
   // Fetch bank details
   const { data: bankData, isLoading: banksLoading, refetch: refetchBanks } = useQuery({
@@ -357,7 +358,7 @@ export default function ClaimFunds() {
     toast.success("Copied to clipboard");
   };
 
-  const inrAmount = claimAmount ? (parseFloat(claimAmount) * (balanceData?.exchangeRate || 84)).toFixed(2) : "0.00";
+  const inrAmount = claimAmount ? (parseFloat(claimAmount) * (balanceData?.exchangeRate || 89)).toFixed(2) : "0.00";
 
   return (
     <>
@@ -397,7 +398,7 @@ export default function ClaimFunds() {
                     </p>
                   )}
                   <p className="text-blue-200 text-sm mt-2">
-                    ≈ ₹{((balanceData?.balanceUSD || 0) * (balanceData?.exchangeRate || 84)).toFixed(2)} INR
+                    ≈ ₹{((balanceData?.balanceUSD || 0) * (balanceData?.exchangeRate || 89)).toFixed(2)} INR
                   </p>
                 </div>
                 <div className="text-right">
@@ -464,7 +465,7 @@ export default function ClaimFunds() {
                 </div>
                 <p className="text-sm text-gray-500 mt-1">
                   You will receive: <span className="font-medium text-green-600">₹{inrAmount} INR</span>
-                  <span className="text-xs ml-1">(@ ₹{balanceData?.exchangeRate || 84}/USD)</span>
+                  <span className="text-xs ml-1">(@ ₹{balanceData?.exchangeRate || 89}/USD)</span>
                 </p>
               </div>
 

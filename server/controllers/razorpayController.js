@@ -11,13 +11,15 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
+
+
 // Get Razorpay Key ID (public route for frontend)
 const getRazorpayKeyId = (req, res) => {
   res.json({ keyId: process.env.RAZORPAY_KEY_ID });
 };
 
 // USD to INR conversion rate (you may want to fetch this dynamically)
-const USD_TO_INR_RATE = 84;
+const USD_TO_INR_RATE = 89;
 
 // Create Razorpay Order
 const createRazorpayOrder = async (req, res) => {

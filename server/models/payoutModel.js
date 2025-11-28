@@ -35,7 +35,7 @@ const payoutSchema = new mongoose.Schema(
     exchangeRate: {
       type: Number,
       required: true,
-      default: 84,
+      default: 89,
     },
     // Razorpay payout ID
     razorpayPayoutId: {

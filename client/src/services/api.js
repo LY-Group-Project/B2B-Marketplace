@@ -118,6 +118,8 @@ export const ordersAPI = {
   updateOrderStatus: (id, statusData) =>
     api.patch(`/orders/${id}/status`, statusData),
   getAllOrders: (params) => api.get("/orders/admin/all", { params }),
+  getTrackingInfo: (id) => api.get(`/orders/${id}/tracking`),
+  getSupportedCarriers: () => api.get("/orders/carriers/supported"),
 };
 
 // Address autocomplete (proxied through server)

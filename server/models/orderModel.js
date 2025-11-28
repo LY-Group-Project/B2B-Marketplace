@@ -136,6 +136,18 @@ const orderSchema = new mongoose.Schema(
       carrier: String,
       trackingNumber: String,
       trackingUrl: String,
+      validatedAt: Date,
+      trackingHistory: [
+        {
+          timestamp: Date,
+          location: String,
+          status: String,
+          description: String,
+          rawData: mongoose.Schema.Types.Mixed,
+        },
+      ],
+      lastUpdated: Date,
+      courierCode: String, // For API lookup (e.g., 'fedex', 'ups', 'usps', 'dhl')
     },
     notes: String,
     vendorOrders: [
@@ -173,6 +185,18 @@ const orderSchema = new mongoose.Schema(
           carrier: String,
           trackingNumber: String,
           trackingUrl: String,
+          validatedAt: Date,
+          trackingHistory: [
+            {
+              timestamp: Date,
+              location: String,
+              status: String,
+              description: String,
+              rawData: mongoose.Schema.Types.Mixed,
+            },
+          ],
+          lastUpdated: Date,
+          courierCode: String,
         },
       },
     ],

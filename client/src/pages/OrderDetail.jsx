@@ -18,6 +18,7 @@ import { ordersAPI } from "../services/api";
 import api from "../services/api";
 import { toast } from "react-hot-toast";
 import EscrowCard from "../components/EscrowCard";
+import TrackingTimeline from "../components/TrackingTimeline";
 
 const OrderDetail = () => {
   const { id } = useParams();
@@ -402,22 +403,12 @@ const OrderDetail = () => {
                   </div>
                 </div>
 
-                {/* Tracking Information */}
-                {order.trackingNumber && (
-                  <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                    <h4 className="font-medium text-blue-900 mb-2">
-                      Tracking Information
-                    </h4>
-                    <p className="text-blue-800 text-sm">
-                      Tracking Number:{" "}
-                      <span className="font-mono">{order.trackingNumber}</span>
-                    </p>
-                    <p className="text-blue-700 text-sm mt-1">
-                      Carrier: {order.carrier || "Standard Shipping"}
-                    </p>
-                  </div>
-                )}
+                {/* Tracking Information - Old Basic Display - Replace with Timeline */}
+                {/* Removed old tracking display - replaced with TrackingTimeline component below */}
               </div>
+
+              {/* Live Tracking Timeline */}
+              <TrackingTimeline orderId={id} order={order} />
 
               {/* Order Items */}
               <div className="bg-white rounded-lg shadow-sm p-6">

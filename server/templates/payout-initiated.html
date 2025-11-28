@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payout Request Submitted</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+    <tr>
+      <td align="center" style="padding: 40px 0;">
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
+              <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 600;">Payout Request Submitted</h1>
+            </td>
+          </tr>
+          
+          <!-- Body -->
+          <tr>
+            <td style="padding: 40px 30px;">
+              <p style="margin: 0 0 20px; color: #333333; font-size: 16px; line-height: 1.5;">
+                Hi <strong>{name}</strong>,
+              </p>
+              
+              <p style="margin: 0 0 30px; color: #333333; font-size: 16px; line-height: 1.5;">
+                Your payout request has been submitted successfully!
+              </p>
+              
+              <!-- Details Box -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f8f9fa; border-radius: 6px; margin-bottom: 30px;">
+                <tr>
+                  <td style="padding: 25px;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="padding: 8px 0; color: #666666; font-size: 14px; width: 40%;">
+                          <strong>Amount:</strong>
+                        </td>
+                        <td style="padding: 8px 0; color: #333333; font-size: 14px;">
+                          ${amountUSD} USD (₹{amountINR} INR)
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; color: #666666; font-size: 14px;">
+                          <strong>Bank:</strong>
+                        </td>
+                        <td style="padding: 8px 0; color: #333333; font-size: 14px;">
+                          {bankName} (****{accountLast4})
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; color: #666666; font-size: 14px;">
+                          <strong>Burn Transaction:</strong>
+                        </td>
+                        <td style="padding: 8px 0; color: #333333; font-size: 14px;">
+                          <a href="{blockExplorerUrl}" style="color: #667eea; text-decoration: none;">{txHashShort}</a>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; color: #666666; font-size: 14px;">
+                          <strong>Status:</strong>
+                        </td>
+                        <td style="padding: 8px 0;">
+                          <span style="background-color: #ffc107; color: #000; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">Processing</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              
+              <p style="margin: 0 0 20px; color: #333333; font-size: 16px; line-height: 1.5;">
+                Your payout will be processed within <strong>24-48 hours</strong>.
+              </p>
+              
+              <p style="margin: 0 0 30px; color: #333333; font-size: 16px; line-height: 1.5;">
+                You can track the status in your payout history.
+              </p>
+              
+              <!-- CTA Button -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
+                <tr>
+                  <td style="border-radius: 4px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <a href="{payoutHistoryUrl}" style="display: inline-block; padding: 14px 40px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600;">
+                      View Payout History
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 30px; background-color: #f8f9fa; border-radius: 0 0 8px 8px; text-align: center;">
+              <p style="margin: 0 0 10px; color: #666666; font-size: 14px;">
+                If you have any questions, please contact our support team.
+              </p>
+              <p style="margin: 0; color: #999999; font-size: 12px;">
+                © 2025 B2B Marketplace. All rights reserved.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

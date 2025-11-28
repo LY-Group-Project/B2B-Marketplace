@@ -47,6 +47,9 @@ import AdminPayouts from "./pages/admin/Payouts";
 import AdminDisputes from "./pages/admin/Disputes";
 import AuthLoader from "./components/AuthLoader";
 
+// 404
+import NotFound from "./pages/NotFound";
+
 // Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -268,6 +271,9 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+
+                {/* 404 Not Found */}
+                <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>
 

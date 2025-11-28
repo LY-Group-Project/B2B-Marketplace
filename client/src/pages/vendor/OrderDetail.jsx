@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, Link } from "react-router-dom";
@@ -22,6 +22,22 @@ const VendorOrderDetail = () => {
   const { id } = useParams();
   const queryClient = useQueryClient();
   const [isUpdating, setIsUpdating] = useState(false);
+  const [showTrackingModal, setShowTrackingModal] = useState(false);
+  const [trackingData, setTrackingData] = useState({
+    trackingNumber: "",
+    carrier: "",
+    courierCode: "",
+  });
+  const [carriers, setCarriers] = useState([]);
+
+  // Fetch supported carriers on mount
+  useEffect(() => {
+    ordersAPI.getSupportedCarriers().then((response) => {
+      setCarriers(response.data.carriers || []);
+    }).catch((error) => {
+      console.error("Failed to fetch carriers:", error);
+    });
+  }, []);
 
   // Fetch order details
   const { data: orderData, isLoading } = useQuery({
@@ -33,13 +49,14 @@ const VendorOrderDetail = () => {
 
   // Update order status mutation
   const updateOrderStatusMutation = useMutation({
-    mutationFn: ({ status }) => ordersAPI.updateOrderStatus(id, { status }),
+    mutationFn: ({ status, tracking }) => ordersAPI.updateOrderStatus(id, { status, tracking }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["order", id] });
       queryClient.invalidateQueries({ queryKey: ["vendorOrders"] });
       queryClient.invalidateQueries({ queryKey: ["escrow", id] });
       toast.success("Order status updated successfully");
       setIsUpdating(false);
+      setShowTrackingModal(false);
     },
     onError: (error) => {
       toast.error(
@@ -104,8 +121,35 @@ const VendorOrderDetail = () => {
   };
 
   const handleUpdateStatus = (newStatus) => {
+    // If updating to shipped, show tracking modal first
+    if (newStatus === "shipped") {
+      setShowTrackingModal(true);
+      return;
+    }
+    
     setIsUpdating(true);
     updateOrderStatusMutation.mutate({ status: newStatus });
+  };
+
+  const handleSubmitTracking = () => {
+    if (!trackingData.trackingNumber.trim()) {
+      toast.error("Please enter a tracking number");
+      return;
+    }
+    if (!trackingData.carrier.trim()) {
+      toast.error("Please select a carrier");
+      return;
+    }
+
+    setIsUpdating(true);
+    updateOrderStatusMutation.mutate({ 
+      status: "shipped",
+      tracking: {
+        trackingNumber: trackingData.trackingNumber.trim(),
+        carrier: trackingData.carrier,
+        courierCode: trackingData.courierCode,
+      }
+    });
   };
 
   const handleCancelOrder = () => {
@@ -416,6 +460,95 @@ const VendorOrderDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* Tracking Number Modal */}
+      {showTrackingModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Add Tracking Information
+            </h3>
+            <p className="text-sm text-gray-600 mb-6">
+              Please provide tracking details to mark this order as shipped. The customer will be notified.
+            </p>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Carrier / Courier <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={trackingData.carrier}
+                  onChange={(e) => {
+                    const selectedCarrier = carriers.find(c => c.name === e.target.value);
+                    setTrackingData({
+                      ...trackingData,
+                      carrier: e.target.value,
+                      courierCode: selectedCarrier?.code || "",
+                    });
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select Carrier</option>
+                  {carriers.map((carrier) => (
+                    <option key={carrier.code} value={carrier.name}>
+                      {carrier.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tracking Number <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={trackingData.trackingNumber}
+                  onChange={(e) =>
+                    setTrackingData({
+                      ...trackingData,
+                      trackingNumber: e.target.value,
+                    })
+                  }
+                  placeholder="Enter tracking number"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  The tracking number will be validated before the order is marked as shipped.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex space-x-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowTrackingModal(false);
+                  setTrackingData({ trackingNumber: "", carrier: "", courierCode: "" });
+                }}
+                disabled={isUpdating}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmitTracking}
+                disabled={isUpdating}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+              >
+                {isUpdating ? (
+                  <span className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Processing...
+                  </span>
+                ) : (
+                  "Mark as Shipped"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

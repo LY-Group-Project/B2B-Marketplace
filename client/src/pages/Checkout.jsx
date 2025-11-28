@@ -668,7 +668,7 @@ const paypalInititalOptions = {
                         </div>
                         {razorpayCurrency === "INR" && (
                           <p className="mt-2 text-xs text-gray-500">
-                            Amount will be converted to INR at checkout (≈ ₹{(finalTotal * 84).toFixed(2)})
+                            Amount will be converted to INR at checkout (≈ ₹{(finalTotal * 89).toFixed(2)})
                           </p>
                         )}
                       </div>
@@ -691,7 +691,7 @@ const paypalInititalOptions = {
                               <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                               <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                             </svg>
-                            Pay {razorpayCurrency === "INR" ? `₹${(finalTotal * 84).toFixed(2)}` : `$${finalTotal.toFixed(2)}`} with Razorpay
+                            Pay {razorpayCurrency === "INR" ? `₹${(finalTotal * 89).toFixed(2)}` : `$${finalTotal.toFixed(2)}`} with Razorpay
                           </>
                         )}
                       </button>

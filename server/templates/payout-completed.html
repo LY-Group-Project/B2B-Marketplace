@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payout Completed</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+    <tr>
+      <td align="center" style="padding: 40px 0;">
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <!-- Header -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
+              <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 600;">🎉 Payout Completed!</h1>
+            </td>
+          </tr>
+          
+          <!-- Body -->
+          <tr>
+            <td style="padding: 40px 30px;">
+              <p style="margin: 0 0 20px; color: #333333; font-size: 16px; line-height: 1.5;">
+                Hi <strong>{name}</strong>,
+              </p>
+              
+              <p style="margin: 0 0 30px; color: #333333; font-size: 16px; line-height: 1.5;">
+                Great news! Your payout has been completed successfully.
+              </p>
+              
+              <!-- Details Box -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color: #f0fdf4; border: 2px solid #10b981; border-radius: 6px; margin-bottom: 30px;">
+                <tr>
+                  <td style="padding: 25px;">
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                      <tr>
+                        <td style="padding: 8px 0; color: #666666; font-size: 14px; width: 40%;">
+                          <strong>Amount:</strong>
+                        </td>
+                        <td style="padding: 8px 0; color: #333333; font-size: 14px;">
+                          ${amountUSD} USD (₹{amountINR} INR)
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; color: #666666; font-size: 14px;">
+                          <strong>Bank:</strong>
+                        </td>
+                        <td style="padding: 8px 0; color: #333333; font-size: 14px;">
+                          {bankName} (****{accountLast4})
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; color: #666666; font-size: 14px;">
+                          <strong>Account Holder:</strong>
+                        </td>
+                        <td style="padding: 8px 0; color: #333333; font-size: 14px;">
+                          {accountHolderName}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; color: #666666; font-size: 14px;">
+                          <strong>UTR Number:</strong>
+                        </td>
+                        <td style="padding: 8px 0; color: #333333; font-size: 14px; font-family: monospace;">
+                          {utr}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; color: #666666; font-size: 14px;">
+                          <strong>Completed On:</strong>
+                        </td>
+                        <td style="padding: 8px 0; color: #333333; font-size: 14px;">
+                          {completedDate}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 8px 0; color: #666666; font-size: 14px;">
+                          <strong>Status:</strong>
+                        </td>
+                        <td style="padding: 8px 0;">
+                          <span style="background-color: #10b981; color: #ffffff; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">✓ Completed</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              
+              <p style="margin: 0 0 30px; color: #333333; font-size: 16px; line-height: 1.5;">
+                The funds should reflect in your bank account within <strong>1-2 business days</strong>.
+              </p>
+              
+              <!-- CTA Button -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin: 0 auto;">
+                <tr>
+                  <td style="border-radius: 4px; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <a href="{payoutDetailsUrl}" style="display: inline-block; padding: 14px 40px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600;">
+                      View Payout Details
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 30px; background-color: #f8f9fa; border-radius: 0 0 8px 8px; text-align: center;">
+              <p style="margin: 0 0 10px; color: #666666; font-size: 14px;">
+                Thank you for using our platform!
+              </p>
+              <p style="margin: 0; color: #999999; font-size: 12px;">
+                © 2025 B2B Marketplace. All rights reserved.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
