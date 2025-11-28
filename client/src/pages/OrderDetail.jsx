@@ -67,6 +67,13 @@ const OrderDetail = () => {
           text: "Confirmed",
           description: "Your order has been confirmed and is being prepared",
         };
+      case "processing":
+        return {
+          icon: ClockIcon,
+          color: "text-purple-600 bg-purple-50 border-purple-200",
+          text: "Processing",
+          description: "Your order is being processed and prepared for shipping",
+        };
       case "shipped":
         return {
           icon: TruckIcon,
@@ -87,6 +94,13 @@ const OrderDetail = () => {
           color: "text-red-600 bg-red-50 border-red-200",
           text: "Cancelled",
           description: "Your order has been cancelled",
+        };
+      case "refunded":
+        return {
+          icon: XCircleIcon,
+          color: "text-orange-600 bg-orange-50 border-orange-200",
+          text: "Refunded",
+          description: "Your order has been refunded",
         };
       default:
         return {
@@ -113,7 +127,14 @@ const OrderDetail = () => {
         title: "Order Confirmed",
         description: "Order confirmed and being prepared",
         date: order.confirmedAt,
-        completed: ["confirmed", "shipped", "delivered"].includes(order.status),
+        completed: ["confirmed", "processing", "shipped", "delivered"].includes(order.status),
+      },
+      {
+        status: "processing",
+        title: "Processing",
+        description: "Order is being prepared for shipping",
+        date: order.processingAt,
+        completed: ["processing", "shipped", "delivered"].includes(order.status),
       },
       {
         status: "shipped",

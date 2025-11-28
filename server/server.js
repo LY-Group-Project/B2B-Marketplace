@@ -26,6 +26,8 @@ app.use(
           "http://127.0.0.1:5000",
           "http://127.0.0.1:5173",
           "https://www.paypalobjects.com",
+          "https://i.ibb.co",
+          "https://*.ibb.co",
         ],
         connectSrc: [
           "'self'",
@@ -35,6 +37,7 @@ app.use(
           "https://www.sandbox.paypal.com",
           "https://api.razorpay.com",
           "https://checkout.razorpay.com",
+          "https://api.imgbb.com",
         ],
         fontSrc: ["'self'", "https:", "data:"],
         objectSrc: ["'none'"],
@@ -132,6 +135,7 @@ app.use("/api/categories", require("./routes/categories"));
 app.use("/api/vendors", require("./routes/vendors"));
 app.use("/api/admin", require("./routes/admin"));
 app.use("/api/upload", require("./routes/upload"));
+app.use("/api/images", require("./routes/images")); // Image proxy with caching
 app.use("/api/reviews", require("./routes/reviews"));
 app.use("/api/webauth", require("./routes/webAuth"));
 app.use("/api/address", require("./routes/address"));

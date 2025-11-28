@@ -250,14 +250,19 @@ const EditProduct = () => {
         newImageUrls = uploadResponse.data.urls;
       }
 
+      // Convert existing images to URL strings (they might be objects with {url, alt, isPrimary})
+      const existingImageUrls = existingImages.map((img) =>
+        typeof img === 'string' ? img : img.url
+      );
+
       // Combine existing and new image URLs
-      const allImages = [...existingImages, ...newImageUrls];
+      const allImageUrls = [...existingImageUrls, ...newImageUrls];
 
       // Create product data
       const productData = {
         ...formData,
         price: parseFloat(formData.price),
-        quantity: parseInt(formData.quantity), // Use quantity instead of stock
+        quantity: parseInt(formData.quantity),
         weight: formData.weight ? parseFloat(formData.weight) : undefined,
         dimensions: {
           length: formData.dimensions.length
@@ -270,7 +275,7 @@ const EditProduct = () => {
             ? parseFloat(formData.dimensions.height)
             : undefined,
         },
-        images: allImages.map((url, index) => ({
+        images: allImageUrls.map((url, index) => ({
           url: url,
           alt: `${formData.name} image ${index + 1}`,
           isPrimary: index === 0,
@@ -506,8 +511,8 @@ const EditProduct = () => {
                   </label>
                   <input
                     type="number"
-                    name="stock"
-                    value={formData.stock}
+                    name="quantity"
+                    value={formData.quantity}
                     onChange={handleInputChange}
                     required
                     min="0"
@@ -549,8 +554,8 @@ const EditProduct = () => {
                       {existingImages.map((image, index) => (
                         <div key={index} className="relative">
                           <img
-                            src={image}
-                            alt={`Product ${index + 1}`}
+                            src={typeof image === 'string' ? image : image.url}
+                            alt={typeof image === 'string' ? `Product ${index + 1}` : (image.alt || `Product ${index + 1}`)}
                             className="w-full h-24 object-cover rounded-md"
                           />
                           <button

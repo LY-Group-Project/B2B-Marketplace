@@ -297,19 +297,44 @@ const updateOrderStatus = async (req, res) => {
     await order.save();
 
     // Create escrow when order is confirmed by vendor
+    let escrowCreated = false;
+    let escrowError = null;
     if (status === "confirmed" && previousStatus === "pending") {
-      try {
-        await escrowService.createEscrowForOrder(order);
-        console.log(`Escrow created for order ${order.orderNumber}`);
-      } catch (escrowError) {
-        console.error(`Failed to create escrow for order ${order.orderNumber}:`, escrowError);
-        // Non-fatal: order status is still updated
+      if (escrowService.isInitialized()) {
+        try {
+          // Re-fetch order with populated fields needed for escrow creation
+          const orderForEscrow = await Order.findById(order._id)
+            .populate("customer", "name email")
+            .populate("vendorOrders.vendor", "name email");
+          
+          await escrowService.createEscrowForOrder(orderForEscrow);
+          escrowCreated = true;
+          console.log(`Escrow created for order ${order.orderNumber}`);
+        } catch (err) {
+          escrowError = err.message;
+          console.error(`Failed to create escrow for order ${order.orderNumber}:`, err);
+          // Non-fatal: order status is still updated
+        }
+      } else {
+        console.warn(`Escrow service not initialized, skipping escrow creation for order ${order.orderNumber}`);
       }
     }
 
+    // Re-fetch the updated order with escrow info
+    const updatedOrder = await Order.findById(order._id)
+      .populate("customer", "name email phone")
+      .populate("items.product", "name images price")
+      .populate("items.vendor", "name email vendorProfile.businessName")
+      .populate("vendorOrders.vendor", "name email vendorProfile.businessName");
+
     res.json({
-      message: "Order status updated successfully",
-      order,
+      message: escrowCreated 
+        ? "Order status updated and escrow created successfully" 
+        : escrowError 
+          ? `Order status updated but escrow creation failed: ${escrowError}`
+          : "Order status updated successfully",
+      order: updatedOrder,
+      escrowCreated,
     });
   } catch (error) {
     console.error("Update order status error:", error);

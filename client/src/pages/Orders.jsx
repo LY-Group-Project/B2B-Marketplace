@@ -59,6 +59,12 @@ const Orders = () => {
           color: "text-blue-600 bg-blue-50",
           text: "Confirmed",
         };
+      case "processing":
+        return {
+          icon: ClockIcon,
+          color: "text-purple-600 bg-purple-50",
+          text: "Processing",
+        };
       case "shipped":
         return {
           icon: TruckIcon,
@@ -76,6 +82,12 @@ const Orders = () => {
           icon: XCircleIcon,
           color: "text-red-600 bg-red-50",
           text: "Cancelled",
+        };
+      case "refunded":
+        return {
+          icon: XCircleIcon,
+          color: "text-orange-600 bg-orange-50",
+          text: "Refunded",
         };
       default:
         return {
@@ -133,9 +145,11 @@ const Orders = () => {
                   <option value="all">All Status</option>
                   <option value="pending">Pending</option>
                   <option value="confirmed">Confirmed</option>
+                  <option value="processing">Processing</option>
                   <option value="shipped">Shipped</option>
                   <option value="delivered">Delivered</option>
                   <option value="cancelled">Cancelled</option>
+                  <option value="refunded">Refunded</option>
                 </select>
               </div>
             </div>
