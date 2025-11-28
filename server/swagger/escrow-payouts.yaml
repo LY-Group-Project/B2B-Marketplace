@@ -1,0 +1,570 @@
+openapi: 3.0.0
+info:
+  title: B2B Marketplace API - Escrow & Payouts
+  version: 1.0.0
+
+paths:
+  # Escrow Routes
+  /api/escrows/wallet:
+    get:
+      tags:
+        - Escrow
+      summary: Get wallet info
+      description: Retrieve the user's blockchain wallet information.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Wallet info retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  address:
+                    type: string
+                    description: Blockchain wallet address
+                  balance:
+                    type: string
+                    description: KooshCoin token balance
+                  hasKey:
+                    type: boolean
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /api/escrows:
+    post:
+      tags:
+        - Escrow
+      summary: Create escrow for order
+      description: Create a blockchain escrow for an order. Tokens are locked until delivery confirmation.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - orderId
+              properties:
+                orderId:
+                  type: string
+                  description: Order ID to create escrow for
+      responses:
+        "201":
+          description: Escrow created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  escrowAddress:
+                    type: string
+                    description: Escrow contract address
+                  transactionHash:
+                    type: string
+                  status:
+                    type: string
+        "400":
+          description: Order not eligible for escrow
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /api/escrows/{orderId}:
+    get:
+      tags:
+        - Escrow
+      summary: Get escrow for order
+      description: Retrieve escrow details for a specific order.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Escrow details retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  escrowAddress:
+                    type: string
+                  amount:
+                    type: string
+                  state:
+                    type: string
+                    enum: [Locked, ReleasePending, Disputed, Complete, Refunded]
+                  buyer:
+                    type: string
+                  seller:
+                    type: string
+                  buyerConfirmedDelivery:
+                    type: boolean
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+  /api/escrows/{orderId}/confirm-delivery:
+    post:
+      tags:
+        - Escrow
+      summary: Confirm delivery (Buyer)
+      description: Buyer confirms delivery, allowing seller to release funds.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Delivery confirmed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transactionHash:
+                    type: string
+                  newState:
+                    type: string
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Only buyer can confirm delivery
+
+  /api/escrows/{orderId}/release:
+    post:
+      tags:
+        - Escrow
+      summary: Release funds (Seller)
+      description: Seller releases funds after buyer confirms delivery.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Funds released
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transactionHash:
+                    type: string
+                  amount:
+                    type: string
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Only seller can release funds
+
+  /api/escrows/{orderId}/dispute:
+    post:
+      tags:
+        - Escrow
+      summary: Raise dispute
+      description: Raise a dispute on the escrow (buyer or seller).
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Dispute raised
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transactionHash:
+                    type: string
+                  disputeId:
+                    type: string
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /api/escrows/{orderId}/resolve:
+    post:
+      tags:
+        - Escrow
+      summary: Resolve dispute (Admin)
+      description: Admin resolves the dispute by choosing a winner.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - winner
+              properties:
+                winner:
+                  type: string
+                  enum: [buyer, seller]
+                  description: Who receives the escrowed funds
+      responses:
+        "200":
+          description: Dispute resolved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transactionHash:
+                    type: string
+                  winner:
+                    type: string
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Admin access required
+
+  # Payout Routes
+  /api/payouts/balance:
+    get:
+      tags:
+        - Payouts
+      summary: Get token balance
+      description: Retrieve the user's KooshCoin token balance and wallet info.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Balance retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  balance:
+                    type: string
+                    description: Token balance in KooshCoin
+                  balanceUSD:
+                    type: number
+                    description: Equivalent USD value
+                  walletAddress:
+                    type: string
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /api/payouts/bank-details:
+    get:
+      tags:
+        - Payouts
+      summary: Get bank details
+      description: Retrieve the user's saved bank details.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Bank details retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BankDetail"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+    post:
+      tags:
+        - Payouts
+      summary: Add bank detail
+      description: Add a new bank account for payouts.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - accountHolderName
+                - accountNumber
+                - ifscCode
+                - bankName
+              properties:
+                accountHolderName:
+                  type: string
+                accountNumber:
+                  type: string
+                  pattern: "^[0-9]{9,18}$"
+                ifscCode:
+                  type: string
+                  pattern: "^[A-Za-z]{4}0[A-Za-z0-9]{6}$"
+                bankName:
+                  type: string
+                accountType:
+                  type: string
+                  enum: [savings, current]
+                  default: savings
+      responses:
+        "201":
+          description: Bank detail added
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /api/payouts/bank-details/{id}:
+    delete:
+      tags:
+        - Payouts
+      summary: Delete bank detail
+      description: Remove a saved bank account.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Bank detail deleted
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+  /api/payouts/bank-details/{id}/default:
+    patch:
+      tags:
+        - Payouts
+      summary: Set default bank detail
+      description: Set a bank account as the default for payouts.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Default bank detail set
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /api/payouts/claim:
+    post:
+      tags:
+        - Payouts
+      summary: Claim funds
+      description: Burn tokens and request payout to bank account.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - amountUSD
+                - bankDetailId
+              properties:
+                amountUSD:
+                  type: number
+                  minimum: 10
+                  description: Amount in USD (minimum $10)
+                bankDetailId:
+                  type: string
+                  description: Bank detail ID for payout
+      responses:
+        "200":
+          description: Claim initiated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  claimId:
+                    type: string
+                  burnTransactionHash:
+                    type: string
+                  amountUSD:
+                    type: number
+                  amountINR:
+                    type: number
+                  status:
+                    type: string
+        "400":
+          description: Insufficient balance or invalid request
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /api/payouts/claims:
+    get:
+      tags:
+        - Payouts
+      summary: Get claim history
+      description: Retrieve the user's payout claim history.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Claims retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Payout"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /api/payouts/claims/{id}:
+    get:
+      tags:
+        - Payouts
+      summary: Get claim details
+      description: Retrieve details of a specific claim.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Claim details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payout"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+  /api/payouts/burns:
+    get:
+      tags:
+        - Payouts
+      summary: Get burn history
+      description: Retrieve the user's token burn history.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Burn history retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                    amount:
+                      type: string
+                    transactionHash:
+                      type: string
+                    status:
+                      type: string
+                    createdAt:
+                      type: string
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /api/payouts/burns/{burnRecordId}/retry:
+    post:
+      tags:
+        - Payouts
+      summary: Retry failed burn
+      description: Retry a failed token burn transaction.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: burnRecordId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Burn retry initiated
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /api/payouts/burns/{burnRecordId}/verify:
+    post:
+      tags:
+        - Payouts
+      summary: Verify burn status
+      description: Manually verify/check a burn transaction status.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: burnRecordId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Burn status verified
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /api/payouts/webhook/razorpay:
+    post:
+      tags:
+        - Payouts
+      summary: Razorpay webhook
+      description: Webhook endpoint for Razorpay payout status updates.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Webhook processed

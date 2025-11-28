@@ -1,0 +1,347 @@
+openapi: 3.0.0
+info:
+  title: B2B Marketplace API - Products
+  version: 1.0.0
+
+paths:
+  /api/products:
+    get:
+      tags:
+        - Products
+      summary: Get all products
+      description: Retrieve a paginated list of products with optional filters.
+      security: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: category
+          in: query
+          schema:
+            type: string
+          description: Filter by category ID
+        - name: minPrice
+          in: query
+          schema:
+            type: number
+        - name: maxPrice
+          in: query
+          schema:
+            type: number
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search in product name and description
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [price_asc, price_desc, newest, rating]
+      responses:
+        "200":
+          description: Products retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  products:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Product"
+                  pagination:
+                    type: object
+                    properties:
+                      currentPage:
+                        type: integer
+                      totalPages:
+                        type: integer
+                      totalProducts:
+                        type: integer
+
+    post:
+      tags:
+        - Products
+      summary: Create a new product
+      description: Create a new product (vendor only).
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - description
+                - price
+                - category
+                - stock
+              properties:
+                name:
+                  type: string
+                  minLength: 3
+                  maxLength: 200
+                description:
+                  type: string
+                  minLength: 10
+                price:
+                  type: number
+                  minimum: 0
+                category:
+                  type: string
+                  description: Category ID
+                stock:
+                  type: integer
+                  minimum: 0
+                images:
+                  type: array
+                  items:
+                    type: string
+                  description: Array of image URLs
+                specifications:
+                  type: object
+                  description: Product specifications
+      responses:
+        "201":
+          description: Product created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  product:
+                    $ref: "#/components/schemas/Product"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Vendor access required
+
+  /api/products/featured:
+    get:
+      tags:
+        - Products
+      summary: Get featured products
+      description: Retrieve featured/promoted products.
+      security: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 8
+      responses:
+        "200":
+          description: Featured products retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+
+  /api/products/vendor/my-products:
+    get:
+      tags:
+        - Products
+      summary: Get vendor's products
+      description: Retrieve all products belonging to the authenticated vendor.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, inactive, all]
+      responses:
+        "200":
+          description: Vendor products retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  products:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Product"
+                  pagination:
+                    type: object
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Vendor access required
+
+  /api/products/{id}:
+    get:
+      tags:
+        - Products
+      summary: Get product by ID
+      description: Retrieve a single product by its ID.
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Product ID
+      responses:
+        "200":
+          description: Product retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+    put:
+      tags:
+        - Products
+      summary: Update product
+      description: Update an existing product (vendor only, must own the product).
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                price:
+                  type: number
+                stock:
+                  type: integer
+                images:
+                  type: array
+                  items:
+                    type: string
+                isActive:
+                  type: boolean
+      responses:
+        "200":
+          description: Product updated successfully
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Not authorized to update this product
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+    delete:
+      tags:
+        - Products
+      summary: Delete product
+      description: Delete a product (vendor only, must own the product).
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Product deleted successfully
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Not authorized to delete this product
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+  /api/products/{id}/related:
+    get:
+      tags:
+        - Products
+      summary: Get related products
+      description: Retrieve products related to the specified product.
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 4
+      responses:
+        "200":
+          description: Related products retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+
+  /api/products/{id}/status:
+    patch:
+      tags:
+        - Products
+      summary: Update product status
+      description: Update the active/inactive status of a product.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                isActive:
+                  type: boolean
+      responses:
+        "200":
+          description: Product status updated
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Not authorized to update this product

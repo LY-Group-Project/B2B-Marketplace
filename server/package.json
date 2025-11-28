@@ -36,6 +36,8 @@
     "pdfkit": "^0.17.2",
     "razorpay": "^2.9.6",
     "stripe": "^16.12.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "web3": "^1.10.4"
   },
   "devDependencies": {

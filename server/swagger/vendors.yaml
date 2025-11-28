@@ -1,0 +1,221 @@
+openapi: 3.0.0
+info:
+  title: B2B Marketplace API - Vendors
+  version: 1.0.0
+
+paths:
+  /api/vendors/admin/all:
+    get:
+      tags:
+        - Vendors
+      summary: Get all vendors (Admin)
+      description: Retrieve all vendors in the system (admin only).
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [approved, pending, rejected]
+      responses:
+        "200":
+          description: Vendors retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  vendors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        _id:
+                          type: string
+                        name:
+                          type: string
+                        email:
+                          type: string
+                        vendorProfile:
+                          type: object
+                  pagination:
+                    type: object
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Admin access required
+
+  /api/vendors/admin/{id}:
+    get:
+      tags:
+        - Vendors
+      summary: Get vendor details (Admin)
+      description: Retrieve detailed information about a specific vendor.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Vendor details retrieved
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Admin access required
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+  /api/vendors/admin/{id}/status:
+    patch:
+      tags:
+        - Vendors
+      summary: Update vendor status (Admin)
+      description: Approve or reject a vendor application.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [approved, rejected]
+                reason:
+                  type: string
+                  description: Reason for rejection
+      responses:
+        "200":
+          description: Vendor status updated
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Admin access required
+
+  /api/vendors/profile:
+    patch:
+      tags:
+        - Vendors
+      summary: Update vendor profile
+      description: Update the current vendor's profile information.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                businessName:
+                  type: string
+                businessAddress:
+                  type: string
+                businessDescription:
+                  type: string
+                gstNumber:
+                  type: string
+                panNumber:
+                  type: string
+                logo:
+                  type: string
+                  description: Logo image URL
+      responses:
+        "200":
+          description: Profile updated
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Vendor access required
+
+  /api/vendors/stats:
+    get:
+      tags:
+        - Vendors
+      summary: Get vendor statistics
+      description: Retrieve sales and performance statistics for the vendor.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Statistics retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalSales:
+                    type: number
+                  totalOrders:
+                    type: integer
+                  totalProducts:
+                    type: integer
+                  pendingOrders:
+                    type: integer
+                  completedOrders:
+                    type: integer
+                  averageRating:
+                    type: number
+                  revenue:
+                    type: object
+                    properties:
+                      thisMonth:
+                        type: number
+                      lastMonth:
+                        type: number
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Vendor access required
+
+  /api/vendors/orders:
+    get:
+      tags:
+        - Vendors
+      summary: Get vendor orders
+      description: Retrieve all orders for the vendor's products.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Orders retrieved
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Vendor access required

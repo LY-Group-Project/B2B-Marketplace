@@ -1,0 +1,367 @@
+openapi: 3.0.0
+info:
+  title: B2B Marketplace API - Disputes
+  version: 1.0.0
+
+paths:
+  /api/disputes:
+    get:
+      tags:
+        - Disputes
+      summary: Get all disputes
+      description: Retrieve disputes. Admin sees all, users see their own.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [open, in_progress, resolved, closed]
+        - name: priority
+          in: query
+          schema:
+            type: string
+            enum: [low, medium, high, urgent]
+      responses:
+        "200":
+          description: Disputes retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Dispute"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+    post:
+      tags:
+        - Disputes
+      summary: Create a dispute
+      description: Create a new dispute for an order.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - orderId
+                - reason
+              properties:
+                orderId:
+                  type: string
+                  description: Order ID to dispute
+                reason:
+                  type: string
+                  minLength: 10
+                  maxLength: 1000
+                  description: Detailed reason for the dispute
+      responses:
+        "201":
+          description: Dispute created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  dispute:
+                    $ref: "#/components/schemas/Dispute"
+        "400":
+          description: Order not eligible for dispute or already disputed
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /api/disputes/proofs/{filename}:
+    get:
+      tags:
+        - Disputes
+      summary: Get proof image
+      description: Retrieve a proof image from a dispute.
+      security: []
+      parameters:
+        - name: filename
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Image retrieved
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Image not found
+        "410":
+          description: Image has expired (older than 7 days)
+
+  /api/disputes/{id}:
+    get:
+      tags:
+        - Disputes
+      summary: Get dispute by ID
+      description: Retrieve a specific dispute by ID.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Dispute retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dispute"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Not authorized to view this dispute
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+  /api/disputes/order/{orderId}:
+    get:
+      tags:
+        - Disputes
+      summary: Get dispute by order ID
+      description: Retrieve the dispute associated with an order.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Dispute retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dispute"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          description: No dispute found for this order
+
+  /api/disputes/{id}/messages:
+    post:
+      tags:
+        - Disputes
+      summary: Send message in dispute
+      description: Send a message in the dispute chat. Supports image uploads.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  description: Message text
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  maxItems: 5
+                  description: Proof images (max 5, 5MB each)
+      responses:
+        "200":
+          description: Message sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: object
+                    properties:
+                      sender:
+                        type: string
+                      content:
+                        type: string
+                      images:
+                        type: array
+                        items:
+                          type: string
+                      timestamp:
+                        type: string
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Not authorized to send messages in this dispute
+
+  /api/disputes/{id}/resolve:
+    post:
+      tags:
+        - Disputes
+      summary: Resolve dispute (Admin)
+      description: Admin resolves the dispute by choosing a winner.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - winner
+              properties:
+                winner:
+                  type: string
+                  enum: [buyer, seller]
+                notes:
+                  type: string
+                  maxLength: 1000
+                  description: Resolution notes
+      responses:
+        "200":
+          description: Dispute resolved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  dispute:
+                    $ref: "#/components/schemas/Dispute"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Admin access required
+
+  /api/disputes/{id}/priority:
+    patch:
+      tags:
+        - Disputes
+      summary: Update priority (Admin)
+      description: Update the priority level of a dispute.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - priority
+              properties:
+                priority:
+                  type: string
+                  enum: [low, medium, high, urgent]
+      responses:
+        "200":
+          description: Priority updated
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Admin access required
+
+  /api/disputes/{id}/assign:
+    patch:
+      tags:
+        - Disputes
+      summary: Assign admin (Admin)
+      description: Assign an admin to handle the dispute.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - adminId
+              properties:
+                adminId:
+                  type: string
+                  description: Admin user ID to assign
+      responses:
+        "200":
+          description: Admin assigned
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Admin access required
+
+  /api/disputes/{id}/close:
+    post:
+      tags:
+        - Disputes
+      summary: Close dispute
+      description: Close a dispute without resolution.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  maxLength: 500
+      responses:
+        "200":
+          description: Dispute closed
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"

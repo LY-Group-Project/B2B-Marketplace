@@ -1,0 +1,342 @@
+openapi: 3.0.0
+info:
+  title: B2B Marketplace API - Orders
+  version: 1.0.0
+
+paths:
+  /api/orders:
+    post:
+      tags:
+        - Orders
+      summary: Create a new order
+      description: Place a new order for products in the cart.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - items
+                - shippingAddress
+                - paymentMethod
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      product:
+                        type: string
+                        description: Product ID
+                      quantity:
+                        type: integer
+                        minimum: 1
+                shippingAddress:
+                  type: object
+                  required:
+                    - street
+                    - city
+                    - state
+                    - zipCode
+                    - country
+                  properties:
+                    street:
+                      type: string
+                    city:
+                      type: string
+                    state:
+                      type: string
+                    zipCode:
+                      type: string
+                    country:
+                      type: string
+                    phone:
+                      type: string
+                paymentMethod:
+                  type: string
+                  enum: [paypal, razorpay, escrow]
+                paymentDetails:
+                  type: object
+                  description: Payment-specific details (PayPal order ID, Razorpay payment ID, etc.)
+      responses:
+        "201":
+          description: Order created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  order:
+                    $ref: "#/components/schemas/Order"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /api/orders/my-orders:
+    get:
+      tags:
+        - Orders
+      summary: Get user's orders
+      description: Retrieve all orders placed by the authenticated user.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, processing, shipped, delivered, cancelled]
+      responses:
+        "200":
+          description: Orders retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orders:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Order"
+                  pagination:
+                    type: object
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /api/orders/vendor/my-orders:
+    get:
+      tags:
+        - Orders
+      summary: Get vendor's orders
+      description: Retrieve all orders containing the vendor's products.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Vendor orders retrieved
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Vendor access required
+
+  /api/orders/admin/all:
+    get:
+      tags:
+        - Orders
+      summary: Get all orders (Admin)
+      description: Retrieve all orders in the system (admin only).
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: All orders retrieved
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Admin access required
+
+  /api/orders/carriers/supported:
+    get:
+      tags:
+        - Orders
+      summary: Get supported shipping carriers
+      description: Retrieve list of supported shipping carriers for tracking.
+      security: []
+      responses:
+        "200":
+          description: Carriers list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code:
+                      type: string
+                    name:
+                      type: string
+
+  /api/orders/{id}:
+    get:
+      tags:
+        - Orders
+      summary: Get order by ID
+      description: Retrieve a single order by its ID.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Order retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+  /api/orders/{id}/status:
+    patch:
+      tags:
+        - Orders
+      summary: Update order status
+      description: Update the status of an order (vendor only).
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [processing, shipped, delivered]
+                trackingNumber:
+                  type: string
+                  description: Required when status is 'shipped'
+                carrier:
+                  type: string
+                  description: Shipping carrier code
+      responses:
+        "200":
+          description: Order status updated
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Not authorized to update this order
+
+  /api/orders/{id}/cancel:
+    patch:
+      tags:
+        - Orders
+      summary: Cancel order
+      description: Cancel an order (only allowed before shipping).
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+      responses:
+        "200":
+          description: Order cancelled
+        "400":
+          description: Order cannot be cancelled
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /api/orders/{id}/tracking:
+    get:
+      tags:
+        - Orders
+      summary: Get tracking information
+      description: Retrieve shipping tracking information for an order.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Tracking info retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trackingNumber:
+                    type: string
+                  carrier:
+                    type: string
+                  status:
+                    type: string
+                  events:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                        location:
+                          type: string
+                        description:
+                          type: string
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"

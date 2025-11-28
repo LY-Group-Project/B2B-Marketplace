@@ -1,292 +1,363 @@
-# Multivendor E-commerce Marketplace
+# B2B Marketplace
 
-A comprehensive full-stack multivendor e-commerce platform built with React, Node.js, Express, and MongoDB. This platform allows multiple vendors to sell their products while providing customers with a seamless shopping experience.
+<div align="center">
 
-## 🚀 Features
+![B2B Marketplace](https://img.shields.io/badge/B2B-Marketplace-blue?style=for-the-badge)
+![Node.js](https://img.shields.io/badge/Node.js-18+-green?style=for-the-badge&logo=node.js)
+![React](https://img.shields.io/badge/React-18-blue?style=for-the-badge&logo=react)
+![MongoDB](https://img.shields.io/badge/MongoDB-4.4+-green?style=for-the-badge&logo=mongodb)
+![Solidity](https://img.shields.io/badge/Solidity-0.8.20-blue?style=for-the-badge&logo=solidity)
 
-### Customer Features
+A comprehensive full-stack multivendor B2B e-commerce platform with blockchain-based escrow, secure payment processing, and advanced vendor management.
 
-- **User Registration & Authentication** - Secure account creation and login
-- **Product Browsing** - Browse products with advanced filtering and search
-- **Shopping Cart** - Add/remove items, quantity management
-- **Order Management** - Place orders, track order status
-- **Product Reviews** - Rate and review products
-- **Responsive Design** - Mobile-first, responsive UI
+[Features](#-features) • [Tech Stack](#-tech-stack) • [Quick Start](#-quick-start) • [API Docs](#-api-documentation) • [Contributing](#-contributing)
 
-### Vendor Features
+</div>
 
-- **Vendor Registration** - Apply to become a vendor
-- **Product Management** - Add, edit, delete products
-- **Inventory Management** - Track stock levels
-- **Order Management** - Process customer orders
-- **Analytics Dashboard** - View sales and performance metrics
-- **Commission System** - Automatic commission calculation
+---
 
-### Admin Features
+## 🌟 Features
 
+### 🛒 Customer Features
+- **User Registration & Authentication** - Secure JWT-based auth with WebAuthn/Passkey support
+- **Product Browsing** - Advanced search, filtering, and category navigation
+- **Shopping Cart** - Persistent cart with quantity management
+- **Order Management** - Place orders, track shipments, view order history
+- **Product Reviews** - Rate and review purchased products
+- **Multiple Payment Options** - PayPal, Razorpay (UPI, Cards, Netbanking)
+- **Blockchain Escrow** - Secure transactions with KooshCoin tokens
+- **Responsive Design** - Mobile-first, works on all devices
+
+### 🏪 Vendor Features
+- **Vendor Registration** - Apply to become a vendor with business verification
+- **Product Management** - Full CRUD operations with image uploads
+- **Inventory Management** - Track stock levels and low-stock alerts
+- **Order Processing** - Manage incoming orders, update status, add tracking
+- **Analytics Dashboard** - Sales, revenue, and performance metrics
+- **Commission System** - Transparent commission tracking
+- **Automated Payouts** - Direct bank transfers via Razorpay
+- **Dispute Management** - Handle customer disputes with chat support
+
+### 👑 Admin Features
+- **Dashboard Analytics** - Platform-wide statistics and insights
 - **User Management** - Manage customers, vendors, and admins
-- **Vendor Approval** - Approve/reject vendor applications
-- **Product Moderation** - Review and moderate products
-- **Order Oversight** - Monitor all orders across the platform
-- **Category Management** - Manage product categories
-- **Analytics & Reports** - Platform-wide analytics
+- **Vendor Approval** - Review and approve vendor applications
+- **Product Moderation** - Review and moderate product listings
+- **Order Oversight** - Monitor all platform orders
+- **Category Management** - Create and manage product categories
+- **Payout Management** - Monitor and manage vendor payouts
+- **Dispute Resolution** - Mediate disputes and resolve issues
+
+### 🔗 Blockchain Features
+- **KooshCoin Token** - Platform's native ERC20 token
+- **Smart Contract Escrow** - Secure fund holding during transactions
+- **Automatic Release** - Funds released after delivery confirmation
+- **Dispute Resolution** - Admin-mediated blockchain dispute resolution
+- **Token Burning** - Convert tokens to fiat via bank payout
 
 ## 🛠️ Tech Stack
 
-### Backend
-
-- **Node.js** - Runtime environment
-- **Express.js** - Web framework
-- **MongoDB** - Database
-- **Mongoose** - ODM for MongoDB
-- **JWT** - Authentication
-- **bcryptjs** - Password hashing
-- **Multer** - File uploads
-- **Cloudinary** - Image storage
-- **Stripe** - Payment processing
-- **Nodemailer** - Email notifications
-
 ### Frontend
+| Technology | Purpose |
+|------------|---------|
+| React 18 | UI Framework |
+| Vite | Build Tool |
+| React Router v7 | Client-side Routing |
+| TanStack Query | Server State Management |
+| Zustand | Client State Management |
+| Tailwind CSS | Styling |
+| Framer Motion | Animations |
+| React Hook Form | Form Handling |
+| Lucide React | Icons |
 
-- **React 18** - UI library
-- **React Router** - Client-side routing
-- **React Query** - Data fetching and caching
-- **Zustand** - State management
-- **Tailwind CSS** - Styling
-- **React Hook Form** - Form handling
-- **React Hot Toast** - Notifications
-- **Lucide React** - Icons
-- **Framer Motion** - Animations
+### Backend
+| Technology | Purpose |
+|------------|---------|
+| Node.js | Runtime |
+| Express.js | Web Framework |
+| MongoDB | Database |
+| Mongoose | ODM |
+| JWT | Authentication |
+| WebAuthn | Passwordless Auth |
+| Swagger/OpenAPI | API Documentation |
+
+### Payments & Blockchain
+| Technology | Purpose |
+|------------|---------|
+| PayPal SDK | International Payments |
+| Razorpay | Indian Payment Gateway |
+| Razorpay Payouts | Vendor Bank Transfers |
+| Solidity | Smart Contracts |
+| Web3.js | Blockchain Integration |
+| Hardhat | Smart Contract Development |
+
+### DevOps & Tools
+| Technology | Purpose |
+|------------|---------|
+| ImgBB | Image Hosting |
+| Nodemailer | Email Service |
+| PDFKit | Invoice Generation |
+| Morgan | HTTP Logging |
+| Helmet | Security Headers |
 
 ## 📁 Project Structure
 
 ```
-B2B Marketplace/
-├── client/                 # React frontend
+b2b-marketplace/
+├── client/                    # React Frontend
 │   ├── src/
-│   │   ├── components/     # Reusable components
-│   │   ├── pages/          # Page components
-│   │   ├── store/          # Zustand stores
-│   │   ├── services/       # API services
-│   │   └── ...
-│   ├── package.json
-│   └── ...
-├── server/                 # Node.js backend
-│   ├── controllers/        # Route controllers
-│   ├── middleware/         # Custom middleware
-│   ├── models/            # Database models
-│   ├── routes/            # API routes
-│   ├── utils/             # Utility functions
-│   ├── server.js          # Entry point
+│   │   ├── components/        # Reusable UI components
+│   │   ├── pages/             # Page components
+│   │   │   ├── admin/         # Admin dashboard pages
+│   │   │   └── vendor/        # Vendor dashboard pages
+│   │   ├── store/             # Zustand state stores
+│   │   ├── services/          # API service functions
+│   │   ├── helpers/           # Utility functions
+│   │   └── assets/            # Static assets
+│   ├── public/                # Public static files
 │   └── package.json
-└── README.md
+│
+├── server/                    # Node.js Backend
+│   ├── config/                # Configuration files
+│   ├── controllers/           # Route controllers
+│   ├── middleware/            # Express middleware
+│   ├── models/                # Mongoose models
+│   ├── routes/                # API routes
+│   ├── services/              # Business logic services
+│   ├── swagger/               # OpenAPI documentation
+│   ├── templates/             # Email templates
+│   ├── utils/                 # Utility functions
+│   └── package.json
+│
+├── solidity/                  # Smart Contracts
+│   ├── contracts/             # Solidity contracts
+│   │   ├── KooshCoin.sol      # ERC20 Token
+│   │   ├── Escrow.sol         # Escrow logic
+│   │   ├── EscrowFactory.sol  # Escrow deployment
+│   │   └── KooshBurner.sol    # Token burning
+│   ├── scripts/               # Deployment scripts
+│   ├── test/                  # Contract tests
+│   └── package.json
+│
+└── package.json               # Root package.json
 ```
 
-## 🚀 Getting Started
+## 🚀 Quick Start
 
 ### Prerequisites
-
-- Node.js (v16 or higher)
-- MongoDB (v4.4 or higher)
+- Node.js v18 or higher
+- MongoDB v4.4 or higher
 - npm or yarn
+- Git
 
 ### Installation
 
 1. **Clone the repository**
-
    ```bash
-   git clone <repository-url>
-   cd B2B-Marketplace
+   git clone https://github.com/The-Parth/b2b-marketplace.git
+   cd b2b-marketplace
    ```
 
-2. **Install backend dependencies**
-
+2. **Install all dependencies**
    ```bash
-   cd server
+   # Install root dependencies
    npm install
+
+   # Install server dependencies
+   cd server && npm install && cd ..
+
+   # Install client dependencies
+   cd client && npm install && cd ..
+
+   # Install solidity dependencies (optional)
+   cd solidity && npm install && cd ..
    ```
 
-3. **Install frontend dependencies**
+3. **Configure environment variables**
 
-   ```bash
-   cd ../client
-   npm install
-   ```
-
-4. **Environment Setup**
-
-   Create a `.env` file in the server directory:
-
+   Create `server/.env`:
    ```env
    NODE_ENV=development
    PORT=5000
-   MONGO_URI=mongodb://localhost:27017/multivendor-ecommerce
-   JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-   CLIENT_URL=http://localhost:3000
+   HOST=localhost
+   HOST_URL=http://localhost:5173
+   CLIENT_URL=http://localhost:5173
+   MONGO_URI=mongodb://localhost:27017/b2b-marketplace
+   JWT_SECRET=your-super-secret-jwt-key
 
-   # Cloudinary (for image uploads)
-   CLOUDINARY_CLOUD_NAME=your-cloudinary-cloud-name
-   CLOUDINARY_API_KEY=your-cloudinary-api-key
-   CLOUDINARY_API_SECRET=your-cloudinary-api-secret
+   # PayPal
+   PAYPAL_CLIENT_ID=your-paypal-client-id
+   PAYPAL_CLIENT_SECRET=your-paypal-client-secret
+   PAYPAL_MODE=sandbox
 
-   # Stripe (for payments)
-   STRIPE_SECRET_KEY=your-stripe-secret-key
-   STRIPE_PUBLISHABLE_KEY=your-stripe-publishable-key
+   # Razorpay
+   RAZORPAY_KEY_ID=your-razorpay-key-id
+   RAZORPAY_KEY_SECRET=your-razorpay-key-secret
 
-   # Email (for notifications)
+   # ImgBB
+   IMGBB_API_KEY=your-imgbb-api-key
+
+   # Email (Gmail)
    EMAIL_HOST=smtp.gmail.com
    EMAIL_PORT=587
    EMAIL_USER=your-email@gmail.com
    EMAIL_PASS=your-app-password
    ```
 
-   Create a `.env` file in the client directory:
-
+   Create `client/.env`:
    ```env
    VITE_API_URL=http://localhost:5000/api
    ```
 
-5. **Start MongoDB**
-
+4. **Start MongoDB**
    ```bash
-   # Make sure MongoDB is running on your system
    mongod
    ```
 
-6. **Start the backend server**
-
+5. **Run the application**
    ```bash
-   cd server
-   npm run dev
+   # From root directory - run both client and server
+   npm run both
+
+   # Or run separately:
+   npm run server  # Start backend on port 5000
+   npm run client  # Start frontend on port 5173
    ```
 
-7. **Start the frontend development server**
-
-   ```bash
-   cd client
-   npm run dev
-   ```
-
-8. **Access the application**
+6. **Access the application**
    - Frontend: http://localhost:5173
    - Backend API: http://localhost:5000
+   - API Documentation: http://localhost:5000/api-docs
+
+## 📖 API Documentation
+
+### Interactive Documentation
+Access the Swagger UI at: **http://localhost:5000/api-docs**
+
+### API Endpoints Summary
+
+| Module | Base Path | Description |
+|--------|-----------|-------------|
+| Authentication | `/api/auth` | User registration, login, profile |
+| WebAuthn | `/api/webauth` | Passkey authentication |
+| Products | `/api/products` | Product CRUD operations |
+| Orders | `/api/orders` | Order management |
+| Categories | `/api/categories` | Category management |
+| Vendors | `/api/vendors` | Vendor management |
+| Admin | `/api/admin` | Admin operations |
+| Reviews | `/api/reviews` | Product reviews |
+| PayPal | `/api/paypal` | PayPal payments |
+| Razorpay | `/api/razorpay` | Razorpay payments |
+| Escrow | `/api/escrows` | Blockchain escrow |
+| Payouts | `/api/payouts` | Vendor payouts |
+| Disputes | `/api/disputes` | Dispute management |
+| Invoices | `/api/invoices` | Invoice generation |
+| Upload | `/api/upload` | Image uploads |
+| Images | `/api/images` | Image proxy/cache |
+
+For detailed API documentation, see [Server README](./server/README.md).
 
 ## 🔧 Available Scripts
 
-### Backend Scripts
-
+### Root Directory
 ```bash
-npm start          # Start production server
-npm run dev        # Start development server with nodemon
+npm run client    # Start frontend development server
+npm run server    # Start backend development server
+npm run both      # Start both client and server
 ```
 
-### Frontend Scripts
-
+### Client Directory
 ```bash
-npm run dev        # Start development server
-npm run build      # Build for production
-npm run preview    # Preview production build
-npm run lint       # Run ESLint
+npm run dev       # Start Vite development server
+npm run build     # Build for production
+npm run preview   # Preview production build
+npm run lint      # Run ESLint
 ```
 
-## 📊 Database Models
+### Server Directory
+```bash
+npm start         # Start production server
+npm run dev       # Start development server with nodemon
+```
 
-### User Model
+### Solidity Directory
+```bash
+npx hardhat compile    # Compile contracts
+npx hardhat test       # Run tests
+npx hardhat node       # Start local blockchain
+npx hardhat run scripts/deploy.js  # Deploy contracts
+```
 
-- Customer, Vendor, Admin roles
-- Authentication and profile data
-- Vendor-specific business information
-- Commission and approval status
+## 🔐 Security Features
 
-### Product Model
+- **JWT Authentication** with secure token handling
+- **WebAuthn/Passkey** for passwordless authentication
+- **Password Hashing** with bcryptjs
+- **Rate Limiting** to prevent abuse
+- **Helmet.js** for HTTP security headers
+- **CORS** properly configured
+- **Input Validation** with express-validator
+- **Blockchain Escrow** for secure transactions
 
-- Product details and pricing
-- Inventory management
-- Image galleries
-- SEO optimization
-- Vendor association
+## 💰 Payment Flow
 
-### Order Model
+### Standard Payment (PayPal/Razorpay)
+1. Customer adds items to cart
+2. Customer proceeds to checkout
+3. Customer selects payment method
+4. Payment is processed
+5. Order is created
+6. Vendor receives notification
+7. Vendor ships product
+8. Order marked as delivered
 
-- Order processing and tracking
-- Multi-vendor order splitting
-- Payment and shipping information
-- Status management
+### Escrow Payment (KooshCoin)
+1. Customer creates order with escrow
+2. KooshCoin tokens locked in smart contract
+3. Vendor ships product
+4. Customer confirms delivery
+5. Tokens released to vendor
+6. Vendor can claim funds to bank account
 
-### Category Model
+## 🚢 Deployment
 
-- Hierarchical category structure
-- SEO-friendly slugs
-- Active/inactive status
+### Backend (Recommended Platforms)
+- Heroku
+- DigitalOcean App Platform
+- AWS EC2/ECS
+- Railway
 
-## 🔐 Authentication & Authorization
+### Frontend (Recommended Platforms)
+- Vercel (recommended for Vite)
+- Netlify
+- AWS S3 + CloudFront
 
-- **JWT-based authentication** for secure API access
-- **Role-based access control** (Customer, Vendor, Admin)
-- **Protected routes** on both frontend and backend
-- **Password hashing** with bcryptjs
-- **Session management** with secure tokens
-
-## 💳 Payment Integration
-
-- **Stripe integration** for secure payments
-- **Multiple payment methods** support
-- **Commission calculation** for vendors
-- **Order splitting** for multi-vendor orders
-
-## 📱 Responsive Design
-
-- **Mobile-first approach** with Tailwind CSS
-- **Responsive grid layouts** for all screen sizes
-- **Touch-friendly interfaces** for mobile devices
-- **Progressive Web App** features
-
-## 🚀 Deployment
-
-### Backend Deployment
-
-1. Set up MongoDB Atlas or your preferred MongoDB hosting
-2. Configure environment variables
-3. Deploy to platforms like Heroku, DigitalOcean, or AWS
-
-### Frontend Deployment
-
-1. Build the production bundle: `npm run build`
-2. Deploy to platforms like Vercel, Netlify, or AWS S3
+### Database
+- MongoDB Atlas (recommended)
+- Self-hosted MongoDB
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch: `git checkout -b feature-name`
-3. Commit changes: `git commit -m 'Add some feature'`
-4. Push to branch: `git push origin feature-name`
-5. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🆘 Support
 
-For support and questions:
-
 - Create an issue in the repository
-- Contact the development team
-- Check the documentation
-
-## 🔮 Future Enhancements
-
-- [ ] Real-time notifications
-- [ ] Advanced analytics dashboard
-- [ ] Mobile app (React Native)
-- [ ] Multi-language support
-- [ ] Advanced search with Elasticsearch
-- [ ] AI-powered product recommendations
-- [ ] Live chat support
-- [ ] Advanced inventory management
-- [ ] Subscription-based vendor plans
-- [ ] API rate limiting and monitoring
+- Check the [API Documentation](http://localhost:5000/api-docs)
+- Read the [Server README](./server/README.md) for detailed backend info
+- Read the [Client README](./client/README.md) for frontend details
+- Read the [Solidity README](./solidity/README.md) for smart contract info
 
 ---
 
-**Note**: This is a comprehensive multivendor e-commerce platform with all essential features. The codebase is production-ready and follows best practices for security, scalability, and maintainability.
+<div align="center">
+Made with ❤️ by the B2B Marketplace Team
+</div>

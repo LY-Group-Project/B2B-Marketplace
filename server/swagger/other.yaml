@@ -1,0 +1,594 @@
+openapi: 3.0.0
+info:
+  title: B2B Marketplace API - Other Endpoints
+  version: 1.0.0
+
+paths:
+  # Categories
+  /api/categories:
+    get:
+      tags:
+        - Categories
+      summary: Get all categories
+      description: Retrieve all active categories.
+      security: []
+      responses:
+        "200":
+          description: Categories retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+
+    post:
+      tags:
+        - Categories
+      summary: Create category (Admin)
+      description: Create a new category (admin only).
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                slug:
+                  type: string
+                description:
+                  type: string
+                image:
+                  type: string
+                sortOrder:
+                  type: integer
+                isActive:
+                  type: boolean
+                  default: true
+      responses:
+        "201":
+          description: Category created
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Admin access required
+
+  /api/categories/vendor:
+    post:
+      tags:
+        - Categories
+      summary: Create category (Vendor)
+      description: Vendor can create a new category.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+      responses:
+        "201":
+          description: Category created
+        "400":
+          description: Category already exists
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Vendor access required
+
+  /api/categories/{id}:
+    get:
+      tags:
+        - Categories
+      summary: Get category by ID
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Category retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+    put:
+      tags:
+        - Categories
+      summary: Update category (Admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                isActive:
+                  type: boolean
+      responses:
+        "200":
+          description: Category updated
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Admin access required
+
+    delete:
+      tags:
+        - Categories
+      summary: Delete category (Admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Category deleted
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Admin access required
+
+  # Reviews
+  /api/reviews/product/{productId}:
+    get:
+      tags:
+        - Reviews
+      summary: Get product reviews
+      description: Retrieve all approved reviews for a product.
+      security: []
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: rating
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 5
+      responses:
+        "200":
+          description: Reviews retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reviews:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Review"
+                  pagination:
+                    type: object
+                  ratingStats:
+                    type: array
+                  averageRating:
+                    type: object
+
+  /api/reviews/user/{productId}:
+    get:
+      tags:
+        - Reviews
+      summary: Get user's review for product
+      description: Retrieve the current user's review for a specific product.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User review retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  review:
+                    $ref: "#/components/schemas/Review"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /api/reviews:
+    post:
+      tags:
+        - Reviews
+      summary: Create a review
+      description: Create a new review for a product.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - productId
+                - rating
+                - comment
+              properties:
+                productId:
+                  type: string
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                comment:
+                  type: string
+      responses:
+        "201":
+          description: Review created
+        "400":
+          description: Already reviewed this product
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /api/reviews/{reviewId}:
+    put:
+      tags:
+        - Reviews
+      summary: Update a review
+      description: Update your own review.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: reviewId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                comment:
+                  type: string
+      responses:
+        "200":
+          description: Review updated
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          description: Review not found or unauthorized
+
+    delete:
+      tags:
+        - Reviews
+      summary: Delete a review
+      description: Delete your own review.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: reviewId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Review deleted
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          description: Review not found or unauthorized
+
+  # Upload
+  /api/upload/images:
+    post:
+      tags:
+        - Upload
+      summary: Upload multiple images
+      description: Upload multiple images to ImgBB (max 5).
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  maxItems: 5
+      responses:
+        "200":
+          description: Images uploaded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  urls:
+                    type: array
+                    items:
+                      type: string
+                  files:
+                    type: array
+                    items:
+                      type: object
+        "400":
+          description: No files uploaded
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /api/upload/image:
+    post:
+      tags:
+        - Upload
+      summary: Upload single image
+      description: Upload a single image to ImgBB.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Image uploaded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  url:
+                    type: string
+                  file:
+                    type: object
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  # Images (Proxy)
+  /api/images/{imageId}/{filename}:
+    get:
+      tags:
+        - Images
+      summary: Get proxied image
+      description: Proxy and cache images from ImgBB.
+      security: []
+      parameters:
+        - name: imageId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: filename
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Image retrieved
+          headers:
+            X-Cache:
+              schema:
+                type: string
+                enum: [HIT, MISS]
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Image not found
+
+  /api/images/cache/stats:
+    get:
+      tags:
+        - Images
+      summary: Get cache statistics
+      description: Retrieve image cache statistics.
+      security: []
+      responses:
+        "200":
+          description: Cache stats
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cacheDir:
+                    type: string
+                  cachedImages:
+                    type: integer
+                  totalSizeBytes:
+                    type: integer
+                  totalSizeMB:
+                    type: string
+                  memoryCacheEntries:
+                    type: integer
+                  maxAgeHours:
+                    type: number
+
+  /api/images/cache/clear:
+    delete:
+      tags:
+        - Images
+      summary: Clear image cache
+      description: Clear the image cache.
+      security: []
+      responses:
+        "200":
+          description: Cache cleared
+
+  # Invoices
+  /api/invoices/{id}/pdf:
+    get:
+      tags:
+        - Invoices
+      summary: Download invoice PDF
+      description: Download an order invoice as PDF.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Order ID
+      responses:
+        "200":
+          description: PDF invoice
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NotFoundError"
+
+  /api/invoices/{id}/html:
+    get:
+      tags:
+        - Invoices
+      summary: Get invoice HTML
+      description: Get invoice as HTML for browser printing.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: HTML invoice
+          content:
+            text/html:
+              schema:
+                type: string
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  # Address
+  /api/address/autocomplete:
+    get:
+      tags:
+        - Address
+      summary: Address autocomplete
+      description: Get address suggestions for autocomplete.
+      security: []
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Search query
+      responses:
+        "200":
+          description: Address suggestions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    display_name:
+                      type: string
+                    lat:
+                      type: string
+                    lon:
+                      type: string
+
+  # Health Check
+  /api/health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Check if the API is running.
+      security: []
+      responses:
+        "200":
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  timestamp:
+                    type: string
+                  uptime:
+                    type: number

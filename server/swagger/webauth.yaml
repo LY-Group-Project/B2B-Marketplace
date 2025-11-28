@@ -1,0 +1,214 @@
+openapi: 3.0.0
+info:
+  title: B2B Marketplace API - WebAuthn
+  version: 1.0.0
+
+paths:
+  /api/webauth:
+    get:
+      tags:
+        - WebAuthn
+      summary: WebAuthn status
+      description: Check if WebAuthn endpoints are working.
+      security: []
+      responses:
+        "200":
+          description: WebAuthn is working
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Working
+
+  /api/webauth/register:
+    post:
+      tags:
+        - WebAuthn
+      summary: Start passkey registration
+      description: Initialize passkey/WebAuthn registration for the authenticated user.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+              properties:
+                username:
+                  type: string
+                  format: email
+                  description: User's email (must match authenticated user)
+      responses:
+        "200":
+          description: Registration options
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  challenge:
+                    type: string
+                  rp:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      id:
+                        type: string
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      name:
+                        type: string
+                      displayName:
+                        type: string
+                  pubKeyCredParams:
+                    type: array
+                    items:
+                      type: object
+                  timeout:
+                    type: integer
+                  attestation:
+                    type: string
+                  authenticatorSelection:
+                    type: object
+        "400":
+          description: Username mismatch or invalid
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          description: User not found
+
+  /api/webauth/verify-registration:
+    post:
+      tags:
+        - WebAuthn
+      summary: Verify passkey registration
+      description: Complete passkey registration by verifying the credential.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - credential
+              properties:
+                username:
+                  type: string
+                  format: email
+                credential:
+                  type: object
+                  description: WebAuthn credential response from authenticator
+      responses:
+        "200":
+          description: Registration verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        "400":
+          description: Verification failed
+
+  /api/webauth/login:
+    post:
+      tags:
+        - WebAuthn
+      summary: Start passkey login
+      description: Initialize passkey/WebAuthn authentication.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+              properties:
+                username:
+                  type: string
+                  format: email
+      responses:
+        "200":
+          description: Authentication options
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  challenge:
+                    type: string
+                  timeout:
+                    type: integer
+                  rpId:
+                    type: string
+                  allowCredentials:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        type:
+                          type: string
+        "400":
+          description: User not found or no passkeys registered
+
+  /api/webauth/verify-login:
+    post:
+      tags:
+        - WebAuthn
+      summary: Verify passkey login
+      description: Complete passkey authentication and receive JWT token.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - assertion
+              properties:
+                username:
+                  type: string
+                  format: email
+                assertion:
+                  type: object
+                  description: WebAuthn assertion response from authenticator
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  token:
+                    type: string
+                    description: JWT token
+                  user:
+                    $ref: "#/components/schemas/User"
+        "400":
+          description: Authentication failed
+        "500":
+          description: Server error during verification

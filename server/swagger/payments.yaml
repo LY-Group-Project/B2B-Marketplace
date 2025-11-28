@@ -1,0 +1,206 @@
+openapi: 3.0.0
+info:
+  title: B2B Marketplace API - Payments
+  version: 1.0.0
+
+paths:
+  # PayPal Routes
+  /api/paypal/client-id:
+    get:
+      tags:
+        - Payments - PayPal
+      summary: Get PayPal Client ID
+      description: Retrieve the PayPal client ID for frontend initialization.
+      security: []
+      responses:
+        "200":
+          description: Client ID retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  clientId:
+                    type: string
+
+  /api/paypal/create-order:
+    post:
+      tags:
+        - Payments - PayPal
+      summary: Create PayPal order
+      description: Create a PayPal order for payment processing.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - amount
+                - orderId
+              properties:
+                amount:
+                  type: number
+                  description: Order amount in USD
+                orderId:
+                  type: string
+                  description: Internal order ID
+      responses:
+        "200":
+          description: PayPal order created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: PayPal order ID
+                  status:
+                    type: string
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /api/paypal/capture-order/{orderID}:
+    post:
+      tags:
+        - Payments - PayPal
+      summary: Capture PayPal payment
+      description: Capture the payment after customer approval.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: orderID
+          in: path
+          required: true
+          schema:
+            type: string
+          description: PayPal order ID
+      responses:
+        "200":
+          description: Payment captured
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  captureId:
+                    type: string
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "400":
+          description: Payment capture failed
+
+  # Razorpay Routes
+  /api/razorpay/key-id:
+    get:
+      tags:
+        - Payments - Razorpay
+      summary: Get Razorpay Key ID
+      description: Retrieve the Razorpay key ID for frontend initialization.
+      security: []
+      responses:
+        "200":
+          description: Key ID retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  keyId:
+                    type: string
+
+  /api/razorpay/create-order:
+    post:
+      tags:
+        - Payments - Razorpay
+      summary: Create Razorpay order
+      description: Create a Razorpay order for payment processing.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - amount
+              properties:
+                amount:
+                  type: number
+                  description: Order amount in INR (paise)
+                currency:
+                  type: string
+                  default: INR
+                receipt:
+                  type: string
+                  description: Order receipt/reference
+      responses:
+        "200":
+          description: Razorpay order created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Razorpay order ID
+                  amount:
+                    type: integer
+                  currency:
+                    type: string
+                  status:
+                    type: string
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /api/razorpay/verify-payment:
+    post:
+      tags:
+        - Payments - Razorpay
+      summary: Verify Razorpay payment
+      description: Verify payment signature and create the order.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - razorpay_order_id
+                - razorpay_payment_id
+                - razorpay_signature
+              properties:
+                razorpay_order_id:
+                  type: string
+                razorpay_payment_id:
+                  type: string
+                razorpay_signature:
+                  type: string
+                orderDetails:
+                  type: object
+                  description: Order details to create after verification
+      responses:
+        "200":
+          description: Payment verified and order created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  order:
+                    $ref: "#/components/schemas/Order"
+        "400":
+          description: Payment verification failed
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"

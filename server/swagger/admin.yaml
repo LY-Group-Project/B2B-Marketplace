@@ -1,0 +1,394 @@
+openapi: 3.0.0
+info:
+  title: B2B Marketplace API - Admin
+  version: 1.0.0
+
+paths:
+  /api/admin/dashboard:
+    get:
+      tags:
+        - Admin
+      summary: Get dashboard statistics
+      description: Retrieve platform-wide statistics and metrics.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Dashboard stats retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalUsers:
+                    type: integer
+                  totalVendors:
+                    type: integer
+                  totalProducts:
+                    type: integer
+                  totalOrders:
+                    type: integer
+                  totalRevenue:
+                    type: number
+                  pendingVendors:
+                    type: integer
+                  recentOrders:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Order"
+                  salesChart:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                        amount:
+                          type: number
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Admin access required
+
+  /api/admin/users:
+    get:
+      tags:
+        - Admin
+      summary: Get all users
+      description: Retrieve all users in the system.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum: [customer, vendor, admin]
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Users retrieved
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Admin access required
+
+  /api/admin/users/{id}/status:
+    patch:
+      tags:
+        - Admin
+      summary: Update user status
+      description: Activate, deactivate, or ban a user.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                isActive:
+                  type: boolean
+                isBanned:
+                  type: boolean
+                banReason:
+                  type: string
+      responses:
+        "200":
+          description: User status updated
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Admin access required
+
+  /api/admin/vendors:
+    get:
+      tags:
+        - Admin
+      summary: Get all vendors
+      description: Retrieve all vendors with their approval status.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Vendors retrieved
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Admin access required
+
+  /api/admin/vendors/{id}/status:
+    patch:
+      tags:
+        - Admin
+      summary: Update vendor approval
+      description: Approve or reject a vendor application.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                isApproved:
+                  type: boolean
+                rejectionReason:
+                  type: string
+      responses:
+        "200":
+          description: Vendor status updated
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Admin access required
+
+  /api/admin/products:
+    get:
+      tags:
+        - Admin
+      summary: Get all products
+      description: Retrieve all products in the system.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: vendor
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Products retrieved
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Admin access required
+
+  /api/admin/products/{id}/status:
+    patch:
+      tags:
+        - Admin
+      summary: Update product status
+      description: Approve, reject, or feature a product.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                isApproved:
+                  type: boolean
+                isFeatured:
+                  type: boolean
+                rejectionReason:
+                  type: string
+      responses:
+        "200":
+          description: Product status updated
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Admin access required
+
+  /api/admin/orders:
+    get:
+      tags:
+        - Admin
+      summary: Get all orders
+      description: Retrieve all orders in the system.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Orders retrieved
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Admin access required
+
+  /api/admin/categories:
+    get:
+      tags:
+        - Admin
+      summary: Get all categories
+      description: Retrieve all categories including inactive ones.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Categories retrieved
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Admin access required
+
+  /api/admin/payouts:
+    get:
+      tags:
+        - Admin
+      summary: Get all payouts
+      description: Retrieve all vendor payouts.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, processing, completed, failed]
+      responses:
+        "200":
+          description: Payouts retrieved
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Admin access required
+
+  /api/admin/payouts/pending:
+    get:
+      tags:
+        - Admin
+      summary: Get pending payouts
+      description: Retrieve all pending and failed payouts.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Pending payouts retrieved
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Admin access required
+
+  /api/admin/payouts/{id}/complete:
+    post:
+      tags:
+        - Admin
+      summary: Mark payout as complete
+      description: Manually mark a payout as completed.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Payout marked as complete
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Admin access required
+
+  /api/admin/payouts/{id}/status:
+    patch:
+      tags:
+        - Admin
+      summary: Update payout status
+      description: Update the status of a payout.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [pending, processing, completed, failed]
+                notes:
+                  type: string
+      responses:
+        "200":
+          description: Payout status updated
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Admin access required
+
+  /api/admin/payouts/{id}/retry:
+    post:
+      tags:
+        - Admin
+      summary: Retry failed payout
+      description: Retry a failed payout.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Payout retry initiated
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "403":
+          description: Admin access required
