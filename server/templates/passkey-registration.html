@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passkey Registered</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f4f4f4; padding: 20px 0;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background-color: #009688; padding: 30px 40px; text-align: center;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">Passkey Registered</h1>
+                        </td>
+                    </tr>
+                    
+                    <!-- Body -->
+                    <tr>
+                        <td style="padding: 40px;">
+                            <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6; color: #333333;">
+                                Hi <strong>{name}</strong>,
+                            </p>
+                            
+                            <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6; color: #333333;">
+                                Great news! A new passkey has been successfully registered to your account.
+                            </p>
+                            
+                            <!-- Passkey Details -->
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f9f9f9; border-radius: 4px; margin: 0 0 30px;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <table width="100%" cellpadding="8" cellspacing="0" border="0">
+                                            <tr>
+                                                <td style="font-size: 14px; color: #666666; width: 140px;">Passkey Name:</td>
+                                                <td style="font-size: 14px; color: #333333; font-weight: bold;">{passkeyName}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-size: 14px; color: #666666;">Device:</td>
+                                                <td style="font-size: 14px; color: #333333; font-weight: bold;">{device}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-size: 14px; color: #666666;">Registered On:</td>
+                                                <td style="font-size: 14px; color: #333333; font-weight: bold;">{registrationTime}</td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6; color: #333333;">
+                                You can now use this passkey for secure, password-free login to your account.
+                            </p>
+                            
+                            <!-- Benefits -->
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 30px;">
+                                <tr>
+                                    <td style="padding: 12px 20px; background-color: #e0f2f1; border-radius: 4px;">
+                                        <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #333333;">
+                                            ✓ No passwords to remember<br>
+                                            ✓ Faster login experience<br>
+                                            ✓ Enhanced security with biometric authentication
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6; color: #333333;">
+                                If you didn't register this passkey, please contact our support team immediately.
+                            </p>
+                            
+                            <!-- CTA Button -->
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                <tr>
+                                    <td align="center" style="padding: 10px 0;">
+                                        <a href="{managePasskeysLink}" style="display: inline-block; padding: 14px 40px; background-color: #009688; color: #ffffff; text-decoration: none; border-radius: 4px; font-size: 16px; font-weight: bold;">Manage Passkeys</a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f9f9f9; padding: 20px 40px; text-align: center; border-top: 1px solid #eeeeee;">
+                            <p style="margin: 0; font-size: 14px; color: #999999;">
+                                &copy; 2025 B2B Marketplace. All rights reserved.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

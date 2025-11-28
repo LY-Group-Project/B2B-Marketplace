@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Funds Released</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f4f4f4; padding: 20px 0;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background-color: #4CAF50; padding: 30px 40px; text-align: center;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">💰 Funds Released</h1>
+                        </td>
+                    </tr>
+                    
+                    <!-- Body -->
+                    <tr>
+                        <td style="padding: 40px;">
+                            <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6; color: #333333;">
+                                Hi <strong>{vendorName}</strong>,
+                            </p>
+                            
+                            <p style="margin: 0 0 30px; font-size: 16px; line-height: 1.6; color: #333333;">
+                                Great news! The funds for your order have been released from escrow and are now available in your account.
+                            </p>
+                            
+                            <!-- Amount Box -->
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 30px;">
+                                <tr>
+                                    <td align="center" style="padding: 30px; background-color: #e8f5e9; border-radius: 8px;">
+                                        <p style="margin: 0 0 10px; font-size: 16px; color: #666666;">Amount Released</p>
+                                        <p style="margin: 0; font-size: 36px; font-weight: bold; color: #4CAF50;">{amount}</p>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Transaction Details -->
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f9f9f9; border-radius: 4px; margin: 0 0 30px;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <table width="100%" cellpadding="8" cellspacing="0" border="0">
+                                            <tr>
+                                                <td style="font-size: 14px; color: #666666; width: 160px;">Transaction ID:</td>
+                                                <td style="font-size: 14px; color: #333333; font-weight: bold;">{transactionId}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-size: 14px; color: #666666;">Order ID:</td>
+                                                <td style="font-size: 14px; color: #333333; font-weight: bold;">{orderId}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-size: 14px; color: #666666;">Release Date:</td>
+                                                <td style="font-size: 14px; color: #333333;">{releaseDate}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-size: 14px; color: #666666;">Payment Method:</td>
+                                                <td style="font-size: 14px; color: #333333;">{paymentMethod}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-size: 14px; color: #666666;">Escrow Contract:</td>
+                                                <td style="font-size: 12px; color: #666666; word-break: break-all;">{escrowAddress}</td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Additional Info -->
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 30px;">
+                                <tr>
+                                    <td style="padding: 15px 20px; background-color: #e8f5e9; border-radius: 4px; border-left: 4px solid #4CAF50;">
+                                        <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #333333;">
+                                            <strong>✓ Payment Status:</strong> Completed<br>
+                                            <strong>✓ Blockchain Verified:</strong> Yes<br>
+                                            <strong>✓ Available Balance:</strong> {availableBalance}
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <p style="margin: 0 0 30px; font-size: 15px; line-height: 1.6; color: #333333;">
+                                The funds are now available for withdrawal. You can request a payout from your vendor dashboard at any time.
+                            </p>
+                            
+                            <!-- CTA Buttons -->
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                <tr>
+                                    <td align="center" style="padding: 10px 0;">
+                                        <table cellpadding="0" cellspacing="0" border="0">
+                                            <tr>
+                                                <td style="padding: 0 5px;">
+                                                    <a href="{viewTransactionLink}" style="display: inline-block; padding: 14px 30px; background-color: #4CAF50; color: #ffffff; text-decoration: none; border-radius: 4px; font-size: 16px; font-weight: bold;">View Transaction</a>
+                                                </td>
+                                                <td style="padding: 0 5px;">
+                                                    <a href="{requestPayoutLink}" style="display: inline-block; padding: 14px 30px; background-color: #ffffff; color: #4CAF50; text-decoration: none; border-radius: 4px; font-size: 16px; font-weight: bold; border: 2px solid #4CAF50;">Request Payout</a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <p style="margin: 30px 0 0; font-size: 14px; line-height: 1.6; color: #666666; text-align: center;">
+                                Questions about your payment? Contact us at <a href="mailto:{supportEmail}" style="color: #4CAF50; text-decoration: none;">{supportEmail}</a>
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f9f9f9; padding: 20px 40px; text-align: center; border-top: 1px solid #eeeeee;">
+                            <p style="margin: 0; font-size: 14px; color: #999999;">
+                                &copy; 2025 B2B Marketplace. All rights reserved.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

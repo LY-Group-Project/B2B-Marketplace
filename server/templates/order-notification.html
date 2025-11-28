@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Order Notification</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f4f4f4; padding: 20px 0;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background-color: #4CAF50; padding: 30px 40px; text-align: center;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">New Order Received!</h1>
+                        </td>
+                    </tr>
+                    
+                    <!-- Body -->
+                    <tr>
+                        <td style="padding: 40px;">
+                            <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6; color: #333333;">
+                                Hi <strong>{vendorName}</strong>,
+                            </p>
+                            
+                            <p style="margin: 0 0 30px; font-size: 16px; line-height: 1.6; color: #333333;">
+                                Great news! You've received a new order. Please review and process it as soon as possible.
+                            </p>
+                            
+                            <!-- Order Summary -->
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f9f9f9; border-radius: 4px; margin: 0 0 30px;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <table width="100%" cellpadding="8" cellspacing="0" border="0">
+                                            <tr>
+                                                <td style="font-size: 14px; color: #666666; width: 140px;">Order ID:</td>
+                                                <td style="font-size: 14px; color: #333333; font-weight: bold;">{orderId}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-size: 14px; color: #666666;">Order Date:</td>
+                                                <td style="font-size: 14px; color: #333333;">{orderDate}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-size: 14px; color: #666666;">Customer:</td>
+                                                <td style="font-size: 14px; color: #333333; font-weight: bold;">{customerName}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-size: 14px; color: #666666;">Order Total:</td>
+                                                <td style="font-size: 14px; color: #4CAF50; font-weight: bold;">{orderTotal}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="font-size: 14px; color: #666666;">Items:</td>
+                                                <td style="font-size: 14px; color: #333333;">{itemCount} item(s)</td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Product Details -->
+                            <p style="margin: 0 0 15px; font-size: 16px; font-weight: bold; color: #333333;">
+                                Order Items:
+                            </p>
+                            
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 30px;">
+                                <tr>
+                                    <td style="padding: 15px 20px; background-color: #e8f5e9; border-radius: 4px;">
+                                        <p style="margin: 0; font-size: 14px; line-height: 1.8; color: #333333;">
+                                            {orderItems}
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Shipping Address -->
+                            <p style="margin: 0 0 15px; font-size: 16px; font-weight: bold; color: #333333;">
+                                Shipping Address:
+                            </p>
+                            
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 30px;">
+                                <tr>
+                                    <td style="padding: 15px 20px; background-color: #f9f9f9; border-radius: 4px; border-left: 4px solid #4CAF50;">
+                                        <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #333333;">
+                                            {shippingAddress}
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <p style="margin: 0 0 30px; font-size: 15px; line-height: 1.6; color: #333333;">
+                                <strong>⏰ Action Required:</strong> Please confirm the order and update the shipping status within 24 hours.
+                            </p>
+                            
+                            <!-- CTA Button -->
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                <tr>
+                                    <td align="center" style="padding: 10px 0;">
+                                        <a href="{orderManagementLink}" style="display: inline-block; padding: 14px 40px; background-color: #4CAF50; color: #ffffff; text-decoration: none; border-radius: 4px; font-size: 16px; font-weight: bold;">Process Order</a>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <p style="margin: 30px 0 0; font-size: 14px; line-height: 1.6; color: #666666; text-align: center;">
+                                Questions? Contact support at <a href="mailto:{supportEmail}" style="color: #4CAF50; text-decoration: none;">{supportEmail}</a>
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f9f9f9; padding: 20px 40px; text-align: center; border-top: 1px solid #eeeeee;">
+                            <p style="margin: 0; font-size: 14px; color: #999999;">
+                                &copy; 2025 B2B Marketplace. All rights reserved.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
