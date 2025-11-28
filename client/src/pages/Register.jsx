@@ -50,42 +50,42 @@ const Register = () => {
         />
       </Helmet>
 
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
-          <div>
-            <div className="flex justify-center">
-              <div className="h-12 w-12 bg-primary-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">M</span>
+          {/* Header */}
+          <div className="text-center">
+            <div className="flex justify-center mb-4">
+              <div className="h-14 w-14 bg-gradient-to-r from-primary-600 to-primary-500 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-2xl">M</span>
               </div>
             </div>
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-              Create your account
+            <h2 className="text-4xl font-extrabold text-gray-900 mb-2">
+              Create Account
             </h2>
-            <p className="mt-2 text-center text-sm text-gray-600">
-              Or{" "}
+            <p className="text-gray-600">Join our marketplace today</p>
+            <p className="mt-3 text-sm text-gray-500">
+              Already have an account?{" "}
               <Link
                 to="/login"
-                className="font-medium text-primary-600 hover:text-primary-500"
+                className="font-semibold text-primary-600 hover:text-primary-500 transition"
               >
-                sign in to your existing account
+                Sign in
               </Link>
             </p>
           </div>
 
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
-            <div className="space-y-4">
+          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+            <div className="space-y-5">
               {/* Name Field */}
               <div>
                 <label
                   htmlFor="name"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-medium text-gray-700 mb-2"
                 >
                   Full Name
                 </label>
-                <div className="mt-1 relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User className="h-5 w-5 text-gray-400" />
-                  </div>
+                <div className="relative">
+                  <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                   <input
                     {...register("name", {
                       required: "Name is required",
@@ -96,12 +96,12 @@ const Register = () => {
                     })}
                     type="text"
                     autoComplete="name"
-                    className="appearance-none rounded-md relative block w-full pl-10 pr-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
+                    className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition"
                     placeholder="Enter your full name"
                   />
                 </div>
                 {errors.name && (
-                  <p className="mt-1 text-sm text-red-600">
+                  <p className="mt-2 text-sm text-red-600">
                     {errors.name.message}
                   </p>
                 )}
@@ -111,14 +111,12 @@ const Register = () => {
               <div>
                 <label
                   htmlFor="email"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  Email address
+                  Email Address
                 </label>
-                <div className="mt-1 relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Mail className="h-5 w-5 text-gray-400" />
-                  </div>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                   <input
                     {...register("email", {
                       required: "Email is required",
@@ -129,12 +127,12 @@ const Register = () => {
                     })}
                     type="email"
                     autoComplete="email"
-                    className="appearance-none rounded-md relative block w-full pl-10 pr-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
-                    placeholder="Enter your email"
+                    className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition"
+                    placeholder="your@email.com"
                   />
                 </div>
                 {errors.email && (
-                  <p className="mt-1 text-sm text-red-600">
+                  <p className="mt-2 text-sm text-red-600">
                     {errors.email.message}
                   </p>
                 )}
@@ -144,19 +142,17 @@ const Register = () => {
               <div>
                 <label
                   htmlFor="role"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-medium text-gray-700 mb-2"
                 >
                   Account Type
                 </label>
-                <div className="mt-1 relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Building className="h-5 w-5 text-gray-400" />
-                  </div>
+                <div className="relative">
+                  <Building className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                   <select
                     {...register("role", {
                       required: "Please select an account type",
                     })}
-                    className="appearance-none rounded-md relative block w-full pl-10 pr-3 py-2 border border-gray-300 text-gray-900 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
+                    className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition appearance-none"
                   >
                     <option value="">Select account type</option>
                     <option value="customer">
@@ -166,7 +162,7 @@ const Register = () => {
                   </select>
                 </div>
                 {errors.role && (
-                  <p className="mt-1 text-sm text-red-600">
+                  <p className="mt-2 text-sm text-red-600">
                     {errors.role.message}
                   </p>
                 )}
@@ -176,14 +172,12 @@ const Register = () => {
               <div>
                 <label
                   htmlFor="password"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-medium text-gray-700 mb-2"
                 >
                   Password
                 </label>
-                <div className="mt-1 relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400" />
-                  </div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                   <input
                     {...register("password", {
                       required: "Password is required",
@@ -194,23 +188,23 @@ const Register = () => {
                     })}
                     type={showPassword ? "text" : "password"}
                     autoComplete="new-password"
-                    className="appearance-none rounded-md relative block w-full pl-10 pr-10 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
+                    className="w-full pl-10 pr-12 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition"
                     placeholder="Create a password"
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
-                      <EyeOff className="h-5 w-5 text-gray-400" />
+                      <EyeOff className="h-5 w-5" />
                     ) : (
-                      <Eye className="h-5 w-5 text-gray-400" />
+                      <Eye className="h-5 w-5" />
                     )}
                   </button>
                 </div>
                 {errors.password && (
-                  <p className="mt-1 text-sm text-red-600">
+                  <p className="mt-2 text-sm text-red-600">
                     {errors.password.message}
                   </p>
                 )}
@@ -220,14 +214,12 @@ const Register = () => {
               <div>
                 <label
                   htmlFor="confirmPassword"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-medium text-gray-700 mb-2"
                 >
                   Confirm Password
                 </label>
-                <div className="mt-1 relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400" />
-                  </div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                   <input
                     {...register("confirmPassword", {
                       required: "Please confirm your password",
@@ -236,23 +228,23 @@ const Register = () => {
                     })}
                     type={showConfirmPassword ? "text" : "password"}
                     autoComplete="new-password"
-                    className="appearance-none rounded-md relative block w-full pl-10 pr-10 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm"
+                    className="w-full pl-10 pr-12 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition"
                     placeholder="Confirm your password"
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
                     {showConfirmPassword ? (
-                      <EyeOff className="h-5 w-5 text-gray-400" />
+                      <EyeOff className="h-5 w-5" />
                     ) : (
-                      <Eye className="h-5 w-5 text-gray-400" />
+                      <Eye className="h-5 w-5" />
                     )}
                   </button>
                 </div>
                 {errors.confirmPassword && (
-                  <p className="mt-1 text-sm text-red-600">
+                  <p className="mt-2 text-sm text-red-600">
                     {errors.confirmPassword.message}
                   </p>
                 )}
@@ -270,19 +262,19 @@ const Register = () => {
               />
               <label
                 htmlFor="terms"
-                className="ml-2 block text-sm text-gray-900"
+                className="ml-2 block text-sm text-gray-600"
               >
                 I agree to the{" "}
                 <Link
                   to="/terms"
-                  className="text-primary-600 hover:text-primary-500"
+                  className="text-primary-600 hover:text-primary-500 font-medium"
                 >
                   Terms of Service
                 </Link>{" "}
                 and{" "}
                 <Link
                   to="/privacy"
-                  className="text-primary-600 hover:text-primary-500"
+                  className="text-primary-600 hover:text-primary-500 font-medium"
                 >
                   Privacy Policy
                 </Link>
@@ -290,22 +282,20 @@ const Register = () => {
             </div>
 
             {/* Submit Button */}
-            <div>
-              <button
-                type="submit"
-                disabled={registerMutation.isLoading}
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {registerMutation.isLoading ? (
-                  <div className="flex items-center">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Creating account...
-                  </div>
-                ) : (
-                  "Create account"
-                )}
-              </button>
-            </div>
+            <button
+              type="submit"
+              disabled={registerMutation.isLoading}
+              className="w-full py-3 px-4 bg-gradient-to-r from-primary-600 to-primary-500 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-primary-500/30 transition transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {registerMutation.isLoading ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Creating account...
+                </div>
+              ) : (
+                "Create account"
+              )}
+            </button>
           </form>
         </div>
       </div>

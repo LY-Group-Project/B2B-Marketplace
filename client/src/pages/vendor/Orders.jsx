@@ -13,6 +13,8 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   FunnelIcon,
+  CurrencyDollarIcon,
+  ShoppingBagIcon,
 } from "@heroicons/react/24/outline";
 import { Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
@@ -23,6 +25,12 @@ const VendorOrders = () => {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+
+  // Fetch vendor stats for the overview
+  const { data: statsData, isLoading: statsLoading } = useQuery({
+    queryKey: ["vendorStats"],
+    queryFn: () => vendorAPI.getVendorStats(),
+  });
 
   // Fetch vendor orders
   const { data: ordersData, isLoading } = useQuery({
@@ -60,6 +68,15 @@ const VendorOrders = () => {
   const orders = payload?.orders || [];
   const totalPages = payload?.totalPages || 0;
   const total = payload?.total || 0;
+
+  // Extract vendor stats - handle nested data structure from API
+  const statsServerPayload = statsData?.data || {};
+  const stats = statsServerPayload.data || statsServerPayload;
+
+  // Calculate order status counts from current orders for display
+  const pendingCount = orders.filter((o) => o.status === "pending").length;
+  const shippedCount = orders.filter((o) => o.status === "shipped").length;
+  const deliveredCount = orders.filter((o) => o.status === "delivered").length;
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -141,6 +158,65 @@ const VendorOrders = () => {
             <p className="text-gray-600">
               Manage and track your customer orders ({total} orders)
             </p>
+          </div>
+
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="flex items-center">
+                <ShoppingBagIcon className="h-12 w-12 text-blue-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">
+                    Total Orders
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {stats.totalOrders || total || 0}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="flex items-center">
+                <ClockIcon className="h-12 w-12 text-yellow-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">
+                    Pending Orders
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {stats.pendingOrders ?? pendingCount}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="flex items-center">
+                <TruckIcon className="h-12 w-12 text-indigo-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">
+                    Shipped Orders
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {stats.shippedOrders ?? shippedCount}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="flex items-center">
+                <CurrencyDollarIcon className="h-12 w-12 text-green-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-500">
+                    Total Revenue
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    ${(stats.totalRevenue || 0).toFixed(2)}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Filters */}
@@ -321,14 +397,7 @@ const VendorOrders = () => {
                               {["pending", "confirmed"].includes(
                                 order.status,
                               ) && (
-                                <button
-                                  onClick={() => handleCancelOrder(order._id)}
-                                  disabled={updateOrderStatusMutation.isLoading}
-                                  className="text-red-600 hover:text-red-900 p-1"
-                                  title="Cancel Order"
-                                >
-                                  <XCircleIcon className="h-4 w-4" />
-                                </button>
+                                <div></div>
                               )}
                             </div>
                           </td>

@@ -44,9 +44,15 @@ const VendorDashboard = () => {
     queryFn: () => vendorAPI.getVendorOrders({ limit: 5, sort: "-createdAt" }),
   });
 
-  const stats = statsData?.data || {};
-  const products = productsData?.data?.products || [];
-  const orders = ordersData?.data?.orders || [];
+  // Handle nested data structure from API responses
+  const statsServerPayload = statsData?.data || {};
+  const stats = statsServerPayload.data || statsServerPayload;
+  
+  const productsServerPayload = productsData?.data || {};
+  const products = productsServerPayload.data?.products || productsServerPayload.products || [];
+  
+  const ordersServerPayload = ordersData?.data || {};
+  const orders = ordersServerPayload.data?.orders || ordersServerPayload.orders || [];
 
   const StatCard = ({
     title,

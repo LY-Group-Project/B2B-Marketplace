@@ -300,18 +300,6 @@ const Orders = () => {
                         </div>
 
                         <div className="mt-3 sm:mt-0 flex space-x-3">
-                          {order.status === "pending" && (
-                            <button className="text-sm text-red-600 hover:text-red-800">
-                              Cancel Order
-                            </button>
-                          )}
-
-                          {order.status === "delivered" && (
-                            <button className="text-sm text-blue-600 hover:text-blue-800">
-                              Reorder
-                            </button>
-                          )}
-
                           <Link
                             to={`/orders/${order._id}`}
                             className="text-sm text-blue-600 hover:text-blue-800"

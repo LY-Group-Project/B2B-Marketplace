@@ -181,6 +181,14 @@ const getVendorStats = async (req, res) => {
     const allOrders = await Order.find({ "items.vendor": vendorId });
     const totalOrders = allOrders.length;
 
+    // Count orders by status
+    const pendingOrders = allOrders.filter((o) => o.status === "pending").length;
+    const confirmedOrders = allOrders.filter((o) => o.status === "confirmed").length;
+    const processingOrders = allOrders.filter((o) => o.status === "processing").length;
+    const shippedOrders = allOrders.filter((o) => o.status === "shipped").length;
+    const deliveredOrders = allOrders.filter((o) => o.status === "delivered").length;
+    const cancelledOrders = allOrders.filter((o) => o.status === "cancelled").length;
+
     // Calculate total revenue from all orders
     let totalRevenue = 0;
     allOrders.forEach((order) => {
@@ -324,6 +332,12 @@ const getVendorStats = async (req, res) => {
         productCount,
         activeProductCount,
         totalOrders,
+        pendingOrders,
+        confirmedOrders,
+        processingOrders,
+        shippedOrders,
+        deliveredOrders,
+        cancelledOrders,
         totalRevenue: Math.round(totalRevenue * 100) / 100,
         orderGrowth: Math.round(orderGrowth * 100) / 100,
         revenueGrowth: Math.round(revenueGrowth * 100) / 100,

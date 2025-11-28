@@ -80,7 +80,7 @@ const PasskeyAuth = () => {
   ];
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
       <Helmet>
         <title>Register Passkey - Marketplace</title>
         <meta
@@ -96,19 +96,19 @@ const PasskeyAuth = () => {
               <span className="text-white font-bold text-2xl">P</span>
             </div>
           </div>
-          <h2 className="text-3xl font-extrabold text-white mb-2">
+          <h2 className="text-3xl font-extrabold text-gray-900 mb-2">
             Register Passkey
           </h2>
-          <p className="text-gray-400">
+          <p className="text-gray-600">
             Add a passkey to enable passwordless, phishing-resistant login.
           </p>
         </div>
 
-        <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
+        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <p className="text-sm text-gray-400">Registered account</p>
-              <p className="text-base font-medium text-white">
+              <p className="text-sm text-gray-500">Registered account</p>
+              <p className="text-base font-medium text-gray-900">
                 {username || "Not signed in"}
               </p>
             </div>
@@ -145,7 +145,7 @@ const PasskeyAuth = () => {
             </div>
           </div>
 
-          <p className="text-sm text-gray-400 mb-4">
+          <p className="text-sm text-gray-500 mb-4">
             Use a device with a platform authenticator (Touch ID, Windows Hello,
             Android biometrics) or an external security key.
           </p>
@@ -163,19 +163,19 @@ const PasskeyAuth = () => {
           )}
         </div>
 
-        <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
-          <h3 className="text-sm font-semibold text-white mb-3">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+          <h3 className="text-sm font-semibold text-gray-900 mb-3">
             Why use Passkeys?
           </h3>
-          <ul className="space-y-3 text-sm text-gray-300">
+          <ul className="space-y-3 text-sm text-gray-600">
             {passkeyFeatures.map((f, i) => (
               <li key={i} className="flex items-start gap-3">
                 <div className="mt-1">
-                  <i className={`fas ${f.icon} text-primary-400 text-lg`}></i>
+                  <i className={`fas ${f.icon} text-primary-500 text-lg`}></i>
                 </div>
                 <div>
-                  <p className="font-medium text-white">{f.title}</p>
-                  <p className="text-gray-400">{f.description}</p>
+                  <p className="font-medium text-gray-900">{f.title}</p>
+                  <p className="text-gray-500">{f.description}</p>
                 </div>
               </li>
             ))}
