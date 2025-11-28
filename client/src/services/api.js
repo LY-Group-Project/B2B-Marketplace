@@ -241,10 +241,43 @@ export const escrowAPI = {
   confirmDelivery: (orderId) => api.post(`/escrows/${orderId}/confirm-delivery`),
   // Release funds (seller action)
   releaseFunds: (orderId) => api.post(`/escrows/${orderId}/release`),
-  // Raise dispute (buyer or seller)
+  // Raise dispute (buyer or seller) - DEPRECATED: Use disputeAPI.createDispute instead
   raiseDispute: (orderId) => api.post(`/escrows/${orderId}/dispute`),
-  // Resolve dispute (admin only)
+  // Resolve dispute (admin only) - DEPRECATED: Use disputeAPI.resolveDispute instead
   resolveDispute: (orderId, winner) => api.post(`/escrows/${orderId}/resolve`, { winner }),
+};
+
+// Dispute API (Chat-based dispute management)
+export const disputeAPI = {
+  // Get all disputes (users see their own, admins see all)
+  getDisputes: (params) => api.get("/disputes", { params }),
+  // Get dispute by ID
+  getDispute: (id) => api.get(`/disputes/${id}`),
+  // Get dispute by order ID
+  getDisputeByOrder: (orderId) => api.get(`/disputes/order/${orderId}`),
+  // Create a new dispute
+  createDispute: (orderId, reason) => api.post("/disputes", { orderId, reason }),
+  // Send a message in dispute chat
+  sendMessage: (disputeId, content) => api.post(`/disputes/${disputeId}/messages`, { content }),
+  // Send a message with images
+  sendMessageWithImages: (disputeId, formData) => 
+    api.post(`/disputes/${disputeId}/messages`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }),
+  // Resolve dispute (admin only)
+  resolveDispute: (disputeId, winner, notes) => 
+    api.post(`/disputes/${disputeId}/resolve`, { winner, notes }),
+  // Update dispute priority (admin only)
+  updatePriority: (disputeId, priority) => 
+    api.patch(`/disputes/${disputeId}/priority`, { priority }),
+  // Assign admin to dispute (admin only)
+  assignAdmin: (disputeId, adminId) => 
+    api.patch(`/disputes/${disputeId}/assign`, { adminId }),
+  // Close dispute
+  closeDispute: (disputeId, reason) => 
+    api.post(`/disputes/${disputeId}/close`, { reason }),
+  // Get proof image URL
+  getProofImageUrl: (filename) => `${API_BASE_URL}/disputes/proofs/${filename}`,
 };
 
 // Payouts API (KooshCoin Burn & Withdrawal)

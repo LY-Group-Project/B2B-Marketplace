@@ -4,3 +4,6 @@ node_modules
 uploads/
 .image-cache/
 migration_backup.json
+proofs/*
+# ignore gitkeep but keep the folder
+!proofs/.gitkeep

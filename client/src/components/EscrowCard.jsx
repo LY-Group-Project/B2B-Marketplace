@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import {
   ShieldCheckIcon,
   ExclamationTriangleIcon,
@@ -7,13 +8,16 @@ import {
   ArrowPathIcon,
   BanknotesIcon,
   LinkIcon,
+  ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
-import { escrowAPI } from "../services/api";
+import { escrowAPI, disputeAPI } from "../services/api";
 import { toast } from "react-hot-toast";
 
 const EscrowCard = ({ orderId, userRole, order }) => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [showDisputeModal, setShowDisputeModal] = useState(false);
+  const [disputeReason, setDisputeReason] = useState("");
   const [showResolveModal, setShowResolveModal] = useState(false);
 
   // Fetch escrow details
@@ -71,14 +75,22 @@ const EscrowCard = ({ orderId, userRole, order }) => {
 
   // Raise dispute mutation
   const raiseDisputeMutation = useMutation({
-    mutationFn: () => escrowAPI.raiseDispute(orderId),
-    onSuccess: () => {
+    mutationFn: (reason) => disputeAPI.createDispute(orderId, reason),
+    onSuccess: (response) => {
       queryClient.invalidateQueries(["escrow", orderId]);
       queryClient.invalidateQueries(["order", orderId]);
       setShowDisputeModal(false);
-      toast.success("Dispute raised. Admin will review and resolve.");
+      setDisputeReason("");
+      toast.success("Dispute created. Redirecting to chat...");
+      // Navigate to dispute chat
+      navigate(`/disputes/${response.data.dispute._id}`);
     },
     onError: (error) => {
+      // If dispute already exists, navigate to existing dispute chat
+      if (error.response?.data?.dispute) {
+        navigate(`/disputes/${error.response.data.dispute._id}`);
+        return;
+      }
       toast.error(error.response?.data?.message || "Failed to raise dispute");
     },
   });
@@ -343,8 +355,17 @@ const EscrowCard = ({ orderId, userRole, order }) => {
           )}
 
           {escrow.status === "Disputed" && (
-            <div className="text-center text-yellow-600 font-medium text-sm">
-              ⚠ Under dispute - awaiting admin resolution
+            <div className="space-y-2">
+              <div className="text-center text-yellow-600 font-medium text-sm">
+                ⚠ Under dispute - awaiting resolution
+              </div>
+              <button
+                onClick={() => navigate(`/disputes/order/${orderId}`)}
+                className="w-full flex items-center justify-center bg-yellow-100 text-yellow-800 py-2 px-4 rounded-md hover:bg-yellow-200 text-sm font-medium"
+              >
+                <ChatBubbleLeftRightIcon className="h-4 w-4 mr-2" />
+                View Dispute Chat
+              </button>
             </div>
           )}
 
@@ -367,23 +388,41 @@ const EscrowCard = ({ orderId, userRole, order }) => {
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Raise Dispute
             </h3>
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to raise a dispute? An admin will review the
-              case and make a decision. This action cannot be easily undone.
+            <p className="text-gray-600 mb-4">
+              Please describe your issue in detail. This will start a chat where
+              you, the other party, and an admin can discuss and resolve the matter.
             </p>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Reason for Dispute *
+              </label>
+              <textarea
+                value={disputeReason}
+                onChange={(e) => setDisputeReason(e.target.value)}
+                rows={4}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Describe the issue in detail (minimum 10 characters)..."
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {disputeReason.length}/1000 characters
+              </p>
+            </div>
             <div className="flex space-x-3">
               <button
-                onClick={() => setShowDisputeModal(false)}
+                onClick={() => {
+                  setShowDisputeModal(false);
+                  setDisputeReason("");
+                }}
                 className="flex-1 border border-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-50"
               >
                 Cancel
               </button>
               <button
-                onClick={() => raiseDisputeMutation.mutate()}
-                disabled={raiseDisputeMutation.isPending}
+                onClick={() => raiseDisputeMutation.mutate(disputeReason)}
+                disabled={raiseDisputeMutation.isPending || disputeReason.length < 10}
                 className="flex-1 bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 disabled:opacity-50"
               >
-                {raiseDisputeMutation.isPending ? "Raising..." : "Raise Dispute"}
+                {raiseDisputeMutation.isPending ? "Creating..." : "Start Dispute"}
               </button>
             </div>
           </div>

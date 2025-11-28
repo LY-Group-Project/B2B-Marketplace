@@ -21,6 +21,8 @@ import OrderDetail from "./pages/OrderDetail";
 import Categories from "./pages/Categories";
 import PasskeyAuthPage from "./pages/RegisterPasskey";
 import ClaimFunds from "./pages/ClaimFunds";
+import DisputeChat from "./pages/DisputeChat";
+import MyDisputes from "./pages/MyDisputes";
 
 // Vendor Pages
 import VendorDashboard from "./pages/vendor/Dashboard";
@@ -39,6 +41,7 @@ import AdminOrders from "./pages/admin/Orders";
 import AdminCategories from "./pages/admin/Categories";
 import AdminVendorManagement from "./pages/admin/VendorManagement";
 import AdminPayouts from "./pages/admin/Payouts";
+import AdminDisputes from "./pages/admin/Disputes";
 import AuthLoader from "./components/AuthLoader";
 
 // Create a client
@@ -108,6 +111,30 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <ClaimFunds />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="disputes"
+                  element={
+                    <ProtectedRoute>
+                      <MyDisputes />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="disputes/:id"
+                  element={
+                    <ProtectedRoute>
+                      <DisputeChat />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="disputes/order/:id"
+                  element={
+                    <ProtectedRoute>
+                      <DisputeChat />
                     </ProtectedRoute>
                   }
                 />
@@ -224,6 +251,14 @@ function App() {
                   element={
                     <ProtectedRoute requiredRole="admin">
                       <AdminPayouts />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="admin/disputes"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <AdminDisputes />
                     </ProtectedRoute>
                   }
                 />
