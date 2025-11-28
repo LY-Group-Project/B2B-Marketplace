@@ -199,10 +199,11 @@ const VendorOrderDetail = () => {
                       >
                         <img
                           className="h-16 w-16 rounded-lg object-cover"
-                          src={
-                            item.product?.images?.[0] ||
-                            "/placeholder-product.jpg"
-                          }
+                          src={(() => {
+                            const img = item.product?.images?.[0];
+                            if (!img) return "/placeholder-product.jpg";
+                            return typeof img === "string" ? img : img?.url || "/placeholder-product.jpg";
+                          })()}
                           alt={item.product?.name}
                         />
                         <div className="flex-1">
@@ -285,20 +286,20 @@ const VendorOrderDetail = () => {
                   <div className="flex items-center">
                     <UserIcon className="h-4 w-4 text-gray-400 mr-2" />
                     <span className="text-sm text-gray-900">
-                      {order.user?.name}
+                      {order.customer?.name || "N/A"}
                     </span>
                   </div>
                   <div className="flex items-center">
                     <EnvelopeIcon className="h-4 w-4 text-gray-400 mr-2" />
                     <span className="text-sm text-gray-900">
-                      {order.user?.email}
+                      {order.customer?.email || "N/A"}
                     </span>
                   </div>
-                  {order.user?.phone && (
+                  {order.customer?.phone && (
                     <div className="flex items-center">
                       <PhoneIcon className="h-4 w-4 text-gray-400 mr-2" />
                       <span className="text-sm text-gray-900">
-                        {order.user.phone}
+                        {order.customer.phone}
                       </span>
                     </div>
                   )}

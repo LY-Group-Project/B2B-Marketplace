@@ -20,12 +20,15 @@ const {
 // Public routes
 router.get("/", getProducts);
 router.get("/featured", getFeaturedProducts);
+
+// Vendor routes (must be before /:id to avoid matching "vendor" as an id)
+router.get("/vendor/my-products", auth, vendorAuth, getVendorProducts);
+
 router.get("/:id", validateObjectId("id"), getProduct);
 router.get("/:id/related", validateObjectId("id"), getRelatedProducts);
 
-// Vendor routes
+// Vendor protected routes
 router.post("/", auth, vendorAuth, validateProduct, createProduct);
-router.get("/vendor/my-products", auth, vendorAuth, getVendorProducts);
 router.put("/:id", auth, vendorAuth, validateObjectId("id"), updateProduct);
 router.delete("/:id", auth, vendorAuth, validateObjectId("id"), deleteProduct);
 router.patch(

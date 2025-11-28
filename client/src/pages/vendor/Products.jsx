@@ -186,10 +186,11 @@ const VendorProducts = () => {
                           <div className="flex items-center">
                             <img
                               className="h-12 w-12 rounded-lg object-cover"
-                              src={
-                                product.images?.[0] ||
-                                "/placeholder-product.jpg"
-                              }
+                              src={(() => {
+                                const img = product.images?.[0];
+                                if (!img) return "/placeholder-product.jpg";
+                                return typeof img === "string" ? img : img?.url || "/placeholder-product.jpg";
+                              })()}
                               alt={product.name}
                             />
                             <div className="ml-4">
@@ -215,13 +216,13 @@ const VendorProducts = () => {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
                             className={`text-sm ${
-                              product.stock < 10
+                              (product.quantity ?? 0) < 10
                                 ? "text-red-600 font-medium"
                                 : "text-gray-900"
                             }`}
                           >
-                            {product.stock}
-                            {product.stock < 10 && (
+                            {product.quantity ?? 0}
+                            {(product.quantity ?? 0) < 10 && (
                               <span className="text-xs text-red-500 ml-1">
                                 (Low)
                               </span>

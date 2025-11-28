@@ -7,13 +7,13 @@ const { encrypt, decrypt } = require("../utils/crypto");
 // Load ABIs from Solidity artifacts
 const escrowFactoryArtifact = JSON.parse(
   fs.readFileSync(
-    path.join(__dirname, "../../solidity/artifacts/contracts/EscrowFactory.sol/EscrowFactory.json"),
+    path.join(__dirname, "../contracts/EscrowFactory.sol/EscrowFactory.json"),
     "utf8"
   )
 );
 const escrowArtifact = JSON.parse(
   fs.readFileSync(
-    path.join(__dirname, "../../solidity/artifacts/contracts/Escrow.sol/Escrow.json"),
+    path.join(__dirname, "../contracts/Escrow.sol/Escrow.json"),
     "utf8"
   )
 );

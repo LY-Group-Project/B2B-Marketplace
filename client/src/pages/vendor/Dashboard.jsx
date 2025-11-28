@@ -48,9 +48,10 @@ const VendorDashboard = () => {
   const statsServerPayload = statsData?.data || {};
   const stats = statsServerPayload.data || statsServerPayload;
   
-  const productsServerPayload = productsData?.data || {};
-  const products = productsServerPayload.data?.products || productsServerPayload.products || [];
+  // Products API returns { products, totalPages, ... } directly (no nested data)
+  const products = productsData?.data?.products || [];
   
+  // Orders API may return nested data structure
   const ordersServerPayload = ordersData?.data || {};
   const orders = ordersServerPayload.data?.orders || ordersServerPayload.orders || [];
 
@@ -103,34 +104,41 @@ const VendorDashboard = () => {
     );
   };
 
+  // Helper to extract image URL (handles both string and object formats)
+  const getImageUrl = (images) => {
+    const img = images?.[0];
+    if (!img) return "/placeholder-product.jpg";
+    return typeof img === "string" ? img : img?.url || "/placeholder-product.jpg";
+  };
+
   const ProductRow = ({ product }) => (
     <tr className="hover:bg-gray-50">
-      <td className="px-6 py-4 whitespace-nowrap">
+      <td className="px-4 py-4 whitespace-nowrap">
         <div className="flex items-center">
           <img
-            className="h-10 w-10 rounded-lg object-cover"
-            src={product.images?.[0] || "/placeholder-product.jpg"}
+            className="h-10 w-10 rounded-lg object-cover flex-shrink-0"
+            src={getImageUrl(product.images)}
             alt={product.name}
           />
-          <div className="ml-4">
-            <div className="text-sm font-medium text-gray-900">
+          <div className="ml-3 min-w-0">
+            <div className="text-sm font-medium text-gray-900 truncate max-w-[120px]">
               {product.name}
             </div>
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-gray-500 truncate max-w-[120px]">
               {product.category?.name}
             </div>
           </div>
         </div>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap">
+      <td className="px-4 py-4 whitespace-nowrap">
         <span className="text-sm font-medium text-gray-900">
           ${product.price?.toFixed(2)}
         </span>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap">
-        <span className="text-sm text-gray-500">{product.stock}</span>
+      <td className="px-4 py-4 whitespace-nowrap">
+        <span className="text-sm text-gray-500">{product.quantity ?? 0}</span>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap">
+      <td className="px-4 py-4 whitespace-nowrap">
         <span
           className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
             product.isActive
@@ -141,8 +149,8 @@ const VendorDashboard = () => {
           {product.isActive ? "Active" : "Inactive"}
         </span>
       </td>
-      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-        <div className="flex items-center space-x-2">
+      <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+        <div className="flex items-center justify-end space-x-2">
           <Link
             to={`/products/${product._id}`}
             className="text-blue-600 hover:text-blue-900"
@@ -330,7 +338,7 @@ const VendorDashboard = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Recent Products */}
-            <div className="bg-white rounded-lg shadow">
+            <div className="bg-white rounded-lg shadow overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-semibold text-gray-900">
@@ -344,7 +352,7 @@ const VendorDashboard = () => {
                   </Link>
                 </div>
               </div>
-              <div className="overflow-hidden">
+              <div className="overflow-x-auto">
                 {productsLoading ? (
                   <div className="p-6 text-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
@@ -353,19 +361,19 @@ const VendorDashboard = () => {
                   <table className="min-w-full">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Product
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Price
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Stock
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Status
                         </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Actions
                         </th>
                       </tr>
