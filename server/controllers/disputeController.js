@@ -107,14 +107,14 @@ const createDispute = async (req, res) => {
   }
 };
 
-// Get dispute by order ID
+// Get dispute by order ID (auto-creates dispute if escrow is disputed but no chat exists)
 const getDisputeByOrder = async (req, res) => {
   try {
     const { orderId } = req.params;
     const userId = req.user.id;
     const isAdmin = req.user.role === "admin";
 
-    const dispute = await Dispute.findOne({ order: orderId })
+    let dispute = await Dispute.findOne({ order: orderId })
       .populate("buyer", "name email")
       .populate("seller", "name email")
       .populate("raisedBy", "name email")
@@ -126,7 +126,74 @@ const getDisputeByOrder = async (req, res) => {
         select: "orderNumber total status escrow",
       });
 
+    // If no dispute exists, check if escrow is disputed and auto-create
     if (!dispute) {
+      const order = await Order.findById(orderId)
+        .populate("customer", "name email")
+        .populate("vendorOrders.vendor", "name email");
+
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      // Check if user has access to this order
+      const customerId = order.customer._id.toString();
+      const vendorId = order.vendorOrders[0]?.vendor?._id?.toString();
+      
+      if (customerId !== userId && vendorId !== userId && !isAdmin) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+
+      // If escrow exists and is disputed, auto-create the dispute chat
+      if (order.escrow && order.escrow.status === "Disputed") {
+        // Determine who raised it based on who is viewing
+        let raisedByRole;
+        let raisedBy;
+        if (customerId === userId) {
+          raisedByRole = "buyer";
+          raisedBy = customerId;
+        } else if (vendorId === userId) {
+          raisedByRole = "seller";
+          raisedBy = vendorId;
+        } else {
+          // Admin viewing - default to buyer as the raiser
+          raisedByRole = "buyer";
+          raisedBy = customerId;
+        }
+
+        dispute = new Dispute({
+          order: orderId,
+          buyer: customerId,
+          seller: vendorId,
+          raisedBy,
+          raisedByRole,
+          reason: "Dispute raised via escrow system",
+          status: "open",
+          messages: [{
+            sender: raisedBy,
+            senderRole: raisedByRole,
+            content: "Dispute raised via escrow system. Please describe the issue in detail.",
+          }],
+        });
+
+        await dispute.save();
+
+        // Populate for response
+        await dispute.populate([
+          { path: "buyer", select: "name email" },
+          { path: "seller", select: "name email" },
+          { path: "raisedBy", select: "name email" },
+          { path: "messages.sender", select: "name email" },
+          { path: "order", select: "orderNumber total status escrow" },
+        ]);
+
+        return res.json({
+          dispute,
+          userRole: isAdmin ? "admin" : raisedByRole,
+          autoCreated: true,
+        });
+      }
+
       return res.status(404).json({ message: "No dispute found for this order" });
     }
 

@@ -68,11 +68,13 @@ router.get("/proofs/:filename", async (req, res) => {
       return res.status(404).json({ message: "Image not found" });
     }
 
-    // Get file stats for cache headers
+    // Get file stats
     const stats = fs.statSync(filePath);
     
-    // Check if file is expired (older than 7 days)
-    const fileAge = Date.now() - stats.mtimeMs;
+    // Check if file is expired (older than 7 days from creation)
+    // Use birthtime for creation time, fallback to mtime
+    const creationTime = stats.birthtimeMs || stats.mtimeMs;
+    const fileAge = Date.now() - creationTime;
     const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
     if (fileAge > sevenDaysMs) {
       // Delete expired file

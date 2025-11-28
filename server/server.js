@@ -144,6 +144,7 @@ app.use("/api/razorpay", require("./routes/razorpay"));
 app.use("/api/escrows", require("./routes/escrows"));
 app.use("/api/payouts", require("./routes/payouts"));
 app.use("/api/disputes", require("./routes/disputes"));
+app.use("/api/invoices", require("./routes/invoices"));
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {

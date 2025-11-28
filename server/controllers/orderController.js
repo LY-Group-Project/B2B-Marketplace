@@ -185,7 +185,7 @@ const createOrder = async (req, res) => {
     // Populate the created orders for response
     const populatedOrders = await Order.find({ _id: { $in: createdOrders.map((o) => o._id) } })
       .populate("customer", "name email")
-      .populate("items.product", "name images")
+      .populate("items.product", "name images sku")
       .populate("items.vendor", "name vendorProfile.businessName");
 
     res.status(201).json({
@@ -210,7 +210,7 @@ const getUserOrders = async (req, res) => {
     }
 
     const orders = await Order.find(query)
-      .populate("items.product", "name images price")
+      .populate("items.product", "name images price sku")
       .populate("items.vendor", "name vendorProfile.businessName")
       .sort({ createdAt: -1 })
       .limit(limit * 1)
@@ -241,10 +241,10 @@ const getOrder = async (req, res) => {
       $or: [{ customer: userId }, { "vendorOrders.vendor": userId }],
     })
       .populate("customer", "name email phone")
-      .populate("items.product", "name images price")
+      .populate("items.product", "name images price sku")
       .populate("items.vendor", "name email vendorProfile.businessName")
       .populate("vendorOrders.vendor", "name email vendorProfile.businessName")
-      .populate("vendorOrders.items.product", "name images");
+      .populate("vendorOrders.items.product", "name images sku");
 
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
@@ -323,7 +323,7 @@ const updateOrderStatus = async (req, res) => {
     // Re-fetch the updated order with escrow info
     const updatedOrder = await Order.findById(order._id)
       .populate("customer", "name email phone")
-      .populate("items.product", "name images price")
+      .populate("items.product", "name images price sku")
       .populate("items.vendor", "name email vendorProfile.businessName")
       .populate("vendorOrders.vendor", "name email vendorProfile.businessName");
 
@@ -355,7 +355,7 @@ const getVendorOrders = async (req, res) => {
 
     const orders = await Order.find(query)
       .populate("customer", "name email")
-      .populate("items.product", "name images")
+      .populate("items.product", "name images sku")
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
@@ -423,7 +423,7 @@ const getAllOrders = async (req, res) => {
 
     const orders = await Order.find(query)
       .populate("customer", "name email")
-      .populate("items.product", "name")
+      .populate("items.product", "name sku")
       .populate("items.vendor", "name vendorProfile.businessName")
       .sort({ createdAt: -1 })
       .limit(limit * 1)

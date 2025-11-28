@@ -12,8 +12,10 @@ import {
   XCircleIcon,
   PrinterIcon,
   ChatBubbleLeftEllipsisIcon,
+  ArrowDownTrayIcon,
 } from "@heroicons/react/24/outline";
 import { ordersAPI } from "../services/api";
+import api from "../services/api";
 import { toast } from "react-hot-toast";
 import EscrowCard from "../components/EscrowCard";
 
@@ -22,6 +24,69 @@ const OrderDetail = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  // Handle print invoice
+  const handlePrint = async () => {
+    try {
+      // Open invoice HTML in new window for printing
+      const token = localStorage.getItem("auth-storage");
+      let authToken = "";
+      if (token) {
+        try {
+          const authData = JSON.parse(token);
+          authToken = authData.state?.token || "";
+        } catch (e) {}
+      }
+      
+      const response = await api.get(`/invoices/${id}/html`, {
+        responseType: "text",
+      });
+      
+      const printWindow = window.open("", "_blank");
+      if (printWindow) {
+        printWindow.document.write(response.data);
+        printWindow.document.close();
+        printWindow.onload = () => {
+          printWindow.print();
+        };
+      }
+    } catch (error) {
+      toast.error("Failed to load invoice for printing");
+    }
+  };
+
+  // Handle download invoice PDF
+  const handleDownloadInvoice = async () => {
+    setIsDownloading(true);
+    try {
+      const response = await api.get(`/invoices/${id}/pdf`, {
+        responseType: "blob",
+      });
+      
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: "application/pdf" }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `invoice-${order?.orderNumber || id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success("Invoice downloaded successfully");
+    } catch (error) {
+      toast.error("Failed to download invoice");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  // Handle contact support - navigate to contact page with order context
+  const handleContactSupport = () => {
+    const orderNumber = order?.orderNumber || id.slice(-8).toUpperCase();
+    navigate(`/contact?orderId=${id}&orderNumber=${orderNumber}`);
+  };
 
   // Fetch order details
   const {
@@ -236,12 +301,18 @@ const OrderDetail = () => {
               </div>
 
               <div className="mt-4 sm:mt-0 flex space-x-3">
-                <button className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+                <button
+                  onClick={handlePrint}
+                  className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                >
                   <PrinterIcon className="h-4 w-4 mr-2" />
                   Print
                 </button>
 
-                <button className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+                <button
+                  onClick={handleContactSupport}
+                  className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                >
                   <ChatBubbleLeftEllipsisIcon className="h-4 w-4 mr-2" />
                   Contact Support
                 </button>
@@ -533,8 +604,13 @@ const OrderDetail = () => {
                     </button>
                   )}
 
-                  <button className="w-full border border-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-50 text-sm font-medium">
-                    Download Invoice
+                  <button
+                    onClick={handleDownloadInvoice}
+                    disabled={isDownloading}
+                    className="w-full border border-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-50 text-sm font-medium inline-flex items-center justify-center disabled:opacity-50"
+                  >
+                    <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
+                    {isDownloading ? "Downloading..." : "Download Invoice"}
                   </button>
                 </div>
               </div>

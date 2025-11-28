@@ -23,6 +23,9 @@ import PasskeyAuthPage from "./pages/RegisterPasskey";
 import ClaimFunds from "./pages/ClaimFunds";
 import DisputeChat from "./pages/DisputeChat";
 import MyDisputes from "./pages/MyDisputes";
+import Terms from "./pages/Terms";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import ContactSupport from "./pages/ContactSupport";
 
 // Vendor Pages
 import VendorDashboard from "./pages/vendor/Dashboard";
@@ -138,6 +141,9 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+                <Route path="contact" element={<ContactSupport />} />
+                <Route path="terms" element={<Terms />} />
+                <Route path="privacy" element={<PrivacyPolicy />} />
 
                 {/* Vendor Routes */}
                 <Route
